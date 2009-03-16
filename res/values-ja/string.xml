@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ Copyright (C) 2008,2009  OMRON SOFTWARE Co., Ltd.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<resources>
+  <!-- common part -->
+    <!-- Preferences -->
+    <string name="preference_ime_setting_app">設定</string>
+
+    <string name="preference_key_setting_menu">キーボード設定</string>
+
+    <string name="preference_key_sound_title">キークリック音</string>
+    <string name="preference_key_sound_summary">キー押下時にクリック音を鳴らします。</string>
+
+    <string name="preference_key_vibration_title">キークリックバイブ</string>
+    <string name="preference_key_vibration_summary">キー押下時にバイブレーションさせます。</string>
+
+    <string name="preference_preview_title">キーポップアップ</string>
+    <string name="preference_preview_summary">キー押下時にキーの刻印をポップアップさせます。</string>
+
+    <string name="preference_conversion_menu">変換設定</string>
+
+    <string name="preference_prediction_title">予測変換</string>
+    <string name="preference_prediction_summary">予測候補を表示します。</string>
+
+    <string name="preference_correct_spell_title">タイプミスの補正</string>
+    <string name="preference_correct_spell_summary">タイプミスを補正した候補を表示します。</string>
+
+    <string name="preference_input_learning_title">候補学習</string>
+    <string name="preference_input_learning_summary">確定した候補を学習します。</string>
+
+    <string name="preference_aboutime_menu">IMEについて</string>
+    
+    <string name="preference_dictionary_menu">辞書</string>
+    <string name="preference_dictionary_menu_ja">日本語辞書</string>
+    <string name="preference_dictionary_menu_en">英語辞書</string>
+    <string name="preference_dictionary_menu_zhcn">中国語辞書</string>
+
+    <string name="preference_user_dictionary">ユーザー辞書</string>
+
+    <string name="preference_user_dictionary_edit_words_title">単語登録/編集/削除</string>
+    <string name="preference_user_dictionary_edit_words_summary">ユーザー辞書の単語を編集します。</string>
+    <string name="preference_user_dictionary_edit_words_summary_ja">日本語ユーザー辞書の単語を編集します。</string>
+    <string name="preference_user_dictionary_edit_words_summary_en">英語ユーザー辞書の単語を編集します。</string>
+    <string name="preference_user_dictionary_edit_words_summary_zhcn">中国語ユーザー辞書の単語を編集します。</string>
+    
+    <string name="preference_user_dictionary_clear_learning_title">学習辞書初期化</string>
+    <string name="preference_user_dictionary_clear_learning_summary">学習辞書の内容をすべて消去します。</string>
+
+    <string name="preference_user_dictionary_clear_user_title">ユーザー辞書初期化</string>
+    <string name="preference_user_dictionary_clear_user_summary">ユーザー辞書の内容をすべて消去します。</string>
+
+    <!-- Dialog Messages -->
+    <string name="dialog_button_ok">OK</string>
+    <string name="dialog_button_cancel">キャンセル</string>
+    <string name="dialog_button_close">閉じる</string>
+
+    <string name="dialog_clear_user_dictionary_message">ユーザー辞書の内容をすべて消去しますか？</string>
+    <string name="dialog_clear_learning_dictionary_message">学習辞書の内容をすべて消去しますか？</string>
+    <string name="dialog_clear_user_dictionary_done">ユーザー辞書の内容をすべて消去しました。</string>
+    <string name="dialog_clear_learning_dictionary_done">学習辞書の内容をすべて消去しました。</string>
+
+    <!-- user dictionary -->
+    <string name="user_dictionary_list_words">単語一覧</string>
+    <string name="user_dictionary_list_words_en">英語辞書 単語一覧</string>
+    <string name="user_dictionary_list_words_ja">日本語辞書 単語一覧</string>
+    <string name="user_dictionary_list_words_zhcn">中国語辞書 単語一覧</string>
+    <string name="user_dictionary_edit_words">単語編集</string>
+    <string name="user_dictionary_title_read">読み</string>
+    <string name="user_dictionary_title_candidate">表記</string>
+    <string name="user_dictionary_add">登録</string>
+    <string name="user_dictionary_edit">編集</string>
+    <string name="user_dictionary_delete">削除</string>
+    <string name="user_dictionary_delete_confirm">選択した単語を削除しますか？</string>
+    <string name="user_dictionary_delete_complete">削除しました。</string>
+    <string name="user_dictionary_delete_fail">削除に失敗しました。</string>
+    <string name="user_dictionary_words_duplication_message">すでに登録されています。</string>
+    <string name="user_dictionary_over_max_text_size_message">登録可能文字列長を超えています。</string>
+    <string name="user_dictionary_creating_wordlist">生成中</string>
+    <string name="user_dictionary_init">ユーザー辞書初期化</string>
+
+  <!-- IME dependency -->
+    <!-- OpenWnn English -->
+    <string name="openwnn_english_copyright">Ver.1.10\nオムロン ソフトウェア(株)</string>
+
+    <!-- OpenWnn Japanese -->
+    <string name="openwnn_japanese_copyright">Ver.1.10\nオムロン ソフトウェア(株)</string>
+
+  <!-- Candidate Delete -->
+    <string name="button_candidate_delete">学習削除</string>
+    <string name="button_candidate_cancel">キャンセル</string>
+
+</resources>
+
