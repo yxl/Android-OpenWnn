@@ -31,7 +31,7 @@ import java.util.regex.Matcher;
  */
 public class RomkanFullKatakana implements LetterConverter {
     /** HashMap for Romaji-to-Kana conversion (Japanese mode) */
-    private static final HashMap mRomkanTable = new HashMap() {{
+    private static final HashMap<String, String> mRomkanTable = new HashMap<String, String>() {{
         put("la", "\u30a1");        put("xa", "\u30a1");        put("a", "\u30a2");
         put("li", "\u30a3");        put("lyi", "\u30a3");       put("xi", "\u30a3");
         put("xyi", "\u30a3");       put("i", "\u30a4");         put("yi", "\u30a4");
@@ -151,9 +151,9 @@ public class RomkanFullKatakana implements LetterConverter {
      * @param text The input/output text
      * @param table HashMap for Romaji-to-Kana conversion
      *
-     * @return <code>true</code> if conversion is compleated; <code>false</code> if not
+     * @return {@code true} if conversion is compleated; {@code false} if not
      */
-    public static boolean convert(ComposingText text, HashMap table) {
+    public static boolean convert(ComposingText text, HashMap<String, String> table) {
         int cursor = text.getCursor(1);
 
         if (cursor <= 0) {
@@ -177,8 +177,12 @@ public class RomkanFullKatakana implements LetterConverter {
             for (int i = start; i < 3; i++) {
                 key.append(str[i].string);
             }
-            String match = (String)table.get(key.toString().toLowerCase());
+            boolean upper = Character.isUpperCase(key.charAt(key.length() - 1));
+            String match = table.get(key.toString().toLowerCase());
             if (match != null) {
+                if (upper) {
+                    match = match.toUpperCase();
+                }
                 StrSegment[] out;
                 if (match.length() == 1) {
                     out = new StrSegment[1];

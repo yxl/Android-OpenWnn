@@ -78,13 +78,10 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         KEYMODE_JA_FULL_HIRAGANA, KEYMODE_JA_HALF_ALPHABET, KEYMODE_JA_HALF_NUMBER
     };
 
-    /** Definition for <code>mInputType</code> (able to predict) */
-    private static final int INPUT_TYPE_PREDICABLE = 0;
+    /** Definition for {@code mInputType} (toggle) */
+    private static final int INPUT_TYPE_TOGGLE = 1;
 
-    /** Definition for <code>mInputType</code> (toggle only) */
-    private static final int INPUT_TYPE_TOGGLE_ONLY = 1;
-
-    /** Definition for <code>mInputType</code> (commit instantly) */
+    /** Definition for {@code mInputType} (commit instantly) */
     private static final int INPUT_TYPE_INSTANT = 2;
 
     /** Toggle cycle table for full-width HIRAGANA */
@@ -103,7 +100,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     };
 
     /** Replace table for full-width HIRAGANA */
-    private static final HashMap JP_FULL_HIRAGANA_REPLACE_TABLE = new HashMap() {{
+    private static final HashMap<String, String> JP_FULL_HIRAGANA_REPLACE_TABLE = new HashMap<String, String>() {{
           put("\u3042", "\u3041"); put("\u3044", "\u3043"); put("\u3046", "\u3045"); put("\u3048", "\u3047"); put("\u304a", "\u3049");
           put("\u3041", "\u3042"); put("\u3043", "\u3044"); put("\u3045", "\u30f4"); put("\u3047", "\u3048"); put("\u3049", "\u304a");
           put("\u304b", "\u304c"); put("\u304d", "\u304e"); put("\u304f", "\u3050"); put("\u3051", "\u3052"); put("\u3053", "\u3054");
@@ -141,7 +138,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     };
 
     /** Replace table for full-width KATAKANA */
-    private static final HashMap JP_FULL_KATAKANA_REPLACE_TABLE = new HashMap() {{
+    private static final HashMap<String,String> JP_FULL_KATAKANA_REPLACE_TABLE = new HashMap<String,String>() {{
         put("\u30a2", "\u30a1"); put("\u30a4", "\u30a3"); put("\u30a6", "\u30a5"); put("\u30a8", "\u30a7"); put("\u30aa", "\u30a9");
         put("\u30a1", "\u30a2"); put("\u30a3", "\u30a4"); put("\u30a5", "\u30f4"); put("\u30a7", "\u30a8"); put("\u30a9", "\u30aa");
         put("\u30ab", "\u30ac"); put("\u30ad", "\u30ae"); put("\u30af", "\u30b0"); put("\u30b1", "\u30b2"); put("\u30b3", "\u30b4");
@@ -176,7 +173,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     };
 
     /** Replace table for half-width KATAKANA */
-    private static final HashMap JP_HALF_KATAKANA_REPLACE_TABLE = new HashMap() {{
+    private static final HashMap<String,String> JP_HALF_KATAKANA_REPLACE_TABLE = new HashMap<String,String>() {{
         put("\uff71", "\uff67");  put("\uff72", "\uff68");  put("\uff73", "\uff69");  put("\uff74", "\uff6a");  put("\uff75", "\uff6b");
         put("\uff67", "\uff71");  put("\uff68", "\uff72");  put("\uff69", "\uff73\uff9e");  put("\uff6a", "\uff74");  put("\uff6b", "\uff75");
         put("\uff76", "\uff76\uff9e"); put("\uff77", "\uff77\uff9e"); put("\uff78", "\uff78\uff9e"); put("\uff79", "\uff79\uff9e"); put("\uff7a", "\uff7a\uff9e");
@@ -205,12 +202,12 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         {"\uff50", "\uff51", "\uff52", "\uff53", "\uff30", "\uff31", "\uff32", "\uff33", "\uff17"},
         {"\uff54", "\uff55", "\uff56", "\uff34", "\uff35", "\uff36", "\uff18"},
         {"\uff57", "\uff58", "\uff59", "\uff5a", "\uff37", "\uff38", "\uff39", "\uff3a", "\uff19"},
-        {"\u2010", "\uff10"},
+        {"\uff0d", "\uff10"},
         {"\uff0c", "\uff0e", "\uff1f", "\uff01", "\u30fb", "\u3000"}
     };
 
     /** Replace table for full-width alphabet */
-    private static final HashMap JP_FULL_ALPHABET_REPLACE_TABLE = new HashMap() {{
+    private static final HashMap<String,String> JP_FULL_ALPHABET_REPLACE_TABLE = new HashMap<String,String>() {{
         put("\uff21", "\uff41"); put("\uff22", "\uff42"); put("\uff23", "\uff43"); put("\uff24", "\uff44"); put("\uff25", "\uff45"); 
         put("\uff41", "\uff21"); put("\uff42", "\uff22"); put("\uff43", "\uff23"); put("\uff44", "\uff24"); put("\uff45", "\uff25"); 
         put("\uff26", "\uff46"); put("\uff27", "\uff47"); put("\uff28", "\uff48"); put("\uff29", "\uff49"); put("\uff2a", "\uff4a"); 
@@ -241,7 +238,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     };
 
     /** Replace table for half-width alphabet */
-    private static final HashMap JP_HALF_ALPHABET_REPLACE_TABLE = new HashMap() {{
+    private static final HashMap<String,String> JP_HALF_ALPHABET_REPLACE_TABLE = new HashMap<String,String>() {{
         put("A", "a"); put("B", "b"); put("C", "c"); put("D", "d"); put("E", "e"); 
         put("a", "A"); put("b", "B"); put("c", "C"); put("d", "D"); put("e", "E"); 
         put("F", "f"); put("G", "g"); put("H", "h"); put("I", "i"); put("J", "j"); 
@@ -268,7 +265,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     private static final int INVALID_KEYMODE = -1;
 
     /** Type of input mode */
-    private int mInputType = INPUT_TYPE_PREDICABLE;
+    private int mInputType = INPUT_TYPE_TOGGLE;
 
     /** Previous input character code */
     private int mPrevInputKeyCode = 0;
@@ -288,8 +285,8 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /** The last input type */
     private int mLastInputType = 0;
 
-    /** Set true if prediction of half width alphabet is enabled. */
-    private boolean mEnableEnglishPrediction = false;
+    /** Auto caps mode */
+    private boolean mEnableAutoCaps = true;
 
 
     /** Default constructor */
@@ -306,11 +303,24 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         /* Keyboard[# of Languages][portrait/landscape][# of keyboard type][shift off/on][max # of key-modes][noinput/input] */
         mKeyboard = new Keyboard[3][2][4][2][8][2];
 
-        if (mDisplayMode == DefaultSoftKeyboard.PORTRAIT) {
-            createKeyboardsPortrait(parent);
+        if (mHardKeyboardHidden) {
+            if (mDisplayMode == DefaultSoftKeyboard.PORTRAIT) {
+                createKeyboardsPortrait(parent);
+            } else {
+                createKeyboardsLandscape(parent);
+            }
+            
+            if (mCurrentKeyboardType == KEYBOARD_12KEY) {
+                mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
+                                              OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_12KEY));
+            } else {
+                mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
+                                              OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
+            }
         } else {
+            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
+                                          OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
         }
-        mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE, OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_12KEY));
     }
 
     /**
@@ -343,6 +353,26 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             targetMode = mFixedKeyMode;
         }
 
+        if (!mHardKeyboardHidden) {
+            if ((targetMode != KEYMODE_JA_FULL_HIRAGANA)
+                && (targetMode != KEYMODE_JA_HALF_ALPHABET)) {
+
+                Locale locale = Locale.getDefault();
+                int keymode = KEYMODE_JA_HALF_ALPHABET;
+                if (locale.getLanguage().equals(Locale.JAPANESE.getLanguage())) {
+                    switch (targetMode) {
+                    case KEYMODE_JA_FULL_HIRAGANA:
+                    case KEYMODE_JA_FULL_KATAKANA:
+                    case KEYMODE_JA_HALF_KATAKANA:
+                        keymode = KEYMODE_JA_FULL_HIRAGANA;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                targetMode = keymode;
+            }
+        }
         Keyboard kbd = getModeChangeKeyboard(targetMode);
         mCurrentKeyMode = targetMode;
         mPrevInputKeyCode = 0;
@@ -351,16 +381,16 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         
         switch (targetMode) {
         case KEYMODE_JA_FULL_HIRAGANA:
-            mInputType = INPUT_TYPE_PREDICABLE;
+            mInputType = INPUT_TYPE_TOGGLE;
             mode = OpenWnnEvent.Mode.DEFAULT;
             break;
             
         case KEYMODE_JA_HALF_ALPHABET:
-            if (USE_ENGLISH_PREDICT && mEnableEnglishPrediction) {
-                mInputType = INPUT_TYPE_PREDICABLE;
+            if (USE_ENGLISH_PREDICT) {
+                mInputType = INPUT_TYPE_TOGGLE;
                 mode = OpenWnnEvent.Mode.NO_LV1_CONV;
             } else {
-                mInputType = INPUT_TYPE_TOGGLE_ONLY;
+                mInputType = INPUT_TYPE_TOGGLE;
                 mode = OpenWnnEvent.Mode.DIRECT;
             }
             break;
@@ -378,17 +408,17 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             break;
             
         case KEYMODE_JA_FULL_KATAKANA:
-            mInputType = INPUT_TYPE_TOGGLE_ONLY;
+            mInputType = INPUT_TYPE_TOGGLE;
             mode = OpenWnnJAJP.ENGINE_MODE_FULL_KATAKANA;
             break;
             
         case KEYMODE_JA_FULL_ALPHABET:
-            mInputType = INPUT_TYPE_TOGGLE_ONLY;
+            mInputType = INPUT_TYPE_TOGGLE;
             mode = OpenWnnEvent.Mode.DIRECT;
             break;
             
         case KEYMODE_JA_HALF_KATAKANA:
-            mInputType = INPUT_TYPE_TOGGLE_ONLY;
+            mInputType = INPUT_TYPE_TOGGLE;
             mode = OpenWnnJAJP.ENGINE_MODE_HALF_KATAKANA;
             break;
             
@@ -401,20 +431,14 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE, mode));
     }
 
-    /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#initView */
-    @Override public View initView(OpenWnn parent, int width, int height) {
+     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#initView */
+     @Override public View initView(OpenWnn parent, int width, int height) {
 
-        mDisplayMode = (width == 320)? PORTRAIT : LANDSCAPE;
-
-        super.initView(parent, width, height);
+        View view = super.initView(parent, width, height);
+        changeKeyboard(mKeyboard[mCurrentLanguage][mDisplayMode][mCurrentKeyboardType][mShiftOn][mCurrentKeyMode][0]);
         
-        KeyboardView view = (KeyboardView) mWnn.getLayoutInflater().inflate(R.layout.default_keyboard, null);
-        view.setOnKeyboardActionListener(this);
-        mKeyboardView = view;
-        
-        Log.d("OpenWnn", "default KBD="+view);
         return view;
-    }
+     }
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#changeKeyboardType */
     @Override public void changeKeyboardType(int type) {
@@ -437,9 +461,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         switch (primaryCode) {
         case KEYCODE_JP12_TOGGLE_MODE:
         case KEYCODE_QWERTY_TOGGLE_MODE:
-        	if (mNoInput) {
             nextKeyMode();
-        	}
             break;
 
         case DefaultSoftKeyboard.KEYCODE_QWERTY_BACKSPACE:
@@ -478,10 +500,8 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
         case KEYCODE_JP12_EMOJI:
         case KEYCODE_QWERTY_EMOJI:
-        	if (mNoInput) {
                 commitText();
                 mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE, OpenWnnJAJP.ENGINE_MODE_SYMBOL));
-        	}
             break;
 
         case KEYCODE_JP12_1:
@@ -501,10 +521,6 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                                               mCurrentInstantTable[getTableIndex(primaryCode)]));
             } else {
                 if ((mPrevInputKeyCode != primaryCode)) {
-                    if (!(mInputType == INPUT_TYPE_PREDICABLE)) {
-                        commitText();
-                    }
-
                     if ((mCurrentKeyMode == KEYMODE_JA_HALF_ALPHABET)
                             && (primaryCode == KEYCODE_JP12_SHARP)) {
                         commitText();
@@ -529,12 +545,14 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                 mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_CHAR,
                                               mCurrentInstantTable[getTableIndex(primaryCode)]));
             } else {
-                HashMap replaceTable = getReplaceTable();
-                if (replaceTable == null) {
-                    Log.e("OpenWnn", "not founds replace table");
-                } else {
-                    mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.REPLACE_CHAR, replaceTable));
-                    mPrevInputKeyCode = primaryCode;
+            	if (!mNoInput) {
+                    HashMap replaceTable = getReplaceTable();
+                    if (replaceTable == null) {
+                        Log.e("OpenWnn", "not founds replace table");
+                    } else {
+                        mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.REPLACE_CHAR, replaceTable));
+                        mPrevInputKeyCode = primaryCode;
+                    }
                 }
             }
             break;
@@ -614,12 +632,12 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                     primaryCode = Character.toUpperCase(primaryCode);
                 }
                 mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_CHAR, (char)primaryCode));
-            } else {
             }
             break;
         }
+
         /* update shift key's state */
-        if (!mCapsLock) {
+        if (!mCapsLock && (primaryCode != DefaultSoftKeyboard.KEYCODE_QWERTY_SHIFT)) {
             setShiftByEditorInfo();
         }
     }
@@ -633,9 +651,9 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             return;
         }
 
+        mEnableAutoCaps = pref.getBoolean("auto_caps", true);
         mFixedKeyMode = INVALID_KEYMODE;
         mPreferenceKeyMode = INVALID_KEYMODE;
-        mEnableEnglishPrediction = true;
 
         switch (inputType & EditorInfo.TYPE_MASK_CLASS) {
 
@@ -653,7 +671,6 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
                 mPreferenceKeyMode = KEYMODE_JA_HALF_ALPHABET;
-                mEnableEnglishPrediction = false;
                 break;
 
             case EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
@@ -662,7 +679,6 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                 break;
 
             default:
-                mPreferenceKeyMode = KEYMODE_JA_FULL_HIRAGANA;
                 break;
             }
             break;
@@ -676,6 +692,12 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             mLastInputType = inputType;
         }
 
+        setShiftByEditorInfo();
+    }
+
+    /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#onUpdateState */
+    @Override public void onUpdateState(OpenWnn parent) {
+        super.onUpdateState(parent);
         setShiftByEditorInfo();
     }
 
@@ -891,8 +913,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     }
 
     /**
-     * Get the toggle table for input that is appropriate in current mode
-     * <br>
+     * Get the toggle table for input that is appropriate in current mode.
      * @return      The toggle table for input
      */
     private String[][] getCycleTable() {
@@ -929,8 +950,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     }
 
     /**
-     * Get the replace table that is appropriate in current mode
-     * <br>
+     * Get the replace table that is appropriate in current mode.
      * @return      The replace table
      */
     private HashMap getReplaceTable() {
@@ -1013,16 +1033,26 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     }
 
     /**
-     * Set the shift key state from <code>EditorInfo</code>
+     * Set the shift key state from {@link EditorInfo}.
      */
     private void setShiftByEditorInfo() {
-        if (mCurrentKeyMode == KEYMODE_JA_HALF_ALPHABET) {
+        if (mEnableAutoCaps && (mCurrentKeyMode == KEYMODE_JA_HALF_ALPHABET)) {
             int shift = getShiftKeyState(mWnn.getCurrentInputEditorInfo());
             
             mShiftOn = shift;
             changeKeyboard(getShiftChangeKeyboard(shift));
         }
     }
+
+    /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#setHardKeyboardHidden */
+    @Override public void setHardKeyboardHidden(boolean hidden) {
+    	super.setHardKeyboardHidden(hidden);	
+        if ((mWnn != null) && !mHardKeyboardHidden) {
+            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
+            		OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
+        }
+    }
 }
+
 
 

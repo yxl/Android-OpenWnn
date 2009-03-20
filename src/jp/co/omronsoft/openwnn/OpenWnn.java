@@ -72,7 +72,9 @@ public class OpenWnn extends InputMethodService {
     /** @see android.inputmethodservice.InputMethodService#onCreate */
     @Override public void onCreate() {
         super.onCreate();
+
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+
 
         if (mConverter != null) { mConverter.init(); }
         if (mComposingText != null) { mComposingText.clear(); }
@@ -95,6 +97,7 @@ public class OpenWnn extends InputMethodService {
     /** @see android.inputmethodservice.InputMethodService#onCreateInputView */
     @Override public View onCreateInputView() {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+
 
         if (mInputViewManager != null) {
             WindowManager wm = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
@@ -159,7 +162,7 @@ public class OpenWnn extends InputMethodService {
         if (mConverter != null) { mConverter.setPreferences(pref);  }
     }
 
-    /** @see android.inputmethodservice.InputMethodService#requestHideSelf(int) */
+    /** @see android.inputmethodservice.InputMethodService#requestHideSelf */
     @Override public void requestHideSelf(int flag) {
         super.requestHideSelf(flag);
         if (mInputViewManager == null) {
@@ -195,7 +198,7 @@ public class OpenWnn extends InputMethodService {
      *
      * @param  ev  An event
      *
-     * @return <code>true</code> if the event is processed in this method; <code>false</code> if not.
+     * @return {@code true} if the event is processed in this method; {@code false} if not.
      */
     public boolean onEvent(OpenWnnEvent ev) {
         return false;
@@ -206,9 +209,9 @@ public class OpenWnn extends InputMethodService {
      *
      * @param prevChar     The character input previous
      * @param toggleTable  Toggle table
-     * @param reverse      <code>false</code>: forward toggle, <code>true</code>: backward toggle
+     * @param reverse      {@code false}:forward toggle, {@code true}: backward toggle
      *
-     * @return A character (<code>null</code> if no character is found)
+     * @return A character ({@code null} if no character is found)
      */
     protected String searchToggleCharacter(String prevChar, String[] toggleTable, boolean reverse) {
         for (int i = 0; i < toggleTable.length; i++) {

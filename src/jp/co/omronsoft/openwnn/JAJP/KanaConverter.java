@@ -21,11 +21,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-
-import jp.co.omronsoft.openwnn.OpenWnnJAJP;
-import jp.co.omronsoft.openwnn.WnnWord;
 import jp.co.omronsoft.openwnn.WnnDictionary;
 import jp.co.omronsoft.openwnn.WnnPOS;
+import jp.co.omronsoft.openwnn.WnnWord;
 
 /**
  * EISU-KANA converter for Japanese IME
@@ -34,7 +32,7 @@ import jp.co.omronsoft.openwnn.WnnPOS;
  */
 public class KanaConverter {
 
-    private static final HashMap mHanSuujiMap = new HashMap() {{
+    private static final HashMap<String,String> mHanSuujiMap = new HashMap<String,String>() {{
         put( "\u3042", "1");
         put( "\u3044", "11");
         put( "\u3046", "111");
@@ -94,7 +92,7 @@ public class KanaConverter {
         put( "\u30fc", "00000");
     }};
 
-    private static final HashMap mZenSuujiMap = new HashMap() {{
+    private static final HashMap<String,String> mZenSuujiMap = new HashMap<String,String>() {{
         put( "\u3042", "\uff11");
         put( "\u3044", "\uff11\uff11");
         put( "\u3046", "\uff11\uff11\uff11");
@@ -154,7 +152,7 @@ public class KanaConverter {
         put( "\u30fc", "\uff10\uff10\uff10\uff10\uff10");
     }};
 
-    private static final HashMap mHanKataMap = new HashMap() {{
+    private static final HashMap<String,String> mHanKataMap = new HashMap<String,String>() {{
         put( "\u3042", "\uff71");
         put( "\u3044", "\uff72");
         put( "\u3046", "\uff73");
@@ -244,7 +242,7 @@ public class KanaConverter {
         put( "\u30fc", "\uff70");
     }};
 
-    private static final HashMap mZenKataMap = new HashMap() {{
+    private static final HashMap<String,String> mZenKataMap = new HashMap<String,String>() {{
         put( "\u3042", "\u30a2");
         put( "\u3044", "\u30a4");
         put( "\u3046", "\u30a6");
@@ -334,14 +332,14 @@ public class KanaConverter {
         put( "\u30fc", "\u30fc");
     }};
 
-    private static final HashMap mHanEijiMap = new HashMap() {{
+    private static final HashMap<String,String> mHanEijiMap = new HashMap<String,String>() {{
         put( "\u3042", ".");
         put( "\u3044", "@");
         put( "\u3046", "_");
         put( "\u3048", " ");
         put( "\u304a", "/");
         put( "\u3041", ":");
-        put( "\u3043", "");
+        put( "\u3043", "~");
         put( "\u3045", "1");
         put( "\u304b", "A");
         put( "\u304d", "B");
@@ -369,9 +367,10 @@ public class KanaConverter {
         put( "\u308a", "X");
         put( "\u308b", "Y");
         put( "\u308c", "Z");
+        put( "\u308f", "-");
     }};
 
-    private static final HashMap mZenEijiMap = new HashMap() {{
+    private static final HashMap<String,String> mZenEijiMap = new HashMap<String,String>() {{
         put( "\u3042", "\uff0e");
         put( "\u3044", "\uff20");
         put( "\u3046", "\uff3f");
@@ -406,10 +405,10 @@ public class KanaConverter {
         put( "\u308a", "\uff38" );
         put( "\u308b", "\uff39");
         put( "\u308c", "\uff3a" );
-
+        put( "\u308f", "\u30fc" );
     }};
 
-    private static final HashMap mZenEijiMapQwety = new HashMap() {{
+    private static final HashMap<String,String> mZenEijiMapQwety = new HashMap<String,String>() {{
         put( "a", "\uff41");
         put( "b", "\uff42");
         put( "c", "\uff43");
@@ -488,7 +487,7 @@ public class KanaConverter {
     /**
      * Set The dictionary.
      * <br>
-     * <code>KanaConverter</code> gets part-of-speech tags from the dictionary.
+     * {@link KanaConverter} gets part-of-speech tags from the dictionary.
      * 
      * @param dict  The dictionary
      */
@@ -502,8 +501,8 @@ public class KanaConverter {
     /**
      * Create the converter
      * <br>
-     * @param inputHiragana     The input string (hiragana)
-     * @param inputRomaji       The input string (romaji)
+     * @param inputHiragana     The input string (Hiragana)
+     * @param inputRomaji       The input string (Romaji)
      * @param keyBoardMode      The mode of keyboard
      * @return                  The word list
      */
@@ -511,6 +510,9 @@ public class KanaConverter {
         List<WnnWord> list = mAddCandidateList;
 
         list.clear();
+        if (inputHiragana.length() == 0) {
+        	return list;
+        }
 
         list.add(new WnnWord(inputHiragana, inputHiragana));
         if (createCandidateString(inputHiragana, mZenKataMap, mStringBuff)) {
@@ -556,10 +558,10 @@ public class KanaConverter {
     }
 
     /**
-     * Create the converter for qwerty keyboard
+     * Create the converter for Qwerty keyboard
      * <br>
-     * @param inputHiragana     The input string (hiragana)
-     * @param inputRomaji       The input string (romaji)
+     * @param inputHiragana     The input string (Hiragana)
+     * @param inputRomaji       The input string (Romaji)
      */
     private void createConverterQwerty(String inputHiragana, String inputRomaji) {
         List<WnnWord> list = mAddCandidateList;
@@ -586,14 +588,14 @@ public class KanaConverter {
      * @param input     The input string
      * @param map       The hash map
      * @param outBuf    The output string
-     * @return          <code>true</code> if success
+     * @return          {@code true} if success
      */
-    private boolean createCandidateString(String input, HashMap map, StringBuffer outBuf) {
+    private boolean createCandidateString(String input, HashMap<String,String> map, StringBuffer outBuf) {
         if (outBuf.length() > 0) {
             outBuf.delete(0, outBuf.length());
         }
         for (int index = 0; index < input.length(); index++) {
-            String convChar = (String) map.get(input.substring(index, index + 1));
+            String convChar = map.get(input.substring(index, index + 1));
             if (convChar == null) {
                 return false;
             }
@@ -621,7 +623,7 @@ public class KanaConverter {
      * Convert the numeric into formatted string
      * <br>
      * @param numComma  The value
-     * @return          <code>true</code> if success
+     * @return          {@code true} if success
      */
     private String convertNumber(String numComma) {
         try {

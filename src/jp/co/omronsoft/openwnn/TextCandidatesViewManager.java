@@ -16,29 +16,40 @@
 
 package jp.co.omronsoft.openwnn;
 
-import junit.framework.Assert;
+import java.util.ArrayList;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Vibrator;
+import android.text.Layout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup.LayoutParams;
+import android.view.GestureDetector;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.EditText;
+import android.text.TextPaint;
 
 /**
- * The default candidates view manager using <code>EditView</code>.
+ * The default candidates view manager using {@link EditText}.
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
-public class TextCandidatesViewManager implements CandidatesViewManager, OnTouchListener {
+public class TextCandidatesViewManager implements CandidatesViewManager, OnTouchListener,
+                                                         GestureDetector.OnGestureListener {
     /** Height of a line */
-    public static final int LINE_HEIGHT = 47;
+    public static final int LINE_HEIGHT = 48;
     /** Number of lines to display (Portrait) */
     public static final int LINE_NUM_PORTRAIT       = 2;
     /** Number of lines to full-display (Portrait) */
@@ -46,43 +57,86 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     /** Number of lines to display (Landscape) */
     public static final int LINE_NUM_LANDSCAPE      = 1;
     /** Number of lines to full-display (Landscape) */
-    public static final int LINE_NUM_LANDSCAPE_FULL = 6;
+    public static final int LINE_NUM_LANDSCAPE_FULL = 3;
 
     /** Separator */
     public static final String CANDIDATE_SEPARATOR = "\u3000 ";
+    
+    /** Maximum lines */
+    private static final int DISPLAY_LINE_MAX_COUNT = 500;
+
+    /** Adjusted value for detecting the selected candidate */
+    private static final int TOUCH_ADJUSTED_VALUE = 1;
 
     /** Body view of the candidates list */
-    protected ViewGroup  mViewBody;
-    /** Scroller of <code>mViewBodyText</code> */
-    protected ScrollView mViewBodyScroll;
+    private ViewGroup  mViewBody;
+    /** Scroller of {@code mViewBodyText} */
+    private ScrollView mViewBodyScroll;
     /** Body of the list view */
-    protected TextCandidatesView   mViewBodyText;
+    private EditText mViewBodyText;
     
-    /** <code>OpenWnn</code> instance using this manager */
-    protected OpenWnn    mWnn;
+    /** {@link OpenWnn} instance using this manager */
+    private OpenWnn mWnn;
     /** View type (VIEW_TYPE_NORMAL or VIEW_TYPE_FULL or VIEW_TYPE_CLOSE) */
-    protected int        mViewType;
-    /** Portrait display(<code>true</code>) or landscape(<code>false</code>) */
-    protected boolean    mPortrait;
+    private int mViewType;
+    /** Portrait display({@code true}) or landscape({@code false}) */
+    private boolean mPortrait;
 
-    protected int        mViewWidth;
-    protected boolean    mAutoHideMode;
-    protected WnnEngine  mConverter;
-    protected int        mDisplayLimit;
-    protected WnnWord    mLastWord;
+    /** Width of the view */
+    private int mViewWidth;
+    /** Whether hide the view if there is no candidates */
+    private boolean mAutoHideMode;
+    /** The converter to be get candidates from and notice the selected candidate to. */
+    private WnnEngine mConverter;
+    /** Limitation of displaying candidates */
+    private int mDisplayLimit;
+    /** The last displaying word */
+    private WnnWord mLastWord;
 
+    /** Vibrator for touch vibration */
     private Vibrator mVibrator = null;
+    /** MediaPlayer for click sound */
     private MediaPlayer mSound = null;
 
-    protected int mWordCount;
-    protected int mWordCountInNormalView;
-    protected int[] mPositionToWordIndexArray;
-    protected StringBuffer mCandidates;
-    protected int[] mStartPositionArray;
-    protected int[] mEndPositionArray;
-    protected WnnWord[] mWnnWordArray;
+    /** Number of candidates displaying */
+    private int mWordCount;
+    private int mWordCountInNormalView;
+    /** List of word's index to convert from the position of the cursor */
+    private ArrayList<Integer> mPositionToWordIndexArray;
+    /** The string to display candidates */
+    private StringBuffer mCandidates;
+    /** List of the start position of each candidate */
+    private ArrayList<Integer> mStartPositionArray;
+    /** List of the end position of each candidate */
+    private ArrayList<Integer> mEndPositionArray;
+    /** List of candidates */
+    private ArrayList<WnnWord> mWnnWordArray;
 
-    /**
+    /** Gesture detector */
+    private GestureDetector mGestureDetector;
+    /** The word pressed */
+    private WnnWord mWord;
+    /** Text on the cancel button */
+    private String mCancelBottonText = null;
+
+    private int mLineLength = 0;
+    private int mLineWordCount = -1;
+
+    private boolean mHardKeyboardHidden = true;
+
+    private boolean mCandidateDeleteState = false;
+
+    private boolean mIsFullView = false;
+
+    private boolean mHasStartedSelect = false;
+
+    private boolean mHasCreatedCandidateList = false;
+
+    private MotionEvent mMotionEvent = null;
+
+    private int mDisplayEndOffset = 0;
+    
+     /**
      * Constructor
      */
     public TextCandidatesViewManager() {
@@ -97,16 +151,16 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     public TextCandidatesViewManager(int displayLimit) {
         this.mDisplayLimit = displayLimit;
         this.mCandidates = new StringBuffer();
-        this.mStartPositionArray = new int[displayLimit];
-        this.mEndPositionArray = new int[displayLimit];
-        this.mPositionToWordIndexArray = new int[52 * 300];
-        this.mWnnWordArray = new WnnWord[displayLimit];
+        this.mStartPositionArray = new ArrayList<Integer>();
+        this.mEndPositionArray = new ArrayList<Integer>();
+        this.mPositionToWordIndexArray = new ArrayList<Integer>();
+        this.mWnnWordArray = new ArrayList<WnnWord>();
     }
 
     /**
      * Set auto-hide mode.
-     * @param hide      <code>true</code> if the view will hidden when no candidate exists;
-     *                  <code>false</code> if the view is always shown.
+     * @param hide      {@code true} if the view will hidden when no candidate exists;
+     *                  {@code false} if the view is always shown.
      */
     public void setAutoHide(boolean hide) {
         mAutoHideMode = hide;
@@ -117,39 +171,58 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mWnn = parent;
         mViewWidth = width;
 
+        mCancelBottonText = mWnn.getResources().getString(R.string.button_candidate_cancel);
+
         mViewBody = (ViewGroup)parent.getLayoutInflater().inflate(R.layout.candidates, null);
+
         mViewBodyScroll = (ScrollView)mViewBody.findViewById(R.id.candview_scroll);
         mViewBodyScroll.setOnTouchListener(this);
 
-        mViewBodyText = (TextCandidatesView)mViewBody.findViewById(R.id.text_candidates_view);
+        mViewBodyText = (EditText)mViewBody.findViewById(R.id.text_candidates_view);
         mViewBodyText.setOnTouchListener(this);
         mViewBodyText.setTextSize(18.0f);
         mViewBodyText.setLineSpacing(6.0f, 1.5f);
         mViewBodyText.setIncludeFontPadding(false);
         mViewBodyText.setFocusable(true);
         mViewBodyText.setCursorVisible(false);
-
-        mViewBodyText.mPositionToWordIndexArray = mPositionToWordIndexArray;
-        mViewBodyText.mWnnWordArray = mWnnWordArray;
-        mViewBodyText.mStartPositionArray = mStartPositionArray;
-        mViewBodyText.mEndPositionArray = mEndPositionArray;
-        mViewBodyText.mParent = this;
-
+        mViewBodyText.setGravity(Gravity.TOP);
+        
         mPortrait = (height > 450)? true : false;
         setViewType(CandidatesViewManager.VIEW_TYPE_CLOSE);
 
+        mGestureDetector = new GestureDetector(this);
         return mViewBody;
     }
 
-    /** @see CandidatesViewManager */
+    /** @see CandidatesViewManager#getCurrentView */
     public View getCurrentView() {
         return mViewBody;
     }
 
-    /** @see CandidatesViewManager */
+    /** @see CandidatesViewManager#setViewType */
     public void setViewType(int type) {
-        mViewType = type;
+        boolean readMore = setViewLayout(type);
+        addNewlineIfNecessary();
 
+        if (readMore) {
+            displayCandidates(this.mConverter, false, -1);
+        } else { 
+        	if (type == CandidatesViewManager.VIEW_TYPE_NORMAL && mDisplayEndOffset > 0) {
+                mIsFullView = false;
+                int maxLine = getMaxLine();
+                displayCandidates(this.mConverter, false, maxLine);
+       	    }
+        }
+    }
+
+    /**
+     * Set the view layout
+     *
+     * @param type  view type
+     * @return true:display update   false:no update
+     */
+    private boolean setViewLayout(int type) {
+        mViewType = type;
         boolean readMore = false;
         int height;
         if (type == CandidatesViewManager.VIEW_TYPE_CLOSE) {
@@ -162,15 +235,17 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mViewBodyText.setLines(LINE_NUM_PORTRAIT);
                 if (mWordCount > 1) {
                     int displayEndCount = (mWordCountInNormalView != -1)	? mWordCountInNormalView : mWordCount;
-                    int endPosition = mEndPositionArray[displayEndCount - 1];
+                    int endPosition = mEndPositionArray.get(displayEndCount - 1);
                     mViewBodyText.setText(mCandidates.subSequence(0, endPosition));
                     mViewBodyText.setSelection(0, 0);
                     mViewBodyText.setCursorVisible(false);
                 }
+                mViewBodyText.setMinimumHeight(height);
             } else {
                 height = LINE_HEIGHT * LINE_NUM_PORTRAIT_FULL;
-                mViewBodyText.setMaxLines(mDisplayLimit);
+                mViewBodyText.setMaxLines(DISPLAY_LINE_MAX_COUNT);
                 readMore = true;
+                mViewBodyText.setMinimumHeight(height);
             }
         } else {
             if (type == CandidatesViewManager.VIEW_TYPE_NORMAL) {
@@ -180,65 +255,58 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mViewBodyText.setLines(LINE_NUM_LANDSCAPE);
                 if (mWordCount > 1) {
                     int displayEndCount = (mWordCountInNormalView != -1)	? mWordCountInNormalView : mWordCount;
-                    int endPosition = mEndPositionArray[displayEndCount - 1];
+                    int endPosition = mEndPositionArray.get(displayEndCount - 1);
                     mViewBodyText.setText(mCandidates.subSequence(0, endPosition));
                     mViewBodyText.setSelection(0, 0);
                     mViewBodyText.setCursorVisible(false);
                 }
+                mViewBodyText.setMinimumHeight(height);
             } else {
-                height = LINE_HEIGHT * LINE_NUM_LANDSCAPE_FULL;
-                mViewBodyText.setMaxLines(mDisplayLimit);
+                height = LINE_HEIGHT * LINE_NUM_LANDSCAPE_FULL * ((!mHardKeyboardHidden) ? 2 : 1);
+                mViewBodyText.setMaxLines(DISPLAY_LINE_MAX_COUNT);
                 readMore = true;
+                mViewBodyText.setMinimumHeight(height);
             }
         }
 
         mViewBody.updateViewLayout(mViewBodyScroll,
                                    new LinearLayout.LayoutParams(mViewWidth, height));
 
-        addNewlineIfNecessary();
-
-        if (readMore) {
-            displayCandidates(this.mConverter, false, -1);
-        }
+        return readMore;
     }
 
-    /** @see CandidatesViewManager */
+    /** @see CandidatesViewManager#getViewType */
     public int getViewType() {
         return mViewType;
     }
 
-    /** @see CandidatesViewManager */
+    /** @see CandidatesViewManager#displayCandidates */
     public void displayCandidates(WnnEngine converter) {
+        mDisplayEndOffset = 0;
+        mIsFullView = false;
         int maxLine = getMaxLine();
         displayCandidates(converter, true, maxLine);
     }
 
-    /** @see CandidatesViewManager */
+    /** @see CandidatesViewManager#getMaxLine */
     private int getMaxLine() {
-        int maxLine = -1;
-        if (mViewType == CandidatesViewManager.VIEW_TYPE_NORMAL) {
-            if (mPortrait) {
-                maxLine = LINE_NUM_PORTRAIT;
-            } else {
-                maxLine = LINE_NUM_LANDSCAPE;
-            }
-        }
+        int maxLine = (mPortrait) ? LINE_NUM_PORTRAIT : LINE_NUM_LANDSCAPE;
         return maxLine;
     }
 
     /**
      * Add a new line if necessary.
      */
-    protected void addNewlineIfNecessary() {
+    private void addNewlineIfNecessary() {
         int maxLine = getMaxLine();
         int lineNum = mViewBodyText.getLineCount();
         if (lineNum == 0) {
             lineNum = countLineUsingMeasureText(mViewBodyText.getText());
         }
         int textLength = mViewBodyText.length();
-        mPositionToWordIndexArray[textLength + 1] = -1;
-        mPositionToWordIndexArray[textLength + 2] = -1;
-        mPositionToWordIndexArray[textLength + 3] = -1;
+        for (int i = 0; i < 3; i++) {
+            mPositionToWordIndexArray.add(textLength + i,-1);
+        }
         for (int i = 0; i < maxLine - lineNum; i++) {
             mViewBodyText.append("\n");
         }
@@ -249,31 +317,30 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     }
 
     /**
-     * Count lines using <code>Paint.measureText()</code>
+     * Count lines using {@link Paint#measureText}.
      *
      * @param text  The text to display
      * @return  Number of lines
      */
-    protected int countLineUsingMeasureText(CharSequence text) {
+    private int countLineUsingMeasureText(CharSequence text) {
         StringBuffer tmpText = new StringBuffer(text);
-        mStartPositionArray[mWordCount] = tmpText.length();
+        mStartPositionArray.add(mWordCount,tmpText.length());
         int padding =
             ViewConfiguration.getScrollBarSize() +
             mViewBodyText.getPaddingLeft() +       
             mViewBodyText.getPaddingRight();       
-        Paint p = new Paint();
+        TextPaint p = mViewBodyText.getPaint();
         int lineCount = 1;
         int start = 0;
         for (int i = 0; i < mWordCount; i++) {
             if (tmpText.length() < start ||
-                tmpText.length() < mStartPositionArray[i + 1]) {
+                tmpText.length() < mStartPositionArray.get(i + 1)) {
                 return 1;
             }
-            float lineLength = p.measureText(tmpText, start, mStartPositionArray[i + 1]);
-            lineLength *= 1.5;
+            float lineLength = measureText(p, tmpText, start, mStartPositionArray.get(i + 1));
             if (lineLength > (mViewWidth - padding)) {
                 lineCount++;
-                start = mStartPositionArray[i];
+                start = mStartPositionArray.get(i);
                 i--;
             }
         }
@@ -282,54 +349,83 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
     /**
      * Display the candidates.
-     * @param converter  <code>WnnEngine</code> which holds candidates.
+     * @param converter  {@link WnnEngine} which holds candidates.
      * @param dispFirst  Whether it is the first time displaying the candidates
      * @param maxLine    The maximum number of displaying lines
      */
-    synchronized protected void displayCandidates(WnnEngine converter, boolean dispFirst, int maxLine) {
+    synchronized private void displayCandidates(WnnEngine converter, boolean dispFirst, int maxLine) {
         if (converter == null) {
             return;
         }
+
+        mHasStartedSelect = false;
 
         /* Clear for the first time */
         if (dispFirst) {
             clearCandidates();
             this.mConverter = converter;
             mLastWord = null;
+            mHasCreatedCandidateList = true;
         }
 
-        /* Concatinate the candidates already got and the last one in dispFirst mode */
+        /* Concatenate the candidates already got and the last one in dispFirst mode */
+        boolean category = false;
         StringBuffer tmp = new StringBuffer();
         tmp.append(mCandidates);
         if ((!dispFirst) && (mLastWord != null) && (mLastWord.candidate.length() != 0)) {
-            mWnnWordArray[mWordCount] = mLastWord;
-            mStartPositionArray[mWordCount] = tmp.length();
-            tmp.append(mLastWord.candidate);
-            mEndPositionArray[mWordCount] = tmp.length();
-            tmp.append(CANDIDATE_SEPARATOR);
-            mWordCount++;
+        	mLineWordCount = -1;
+
+            StringBuffer displayText = createDisplayText(mLastWord, maxLine);
+
+            if (category) {
+                tmp.append(displayText);
+                category = false;
+            } else {
+                mWnnWordArray.add(mWordCount, mLastWord);
+                int i = 0;
+                for (i = 0 ; i < tmp.length(); i++) {
+                	if (!displayText.subSequence(i, i + 1).equals("\n")) {
+                		break;
+                	}
+                }
+                mStartPositionArray.add(mWordCount, tmp.length() + i);
+                tmp.append(displayText);
+                mEndPositionArray.add(mWordCount, tmp.length());
+                tmp.append(CANDIDATE_SEPARATOR);
+                mWordCount++;
+            }
             mLastWord = null;
         }
 
-
+        int displayLimit = mDisplayLimit;
+        StringBuffer displayText;
         /* Get candidates */
         WnnWord result;
-        while ((result = converter.getNextCandidate()) != null && mWordCount < mDisplayLimit) {
-            mWnnWordArray[mWordCount] = result;
-            mStartPositionArray[mWordCount] = tmp.length();
-            tmp.append(result.candidate);
-            mEndPositionArray[mWordCount] = tmp.length();
+        while ((result = converter.getNextCandidate()) != null && (displayLimit == -1 || mWordCount < displayLimit)) {
+
+            displayText = createDisplayText(result, maxLine);
+            if (displayText == null) {
+            	continue;
+            }
+            
+            mWnnWordArray.add(mWordCount, result);
+            int i = 0;
+            for (i = 0 ; i < tmp.length(); i++) {
+            	if (!displayText.subSequence(i, i + 1).equals("\n")) {
+            		break;
+            	}
+            }
+            mStartPositionArray.add(mWordCount, tmp.length() + i);
+            tmp.append(displayText);
+            mEndPositionArray.add(mWordCount,tmp.length());
             tmp.append(CANDIDATE_SEPARATOR);
             mWordCount++;
-            if (maxLine == -1) {
+
+            if (mIsFullView) {
                 continue;
             }
 	    
             mViewBodyText.setText(tmp);
-            /* [Should be improved...] 
-               The view has to be laid out to use getLineCount().
-               For the very first time, layout has to be called manually.
-               However, the code below doesn't work ... */
             int lineNum = mViewBodyText.getLineCount();
             if (lineNum == 0) {
                 lineNum = countLineUsingMeasureText(mViewBodyText.getText());
@@ -338,32 +434,52 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 }
             }
             if (dispFirst &&  lineNum > maxLine) {
-                mLastWord = result;
+            
+                if (mWordCount == 1) {
+                	setViewLayout(CandidatesViewManager.VIEW_TYPE_FULL);
+                	maxLine = -1;
+                    mIsFullView = true;
+                    continue;
+                }            	
+            	
+                    mLastWord = result;
                 if (mWordCount > 1) {
-                    tmp.delete(mStartPositionArray[mWordCount - 1], tmp.length());
+                    tmp.delete(mStartPositionArray.get(mWordCount - 1), tmp.length());
+                    mWnnWordArray.remove(mWordCount -1);
+                    mStartPositionArray.remove(mWordCount -1);
+                    mEndPositionArray.remove(mWordCount -1);
                 } else {
                     return;
                 }
                 mWordCount--;
                 mWordCountInNormalView = mWordCount;
                 break;
+            } else {
+            
+                if (mWordCount == 1) {
+                	setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
+                }            	
             }
         }
-
+        
         /* save the candidate string */
         mCandidates.delete(0, mCandidates.length());
         mCandidates.append(tmp);
+        int j = 0;
         for (int i = 0; i < mWordCount; i++) {
-            int j;
-            for (j = mStartPositionArray[i]; j <= mEndPositionArray[i]; j++) {
-                mPositionToWordIndexArray[j] = i;
+            while (j <= mEndPositionArray.get(i)) {
+            	if (j < mStartPositionArray.get(i)) {
+                    mPositionToWordIndexArray.add(j,-1);
+            	} else {
+                    mPositionToWordIndexArray.add(j,i);
+            	}
+                j++;
             }
-            mPositionToWordIndexArray[j] = mPositionToWordIndexArray[j + 1] = -1;
+            mPositionToWordIndexArray.add(j,-1);    
+            mPositionToWordIndexArray.add(j + 1,-1);
         }
-        
-  
 
-        if (mWordCount < 1) {
+        if (mAutoHideMode && mWordCount < 1) {
             mWnn.setCandidatesViewShown(false);
             return;
         }
@@ -372,38 +488,140 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
             ((mViewType == CandidatesViewManager.VIEW_TYPE_NORMAL) &&
              (mWordCountInNormalView != -1))
             ? mWordCountInNormalView : mWordCount;
-        int endPosition = mEndPositionArray[displayEndCount - 1];
+        int endPosition = mEndPositionArray.get(displayEndCount - 1);
         endPosition += CANDIDATE_SEPARATOR.length();
-        Assert.assertTrue(endPosition <= mCandidates.length());
 
-        mViewBodyText.setText(mCandidates.subSequence(0, endPosition));
-        addNewlineIfNecessary();
+        if (mDisplayEndOffset > 0 && maxLine != -1) {
+        	String str = mCandidates.substring(0, mDisplayEndOffset);
+        	StringBuffer sub = new StringBuffer(str);
+        	sub.append(CANDIDATE_SEPARATOR);
+            mViewBodyText.setText(sub.subSequence(0, mDisplayEndOffset + CANDIDATE_SEPARATOR.length()));
+        } else {
+            mViewBodyText.setText(mCandidates.subSequence(0, endPosition));
+            addNewlineIfNecessary();
+        }
 
         /* Set EditText */
         mViewBodyText.setSelection(0, 0);
         mViewBodyText.setCursorVisible(false);
         mViewBodyText.requestFocus();
 
-        if (mAutoHideMode && !(mViewBody.isShown())) {
+        if (!(mViewBody.isShown())) {
             mWnn.setCandidatesViewShown(true);
         }
         return;
     }
 
-    /** @see CandidatesViewManager */
+    private StringBuffer createDisplayText(WnnWord word, int maxLine) {
+        StringBuffer tmp = new StringBuffer();
+        int padding = ViewConfiguration.getScrollBarSize() + 
+                      mViewBodyText.getPaddingLeft() +       
+                      mViewBodyText.getPaddingRight();       
+        int width = mViewWidth - padding;
+        TextPaint p = mViewBodyText.getPaint();
+        float newLineLength = measureText(p, word.candidate, 0, word.candidate.length());
+        float separatorLength = measureText(p, CANDIDATE_SEPARATOR, 0, CANDIDATE_SEPARATOR.length());
+        boolean isFirstWordOfLine = (mLineLength == 0);
+
+   	    int maxWidth = 0;
+  	    int lineLength = 0;
+  	    lineLength += newLineLength;
+  	   
+  	    maxWidth += width - separatorLength;
+  	    
+  	    mLineLength += newLineLength;
+        mLineLength += separatorLength;
+  	    mLineWordCount++;
+
+  	   
+    	if (mLineWordCount == 0) {
+    		mLineLength = lineLength;
+    		mLineLength += separatorLength;
+    	}
+    	
+        if (!isFirstWordOfLine && (width < mLineLength) && mLineWordCount != 0) {
+            tmp.append("\n");
+            mLineLength = lineLength;
+            mLineLength += separatorLength;
+            mLineWordCount = 0;
+        }
+        return adjustDisplaySize(word, tmp, lineLength, maxWidth, maxLine);
+    }
+
+    
+    private StringBuffer adjustDisplaySize(WnnWord word, StringBuffer tmp, int newLineLength, int maxWidth, int maxLine) {
+        StringBuffer string = new StringBuffer(tmp);
+  	   
+        if (newLineLength > maxWidth) {
+            TextPaint p = mViewBodyText.getPaint();
+            float separatorLength = measureText(p, CANDIDATE_SEPARATOR, 0, CANDIDATE_SEPARATOR.length());
+  	        int length = word.candidate.length();
+  	        int size = 0;
+  	        int count = 0;
+  	        int line = 0;
+  	        float LineLength = 0;
+  	        for (int i = 0 ; i < length;i++) {
+  	            string.append(word.candidate.charAt(i));
+   	            LineLength = measureText(p, string, count, count + 1);
+   	            size += LineLength;
+  	            if (size > maxWidth) {
+  	            	line++;
+                    string.delete(string.length() - 1, string.length());
+                    if (mDisplayEndOffset == 0 && line == maxLine && mWordCount == 0) {
+                    	mDisplayEndOffset = count;
+                    }
+     	           
+                    string.append("\n");
+                    string.append(word.candidate.charAt(i));
+     	            size = 0;
+     	            count++;
+       	            LineLength = measureText(p, string, count, count + 1);
+       	            size += LineLength;
+  	    	    }
+   	            count++;
+  	        }
+
+            mLineWordCount = 0;
+            mLineLength = newLineLength;
+            mLineLength += separatorLength;
+        } else {
+        	string.append(word.candidate);
+        }
+        return string;
+    }
+    	
+    	
+    /** @see CandidatesViewManager#clearCandidates */
     public void clearCandidates() {
         mViewBodyText.setText("");
 	
         mCandidates.delete(0, mCandidates.length());
         mWordCount = 0;
         mWordCountInNormalView = -1;
+        mStartPositionArray.clear();
+        mEndPositionArray.clear();
+        mPositionToWordIndexArray.clear();
+        mWnnWordArray.clear();
+
+    	mLineLength = 0;
+    	mLineWordCount = -1;
+
+        setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
+
+        if (mCandidateDeleteState) {
+            mViewBodyScroll.removeAllViews();
+            mViewBodyScroll.addView(mViewBodyText);
+        }
+        mCandidateDeleteState = false;
+
+        mHasCreatedCandidateList = false;
 
         if (mAutoHideMode && mViewBody.isShown()) {
             mWnn.setCandidatesViewShown(false);
         }
     }
 
-    /** @see CandidatesViewManager */
+    /** @see CandidatesViewManager#setPreferences */
     public void setPreferences(SharedPreferences pref) {
         try {
             if (pref.getBoolean("key_vibration", false)) {
@@ -420,90 +638,39 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
             Log.d("iwnn", "NO VIBRATOR");
         }
     }
-
-    /** Touch point (X axis) */
-    private float firstTouchX = 0;
-    /** Touch point (Y axis) */
-    private float firstTouchY = 0;
-
-    /**
-     * Whether it is the gesture to get all candidates.
-     */
-    private boolean isGettingAllCandidates(float downX, float downY, float upX, float upY) {
-        final float threshY = 50.0F;
-        return (Math.abs(downY - upY) > threshY);
-    }
     
     /**
-     * Implementation of OnTouchListener
-     *
-     * @param v         The associated view
-     * @param event     The event object
-     * @return          <code>true</code> if the event is processed in this listener;
-     *                  <code>false</code> if the event must be passed on other listener.
+     * @see OnTouchListener#onTouch
      */
-    synchronized public boolean onTouch(View v, MotionEvent event) {
-        if (v == mViewBodyScroll) {
-            mViewBodyText.setCursorVisible(false);
-        } else if (v == mViewBodyText) {
+    public boolean onTouch(View v, MotionEvent event) {
+        if (mMotionEvent != null) {
+            return true;
         }
 
-        try {
-            switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                firstTouchX = event.getX();
-                firstTouchY = event.getY();
-                return true;
+        mMotionEvent = event;
+        boolean ret = mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CANDIDATE_VIEW_TOUCH));
+        mMotionEvent = null;
+        return ret;
+    }
 
-            case MotionEvent.ACTION_UP:
-                float x = event.getX();
-                float y = event.getY();
-                if (firstTouchY != 0) {
-                    if (mViewType == CandidatesViewManager.VIEW_TYPE_NORMAL) {
-                        if (isGettingAllCandidates(firstTouchX, firstTouchY, x, y)) {
-                            if (mVibrator != null) {
-                                try { mVibrator.vibrate(30); } catch (Exception ex) { }
-                            }
-                            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.LIST_CANDIDATES_FULL));
-                            firstTouchY = 0;
-                            return true;
-                        }
-                    } else if (mViewBodyScroll.getScrollY() == 0) {
-                        if (y - firstTouchY > 50.0) {
-                            if (mVibrator != null) {
-                                try { mVibrator.vibrate(30); } catch (Exception ex) { }
-                            }
-                            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.LIST_CANDIDATES_NORMAL));
-                            return true;
-                        }
-                    }
-                }
-                return false;
-
-            case MotionEvent.ACTION_MOVE:
-                if (firstTouchY == 0) {
-                    firstTouchY = event.getY();
-                    return true;
-                } else if (mViewType == CandidatesViewManager.VIEW_TYPE_NORMAL) {
-                    return false;
-                }
-                return false;
-            }
-        } catch (Exception ex) {
-            /* just ignore the event if an error occurs */
+    public boolean onTouchSync() {
+        if (!mHasCreatedCandidateList) {
+            return false;
         }
 
-        return false;
+        mViewBodyText.setCursorVisible(false);
+        return mGestureDetector.onTouchEvent(mMotionEvent);
     }
 
     /**
      * Select a candidate.
      * <br>
-     * This method notices the selected word to <code>OpenWnn</code>.
+     * This method notices the selected word to {@link OpenWnn}.
      *
      * @param word  The selected word
      */
-    public void selectCandidate(WnnWord word) {
+    private void selectCandidate(WnnWord word) {
+        setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
         if (mVibrator != null) {
             try { mVibrator.vibrate(30); } catch (Exception ex) { }
         }
@@ -513,5 +680,191 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.SELECT_CANDIDATE, word));
     }
 
-}
+	public int getOffset(int x,int y){
+	    Layout layout = mViewBodyText.getLayout();
+	    int line = layout.getLineForVertical(y);
+	    
+	    if( y >= layout.getLineTop(line+1) ){
+	    	return layout.getText().length();
+	    }
 
+	    int offset = layout.getOffsetForHorizontal(line,x);
+        offset -= TOUCH_ADJUSTED_VALUE;
+        if (offset < 0) {
+            offset = 0;
+        }
+	    return offset;
+	}
+
+	/** from GestureDetector.OnGestureListener class */
+	public boolean onDown(MotionEvent arg0) {
+        if (!mCandidateDeleteState) {
+            int position = getOffset((int)arg0.getX(),(int)arg0.getY());
+            int wordIndex = mPositionToWordIndexArray.get(position);
+            if (wordIndex != -1) {
+                int startPosition = mStartPositionArray.get(wordIndex);
+                int endPosition = 0;
+                if (mDisplayEndOffset > 0 && getViewType() == CandidatesViewManager.VIEW_TYPE_NORMAL) {
+                	endPosition = mDisplayEndOffset + CANDIDATE_SEPARATOR.length();
+                } else {
+                    endPosition = mEndPositionArray.get(wordIndex);
+                }
+                mViewBodyText.setSelection(startPosition, endPosition);
+                mViewBodyText.setCursorVisible(true);
+                mViewBodyText.invalidate();
+                mHasStartedSelect = true;
+            }
+        }
+		return true;
+	}
+
+    /** from GestureDetector.OnGestureListener class */
+	public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2, float arg3) {
+
+        if (mCandidateDeleteState) {
+            return false;
+        }
+
+        boolean consumed = false;
+        if (arg1.getY() < arg0.getY()) {
+            if (mViewType == CandidatesViewManager.VIEW_TYPE_NORMAL) {
+                if (mVibrator != null) {
+                    try { mVibrator.vibrate(30); } catch (Exception ex) { }
+                }
+                mIsFullView = true;
+                mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.LIST_CANDIDATES_FULL));
+                consumed = true;
+            }
+        } else {
+            if (mViewBodyScroll.getScrollY() == 0) {
+                if (mVibrator != null) {
+                    try { mVibrator.vibrate(30); } catch (Exception ex) { }
+                }
+                mIsFullView = false;
+                mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.LIST_CANDIDATES_NORMAL));
+                consumed = true;
+            }
+        }
+
+		return consumed;
+	}
+
+    /** from GestureDetector.OnGestureListener class */
+	public void onLongPress(MotionEvent arg0) {
+        if (!mHasStartedSelect) {
+            return;
+        }
+
+        mWord = null;
+        int position = getOffset((int)arg0.getX(),(int)arg0.getY());
+        if (position < mPositionToWordIndexArray.size()) {
+            int wordIndex = mPositionToWordIndexArray.get(position);
+            if (wordIndex != -1) {
+                mCandidateDeleteState = true;
+                mViewBodyScroll.removeAllViews();
+                mViewBody.updateViewLayout(mViewBodyScroll,
+                                           new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,
+                                                                         LayoutParams.WRAP_CONTENT));
+                mWord = mWnnWordArray.get(wordIndex);
+                LinearLayout mLinerLayout;
+                mLinerLayout = new  LinearLayout(mViewBodyScroll.getContext());
+                mLinerLayout.setOrientation(LinearLayout.VERTICAL);
+                Resources r = mViewBodyScroll.getContext().getResources();
+              	int color = r.getColor(R.color.candidate_background);
+                mLinerLayout.setBackgroundColor(color);
+                TextView text = new TextView(mViewBodyScroll.getContext());
+                text.setText(mWord.candidate);
+                text.setTextSize(mWnn.getResources().getDimension(R.dimen.candidate_delete_word_size));
+                text.setGravity(Gravity.CENTER);
+                mLinerLayout.addView(text);
+                
+                LinearLayout linearLayout = new LinearLayout(mViewBodyScroll.getContext());
+                linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+                
+                linearLayout.addView(createCancelButton());
+                linearLayout.setGravity(Gravity.CENTER);
+                mLinerLayout.addView(linearLayout);
+                mViewBodyScroll.addView(mLinerLayout);
+            }
+        }
+	}
+
+    /** from GestureDetector.OnGestureListener class */
+	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
+			float arg3) {
+		return false;
+	}
+
+    /** from GestureDetector.OnGestureListener class */
+	public void onShowPress(MotionEvent arg0) {
+	}
+
+    /** from GestureDetector.OnGestureListener class */
+	public boolean onSingleTapUp(MotionEvent arg0) {
+        if (!mHasStartedSelect) {
+            return true;
+        }
+
+        WnnWord word = null;
+
+        if (!mCandidateDeleteState) {
+            int position = getOffset((int)arg0.getX(),(int)arg0.getY());
+            if (position < mPositionToWordIndexArray.size()) {
+                int wordIndex = mPositionToWordIndexArray.get(position);
+                if (wordIndex != -1) {
+                    word = mWnnWordArray.get(wordIndex);
+                }
+            
+                if (word != null) {
+                    selectCandidate(word);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+		return false;
+	}
+	
+	private Button createCancelButton(){
+        final Button cancelB;
+        cancelB= new Button(mViewBodyScroll.getContext()) {
+            public boolean onTouchEvent(MotionEvent me) {
+                boolean ret = super.onTouchEvent(me);
+                Drawable d = getBackground();
+                switch (me.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    d.setState(View.PRESSED_ENABLED_SELECTED_WINDOW_FOCUSED_STATE_SET);
+                    break;
+                case MotionEvent.ACTION_UP:
+                default:
+                	d.clearColorFilter();
+                    break;
+                }
+            
+                return ret;
+            }
+        };
+        cancelB.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            	setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
+                mViewBodyScroll.removeAllViews();
+            
+                mCandidateDeleteState = false;
+                mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.UPDATE_CANDIDATE));
+                mViewBodyScroll.addView(mViewBodyText);
+            }
+        });
+        cancelB.setText(mCancelBottonText);
+        return cancelB;
+	}
+
+
+    public void setHardKeyboardHidden(boolean hidden) {
+        mHardKeyboardHidden = hidden;
+    }
+
+    public int measureText(TextPaint paint, CharSequence text, int start, int end) {
+        return (int)paint.measureText(text, start, end);
+    }
+}

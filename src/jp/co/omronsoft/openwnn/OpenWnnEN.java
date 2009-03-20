@@ -21,9 +21,9 @@ import android.content.SharedPreferences;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
+import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.MetaKeyKeyListener;
@@ -33,6 +33,7 @@ import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 /**
@@ -41,12 +42,24 @@ import android.view.inputmethod.EditorInfo;
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnEN extends OpenWnn {
+	/** A space character */
 	private static final char[] SPACE = {' '};
-	private static final CharacterStyle SPAN_BGCOLOR_HL  = new BackgroundColorSpan(0xFF8888FF);
+	
+	/** Character style of underline */
 	private static final CharacterStyle SPAN_UNDERLINE   = new UnderlineSpan();
-	private static final int PRIVATE_AREA_CODE = 61184;
-	private static final int MOD = 3;
+    /** Highlight color style for the selected string  */
+    private static final CharacterStyle SPAN_EXACT_BGCOLOR_HL     = new BackgroundColorSpan(0xFF66CDAA);
+    /** Highlight color style for the composing text */
+    private static final CharacterStyle SPAN_REMAIN_BGCOLOR_HL    = new BackgroundColorSpan(0xFFF0FFFF);
 
+	/** A private area code(ALT+SHIFT+X) to be ignore (G1 specific). */
+	private static final int PRIVATE_AREA_CODE = 61184;
+	/** Never move cursor in to the composing text (adapting to IMF's specification change) */
+    private static final boolean FIX_CURSOR_TEXT_END = true;
+
+	/** Whether using Emoji or not */
+    private static final boolean ENABLE_EMOJI_LIMITATION = true;
+	
 	/** Spannable string for the composing text */
 	protected SpannableStringBuilder mDisplayText;
 
@@ -57,15 +70,25 @@ public class OpenWnnEN extends OpenWnn {
 	/** Previous event's code */
 	private int mPreviousEventCode;
 
+	/** Array of words from the user dictionary */
 	private WnnWord[] mUserDictionaryWords = null;
 
+	/** The converter for English prediction/spell correction */
 	private OpenWnnEngineEN mConverterEN;
+	/** The symbol list generator */
 	private SymbolList mSymbolList;
+	/** Whether it is displaying symbol list */
 	private boolean mSymbolMode;
+	/** Whether prediction is enabled */
 	private boolean mOptPrediction;
+	/** Whether spell correction is enabled */
 	private boolean mOptSpellCorrection;
+	/** Whether learning is enabled */
 	private boolean mOptLearning;
+	
+	/** SHIFT key state */
 	private int mHardShift;
+	/** ALT key state */
 	private int mHardAlt;
 
 	/** Instance of this service */
@@ -77,6 +100,8 @@ public class OpenWnnEN extends OpenWnn {
 	private static final int[] mAltKeyToggle = {0, MetaKeyKeyListener.META_ALT_ON, MetaKeyKeyListener.META_ALT_LOCKED};
 	/** Auto caps mode */
 	private boolean mAutoCaps = false;
+	
+	private CandidateFilter mFilter;
 
     /**
      * Constructor
@@ -87,10 +112,11 @@ public class OpenWnnEN extends OpenWnn {
 
 		/* used by OpenWnn */
 		mComposingText = new ComposingText();
-		mCandidatesViewManager = new TextCandidatesViewManagerEN(300);
+		mCandidatesViewManager = new TextCandidatesViewManager(300);
 		mInputViewManager = new DefaultSoftKeyboardEN();
 		mConverterEN = new OpenWnnEngineEN("/data/data/jp.co.omronsoft.openwnn/writableEN.dic");
 		mConverter = mConverterEN;
+		mFilter = new CandidateFilter();
 		mSymbolList = null;
 
 		/* etc */
@@ -162,7 +188,6 @@ public class OpenWnnEN extends OpenWnn {
         return true;
     }
 
-
 	/**
 	 * Get the shift key state from the editor.
 	 *
@@ -176,7 +201,7 @@ public class OpenWnnEN extends OpenWnn {
 
     /**
      * Set the mode of the symbol list.
-     * @param mode <code>SymbolList.SYMBOL_ENGLISH</code> or <code>null</code>
+     * @param mode {@code SymbolList.SYMBOL_ENGLISH} or {@code null}.
      */
 	private void setSymbolMode(String mode) {
 		if (mode != null) {
@@ -206,6 +231,16 @@ public class OpenWnnEN extends OpenWnn {
 			mSymbolList = new SymbolList(this, SymbolList.LANG_EN);
 		}
 	}
+	
+    /** @see jp.co.omronsoft.openwnn.OpenWnn#onCreateInputView */
+    @Override public View onCreateInputView() {
+    	int hiddenState = getResources().getConfiguration().hardKeyboardHidden;
+    	boolean hidden = (hiddenState == Configuration.HARDKEYBOARDHIDDEN_YES);
+    	((TextCandidatesViewManager)
+    			mCandidatesViewManager).setHardKeyboardHidden(hidden);
+
+        return super.onCreateInputView();
+    }
 
     /** @see jp.co.omronsoft.openwnn.OpenWnn#onStartInputView */
 	@Override public void onStartInputView(EditorInfo attribute, boolean restarting) {
@@ -216,19 +251,18 @@ public class OpenWnnEN extends OpenWnn {
 
 		mHardShift = 0;
 		mHardAlt   = 0;
-		/* auto caps mode */
-        try {
-			mAutoCaps = (Settings.System.getInt(getContentResolver(), Settings.System.TEXT_AUTO_CAPS) != 0);
-        } catch (android.provider.Settings.SettingNotFoundException ex) {
-			mAutoCaps = false;
-        }
+        updateMetaKeyStateDisplay();
 
-		/* load preferences */
+        /* load preferences */
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
 
-		/* set TextCandidatesViewManager's option */
-		((TextCandidatesViewManagerEN)mCandidatesViewManager).setAutoHide(true);
+		/* auto caps mode */
+		mAutoCaps = pref.getBoolean("auto_caps", true);
 
+		/* set TextCandidatesViewManager's option */
+		((TextCandidatesViewManager)mCandidatesViewManager).setAutoHide(false);
+
+        
 		/* display status icon */
  		showStatusIcon(R.drawable.immodeic_half_alphabet);
 
@@ -238,31 +272,54 @@ public class OpenWnnEN extends OpenWnn {
 		mOptLearning        = pref.getBoolean("opt_en_enable_learning", true);
 
 		/* prediction on/off */
-		switch (attribute.inputType & EditorInfo.TYPE_MASK_VARIATION) {
-		case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
-			mOptLearning = false;
-			mOptPrediction = false;
-			break;
-		default:
-			break;
-		}
+        switch (attribute.inputType & EditorInfo.TYPE_MASK_CLASS) {
+        case EditorInfo.TYPE_CLASS_NUMBER:
+        case EditorInfo.TYPE_CLASS_DATETIME:
+        case EditorInfo.TYPE_CLASS_PHONE:
+            mOptPrediction = false;
+    		mOptLearning = false;
+            break;
 
-		/* set engine's mode */
-		if (mOptSpellCorrection) {
-			mConverterEN.setDictionary(OpenWnnEngineEN.DICT_FOR_CORRECT_MISTYPE);
-		} else {
-			mConverterEN.setDictionary(OpenWnnEngineEN.DICT_DEFAULT);
-		}
+        case EditorInfo.TYPE_CLASS_TEXT:
+        	switch (attribute.inputType & EditorInfo.TYPE_MASK_VARIATION) {
+        	case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
+            case EditorInfo.TYPE_TEXT_VARIATION_PHONETIC:
+            	mOptLearning = false;
+        		mOptPrediction = false;
+        		break;
+        	default:
+        		break;
+        	}
+        }
 
-		/* doesn't learn any word if it is not prediction mode */
-		if (!mOptPrediction) {
-			mOptLearning = false;
-		}
+        /* set engine's mode */
+        if (mOptSpellCorrection) {
+        	mConverterEN.setDictionary(OpenWnnEngineEN.DICT_FOR_CORRECT_MISTYPE);
+        } else {
+        	mConverterEN.setDictionary(OpenWnnEngineEN.DICT_DEFAULT);
+        }
+        /* emoji */
+        if (ENABLE_EMOJI_LIMITATION) {
+            Bundle bundle = attribute.extras;
+            if (bundle != null && bundle.getBoolean("allowEmoji")) {
+            	mConverterEN.setFilter(null);
+            } else {
+            	mFilter.setFilter(CandidateFilter.FILTER_EMOJI);
+            	mConverterEN.setFilter(mFilter);
+            }
+        } else {
+        	mConverterEN.setFilter(null);
+        }
 
+        /* doesn't learn any word if it is not prediction mode */
+        if (!mOptPrediction) {
+        	mOptLearning = false;
+        }
 
-		if (mComposingText != null) {
-			mComposingText.clear();
-		}
+        if (mComposingText != null) {
+        	mComposingText.clear();
+        }
+
 	}
 
     /** @see jp.co.omronsoft.openwnn.OpenWnn#onComputeInsets */
@@ -357,6 +414,15 @@ public class OpenWnnEN extends OpenWnn {
 
 		case OpenWnnEvent.CHANGE_MODE:
             return false;
+            
+        case OpenWnnEvent.CHANGE_INPUT_VIEW:
+        	setInputView(onCreateInputView());
+            return true;
+
+        case OpenWnnEvent.CANDIDATE_VIEW_TOUCH:
+            boolean ret;
+                ret = ((TextCandidatesViewManager)mCandidatesViewManager).onTouchSync();
+            return ret;
 
         default:
             break;
@@ -465,9 +531,9 @@ public class OpenWnnEN extends OpenWnn {
 	/**
 	 * Handling KeyEvent
 	 * <br>
-	 * This method is called from <code>onEvent()</code>.
+	 * This method is called from {@link #onEvent()}.
 	 *
-	 * @param ev   a key event
+	 * @param ev   A key event
 	 */
 	private boolean processKeyEvent(KeyEvent ev) {
 
@@ -476,8 +542,7 @@ public class OpenWnnEN extends OpenWnn {
 		/* keys which produce a glyph */
 		if (ev.isPrintingKey()) {
 			/* do nothing if the character is not able to display or the character is dead key */
-			if ((mHardShift > 0 && mHardAlt > 0) ||
-                (ev.isAltPressed() == true && ev.isShiftPressed() == true)) {
+			if ((mHardShift > 0 && mHardAlt > 0) || (ev.isAltPressed() && ev.isShiftPressed())) {
 				int charCode = ev.getUnicodeChar(MetaKeyKeyListener.META_SHIFT_ON | MetaKeyKeyListener.META_ALT_ON);
 				if (charCode == 0 || (charCode & KeyCharacterMap.COMBINING_ACCENT) != 0 || charCode == PRIVATE_AREA_CODE) {
 					if (mHardAlt == 1) {
@@ -593,10 +658,10 @@ public class OpenWnnEN extends OpenWnn {
 		public void run() {
 			int candidates = 0;
 			if (mConverter != null) {
-			
+				/* normal prediction */
 				candidates = mConverter.predict(mComposingText, 0, -1);
 			}
-		
+			/* update the candidates view */
 			if (candidates > 0) {
 				mCandidatesViewManager.displayCandidates(mConverter);
 			} else {
@@ -608,7 +673,7 @@ public class OpenWnnEN extends OpenWnn {
 	/**
 	 * Update the composing text.
 	 *
-	 * @param layer  <code>mComposingText</code>'s layer to display
+	 * @param layer  {@link mComposingText}'s layer to display
 	 */
 	private void updateComposingText(int layer) {
 		/* update the candidates view */
@@ -641,21 +706,34 @@ public class OpenWnnEN extends OpenWnn {
 			disp.insert(0, mComposingText.toString(layer));
 
 			/* add decoration to the text */
-			int start = 0;
 			int cursor = mComposingText.getCursor(layer);
 			if (disp.length() != 0) {
-				disp.setSpan(SPAN_UNDERLINE, start, disp.length(),
+				if (cursor > 0 && cursor < disp.length()) {
+					disp.setSpan(SPAN_EXACT_BGCOLOR_HL, 0, cursor,
+							Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
+				if (cursor < disp.length()) {
+                    mDisplayText.setSpan(SPAN_REMAIN_BGCOLOR_HL, cursor, disp.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
+				
+				disp.setSpan(SPAN_UNDERLINE, 0, disp.length(),
 						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 			}
+			
+            int displayCursor = cursor;
+            if (FIX_CURSOR_TEXT_END) {
+                displayCursor = (cursor == 0) ?  0 : 1;
+            } 
 			/* update the composing text on the EditView */
-			mInputConnection.setComposingText(disp, cursor);
+			mInputConnection.setComposingText(disp, displayCursor);
 		}
 	}
 
 	/**
 	 * Commit the composing text.
 	 *
-	 * @param layer  <code>mComposingText</code>'s layer to commit.
+	 * @param layer  {@link mComposingText}'s layer to commit.
 	 */
 	private void commitText(int layer) {
 		String tmp = mComposingText.toString(layer);
@@ -665,15 +743,15 @@ public class OpenWnnEN extends OpenWnn {
 			mConverter.learn(word);
 		}
 
-		mInputConnection.commitText(tmp, tmp.length());
+        mInputConnection.commitText(tmp, (FIX_CURSOR_TEXT_END ? 1 : tmp.length()));
 		mCandidatesViewManager.clearCandidates();
 	}
 
 	/**
 	 * Commit a word
 	 *
-	 * @param word  a word to commit
-	 * @param withSpace  append a space after the word if <code>true</code>
+	 * @param word  A word to commit
+	 * @param withSpace  Append a space after the word if {@code true}.
 	 */
 	private void commitText(WnnWord word, boolean withSpace) {
 
@@ -681,7 +759,7 @@ public class OpenWnnEN extends OpenWnn {
 			mConverter.learn(word);
 		}
 
-		mInputConnection.commitText(word.candidate, word.candidate.length());
+        mInputConnection.commitText(word.candidate, (FIX_CURSOR_TEXT_END ? 1 : word.candidate.length()));
 
 		if (withSpace) {
 			commitText(" ");
@@ -693,10 +771,10 @@ public class OpenWnnEN extends OpenWnn {
      * <br>
      * The string is not registered into the learning dictionary.
 	 *
-	 * @param str  a string to commit
+	 * @param str  A string to commit
 	 */
 	private void commitText(String str) {
-		mInputConnection.commitText(str, str.length());
+        mInputConnection.commitText(str, (FIX_CURSOR_TEXT_END ? 1 : str.length()));
 		mCandidatesViewManager.clearCandidates();
 	}
 
@@ -714,8 +792,32 @@ public class OpenWnnEN extends OpenWnn {
 	 * Display current meta-key state.
 	 */
 	private void updateMetaKeyStateDisplay() {
+        int mode = 0;
+        if(mHardShift == 0 && mHardAlt == 0){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_OFF;
+        }else if(mHardShift == 1 && mHardAlt == 0){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_ON_ALT_OFF;
+        }else if(mHardShift == 2  && mHardAlt == 0){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_LOCK_ALT_OFF;
+        }else if(mHardShift == 0 && mHardAlt == 1){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_ON;
+        }else if(mHardShift == 0 && mHardAlt == 2){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_LOCK;
+        }else if(mHardShift == 1 && mHardAlt == 1){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_ON_ALT_ON;
+        }else if(mHardShift == 1 && mHardAlt == 2){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_ON_ALT_LOCK;
+        }else if(mHardShift == 2 && mHardAlt == 1){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_LOCK_ALT_ON;
+        }else if(mHardShift == 2 && mHardAlt == 2){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_LOCK_ALT_LOCK;
+        }else{
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_OFF;
+        }
+        ((DefaultSoftKeyboard) mInputViewManager).updateIndicator(mode);
 	}
 }
+
 
 
 

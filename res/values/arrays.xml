@@ -15,9 +15,20 @@
  limitations under the License.
 -->
 <resources>
+
     <string-array name="keyboard_skin">
-        <item>Default</item>
-        <item>Wooden</item>
-        <item>Light</item>
+        <item>@string/preference_keyboard_android_default</item>
+        <item>@string/preference_keyboard_simple</item>
+        <item>@string/preference_keyboard_light</item>
+        <item>@string/preference_keyboard_default</item>
+    </string-array>
+
+    <string name="keyboard_skin_id_default">keyboard_android_default</string>
+
+    <string-array name="keyboard_skin_id">
+        <item>keyboard_android_default</item>
+        <item>keyboard_simple</item>
+        <item>keyboard_light</item>
+        <item>keyboard_default</item>
     </string-array>
 </resources>

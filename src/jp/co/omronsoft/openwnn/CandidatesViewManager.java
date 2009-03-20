@@ -60,14 +60,14 @@ public interface CandidatesViewManager {
      * @param width     The width of the display
      * @param height    The height of the display
      *
-     * @return the view created in the initialize process; <code>null</code> if cannot create a view.
+     * @return The view created in the initialize process; {@code null} if cannot create a view.
      */
     public View initView(OpenWnn parent, int width, int height);
 
     /**
      * Get the view being used currently.
      *
-     * @return The view; <code>null</code> if no view is used currently.
+     * @return The view; {@code null} if no view is used currently.
      */
     public View getCurrentView();
 
@@ -88,7 +88,7 @@ public interface CandidatesViewManager {
     /**
      * Display candidates
      *
-     * @param converter  The <code>WnnEngine</code> from which <code>CandidateView</code> gets the candidates
+     * @param converter  The {@link WnnEngine} from which {@link CandidatesViewManager} gets the candidates
      *
      * @see jp.co.omronsoft.openwnn.WnnEngine#getNextCandidate
      */

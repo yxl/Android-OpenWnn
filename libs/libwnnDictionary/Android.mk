@@ -3,9 +3,9 @@ LOCAL_PATH:= $(call my-dir)
 #----------------------------------------------------------------------
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libwnndict
-
 LOCAL_MODULE_TAGS := optional
+
+LOCAL_MODULE := libwnndict
 
 # All of the source files that we will compile.
 LOCAL_SRC_FILES := \
@@ -20,9 +20,9 @@ LOCAL_SRC_FILES := \
 	engine/ndcommon.c \
 	engine/nj_str.c
 
-LOCAL_LDLIBS := -ldl
 
 ifeq ($(TARGET_SIMULATOR),true)
+LOCAL_LDLIBS := -ldl
 else
 # for dynamic link library functions.
 LOCAL_SHARED_LIBRARIES := \

@@ -17,6 +17,7 @@
 package jp.co.omronsoft.openwnn.JAJP;
 
 import jp.co.omronsoft.openwnn.*;
+
 import java.util.*;
 
 import android.util.Log;
@@ -35,10 +36,12 @@ public class OpenWnnClauseConverterJAJP {
     /** Maximum limit length of input */
     public static final int MAX_INPUT_LENGTH = 50;
 
-    /** search cache for independent words (jiritsugo) */
-    private HashMap<String, ArrayList> mIndepWordBag;
+    /** search cache for unique independent words (jiritsugo) */
+    private HashMap<String, ArrayList<WnnWord>> mIndepWordBag;
+    /** search cache for all independent words (jiritsugo) */
+    private HashMap<String, ArrayList<WnnWord>> mAllIndepWordBag;
     /** search cache for ancillary words (fuzokugo) */
-    private HashMap<String, ArrayList> mFzkPatterns;
+    private HashMap<String, ArrayList<WnnWord>> mFzkPatterns;
 
     /** connect matrix for generating a clause */
     private byte[][] mConnectMatrix;
@@ -48,9 +51,6 @@ public class OpenWnnClauseConverterJAJP {
 
     /** candidates of conversion */
     private LinkedList mConvertResult;
-
-    /** previous input string  */
-    private String mPrevInputString;
 
     /** work area for consecutive clause conversion */
     private WnnSentence[] mSentenceBuffer;
@@ -66,17 +66,20 @@ public class OpenWnnClauseConverterJAJP {
 
     /** cost value of a clause */
     private static final int CLAUSE_COST = -1000;
+    
+    /** The candidate filter */
+    private CandidateFilter mFilter = null;
 
     /**
      * Constructor
      */
     public OpenWnnClauseConverterJAJP() {
-        mIndepWordBag  = new HashMap();
+        mIndepWordBag  = new HashMap<String, ArrayList<WnnWord>>();
+        mAllIndepWordBag  = new HashMap<String, ArrayList<WnnWord>>();
         mFzkPatterns   = new HashMap();
         mConvertResult = new LinkedList();
 
         mSentenceBuffer = new WnnSentence[MAX_INPUT_LENGTH];
-        mPrevInputString = "";
     }
 
     /**
@@ -95,14 +98,22 @@ public class OpenWnnClauseConverterJAJP {
 
         /* clear work areas */
         mIndepWordBag.clear();
+        mAllIndepWordBag.clear();
         mFzkPatterns.clear();
-        mPrevInputString = "";
-
+        
         /* get part of speech tags */
         mPosDefault      = dict.getPOS(WnnDictionary.POS_TYPE_MEISI);
         mPosEndOfClause1 = dict.getPOS(WnnDictionary.POS_TYPE_V1);
         mPosEndOfClause2 = dict.getPOS(WnnDictionary.POS_TYPE_V2);
         mPosEndOfClause3 = dict.getPOS(WnnDictionary.POS_TYPE_V3);
+    }
+    
+    /**
+     * Set the candidate filter
+     * @param filter
+     */
+    public void setFilter(CandidateFilter filter) {
+    	mFilter = filter;
     }
 
     /**
@@ -112,7 +123,7 @@ public class OpenWnnClauseConverterJAJP {
       *
      * @param input  The input string
      *
-     * @return The candidates of conversion; <code>null</code> if an error occurs.
+     * @return The candidates of conversion; {@code null} if an error occurs.
      */
      public Iterator convert(String input) {
         /* do nothing if no dictionary is specified */
@@ -139,37 +150,16 @@ public class OpenWnnClauseConverterJAJP {
      *
      * @param input       The input string
      *
-     * @return The result of consecutive clause conversion; <code>null</code> if fail.
+     * @return The result of consecutive clause conversion; {@code null} if fail.
      */
     public WnnSentence consecutiveClauseConvert(String input) {
         LinkedList clauses = new LinkedList();
 
-        /* check the cache buffer for the consecutive clause conversion */
-        int same;
-        for (same = 0; same < input.length() && same < mPrevInputString.length(); same++) {
-            if (mPrevInputString.charAt(same) != input.charAt(same)) {
-                break;
-            }
-        }
-        if (same > 0) {
-            same--;
-        }
         /* clear the cache which is not matched */
-        for (int i = same; i < input.length(); i++) {
+        for (int i = 0; i < input.length(); i++) {
             mSentenceBuffer[i] = null;
         }
         WnnSentence[] sentence = mSentenceBuffer;
-        mPrevInputString = input;
-        if (same > 0 && sentence[same-1] != null) {
-            for (int end = input.length(); end > same; end--) {
-                String key = input.substring(same, end);
-                clauses.clear();
-                singleClauseConvert(clauses, key, mPosEndOfClause1, false);
-                WnnClause bestClause = (clauses.isEmpty())? defaultClause(key) : (WnnClause)clauses.get(0);
-                sentence[end - 1] = new WnnSentence(sentence[same-1], bestClause);
-                sentence[end - 1].frequency += CLAUSE_COST;
-            }
-        }
 
         /* consecutive clause conversion */
         for (int start = 0; start < input.length(); start++) {
@@ -183,7 +173,7 @@ public class OpenWnnClauseConverterJAJP {
                 end = start + 20;
             }
             /* make clauses */
-            for ( ; end > start && end > same; end--) {
+            for ( ; end > start; end--) {
                 int idx = end - 1;
 
                 /* cutting a branch */
@@ -246,7 +236,7 @@ public class OpenWnnClauseConverterJAJP {
      * @param resultList  where to store the result
      * @param input       input string
      *
-     * @return <code>true</code> if success; <code>false</code> if fail.
+     * @return {@code true} if success; {@code false} if fail.
      */
     private boolean consecutiveClauseConvert(LinkedList resultList, String input) {
         WnnSentence sentence = consecutiveClauseConvert(input);
@@ -267,17 +257,17 @@ public class OpenWnnClauseConverterJAJP {
      * @param terminal    part of speech tag at the terminal
      * @param all         get all candidates or not
      *
-     * @return <code>true</code> if success; <code>false</code> if fail.
+     * @return {@code true} if success; {@code false} if fail.
      */
     private boolean singleClauseConvert(LinkedList clauseList, String input, WnnPOS terminal, boolean all) {
         boolean ret = false;
 
         /* get clauses without ancillary word */
-        ArrayList stems = getIndependentWords(input, all);
+        ArrayList<WnnWord> stems = getIndependentWords(input, all);
         if (stems != null && (!stems.isEmpty())) {
-            Iterator stemsi = stems.iterator();
+            Iterator<WnnWord> stemsi = stems.iterator();
             while (stemsi.hasNext()) {
-                WnnWord stem = (WnnWord) stemsi.next();
+                WnnWord stem = stemsi.next();
                 if (addClause(clauseList, input, stem, null, terminal, all)) {
                     ret = true;
                 }
@@ -289,7 +279,7 @@ public class OpenWnnClauseConverterJAJP {
         for (int split = 1; split < input.length(); split++) {
             /* get ancillary patterns */
             String str = input.substring(split);
-            ArrayList fzks = getAncillaryPattern(str);
+            ArrayList<WnnWord> fzks = getAncillaryPattern(str);
             if (fzks == null || fzks.isEmpty()) {
                 continue;
             }
@@ -305,13 +295,13 @@ public class OpenWnnClauseConverterJAJP {
                 }
             }
             /* make clauses */
-            Iterator stemsi = stems.iterator();
+            Iterator<WnnWord> stemsi = stems.iterator();
             while (stemsi.hasNext()) {
-                WnnWord stem = (WnnWord) stemsi.next();
+                WnnWord stem = stemsi.next();
                 if (all || stem.frequency > max) {
-                    Iterator fzksi  = fzks.iterator();
+                    Iterator<WnnWord> fzksi  = fzks.iterator();
                     while (fzksi.hasNext()) {
-                        WnnWord fzk = (WnnWord) fzksi.next();
+                        WnnWord fzk = fzksi.next();
                         if (addClause(clauseList, input, stem, fzk, terminal, all)) {
                             ret = true;
                             max = stem.frequency;
@@ -333,7 +323,7 @@ public class OpenWnnClauseConverterJAJP {
      * @param terminal    part of speech tag at the terminal
      * @param all         get all candidates or not
      *
-     * @return <code>true</code> if add the clause to the list; <code>false</code> if not.
+     * @return {@code true} if add the clause to the list; {@code false} if not.
      */
     private boolean addClause(LinkedList<WnnClause> clauseList, String input, WnnWord stem, WnnWord fzk,
                               WnnPOS terminal, boolean all) {
@@ -351,6 +341,9 @@ public class OpenWnnClauseConverterJAJP {
         }
         if (clause == null) {
             return false;
+        }
+        if (mFilter != null && !mFilter.isAllowed(clause)) {
+        	return false;
         }
 
         /* store to the list */
@@ -408,13 +401,13 @@ public class OpenWnnClauseConverterJAJP {
      *
      * @return  list of ancillary words
      */
-    private ArrayList getAncillaryPattern(String input) {
+    private ArrayList<WnnWord> getAncillaryPattern(String input) {
         if (input.length() == 0) {
             return null;
         }
 
-        HashMap<String, ArrayList> fzkPat = mFzkPatterns;
-        ArrayList fzks = fzkPat.get(input);
+        HashMap<String,ArrayList<WnnWord>> fzkPat = mFzkPatterns;
+        ArrayList<WnnWord> fzks = fzkPat.get(input);
         if (fzks != null) {
             return fzks;
         }
@@ -433,7 +426,7 @@ public class OpenWnnClauseConverterJAJP {
                 continue;
             }
 
-            fzks = new ArrayList();
+            fzks = new ArrayList<WnnWord>();
             mFzkPatterns.put(key, fzks);
 
             /* search ancillary words */
@@ -445,15 +438,15 @@ public class OpenWnnClauseConverterJAJP {
 
             /* concatenate sequence of ancillary words */
             for (int end = input.length() - 1; end > start; end--) {
-                ArrayList followFzks = fzkPat.get(input.substring(end));
+                ArrayList<WnnWord> followFzks = fzkPat.get(input.substring(end));
                 if (followFzks == null ||  followFzks.isEmpty()) {
                     continue;
                 }
                 dict.searchWord(WnnDictionary.SEARCH_EXACT, WnnDictionary.ORDER_BY_FREQUENCY, input.substring(start, end));
                 while ((word = dict.getNextWord()) != null) {
-                    Iterator followFzksi = followFzks.iterator();
+                    Iterator<WnnWord> followFzksi = followFzks.iterator();
                     while (followFzksi.hasNext()) {
-                        WnnWord follow = (WnnWord)followFzksi.next();
+                        WnnWord follow = followFzksi.next();
                         if (connectible(word.partOfSpeech.right, follow.partOfSpeech.left)) {
                             fzks.add(new WnnWord(key, key, new WnnPOS(word.partOfSpeech.left, follow.partOfSpeech.right)));
                         }
@@ -468,16 +461,16 @@ public class OpenWnnClauseConverterJAJP {
      * Get all exact matched independent words(Jiritsugo) list.
      *
      * @param input    search key
-     * @param all      <code>true<code>: list all. <code>false</code>: list words which has an unique part of speech tag.
+     * @param all      {@code true}: list all. {@code false}: list words which has an unique part of speech tag.
      *
-     * @return list of words; <code>null</code> if <code>input.length() == 0</code>.
+     * @return list of words; {@code null} if {@code input.length() == 0}.
      */
-    private ArrayList getIndependentWords(String input, boolean all) {
+    private ArrayList<WnnWord> getIndependentWords(String input, boolean all) {
         if (input.length() == 0) {
             return null;
         }
 
-        ArrayList words = (ArrayList)mIndepWordBag.get(input);
+        ArrayList<WnnWord> words = (all)? mAllIndepWordBag.get(input) : mIndepWordBag.get(input);
         
         if (words == null) {
             /* set dictionaries */
@@ -489,12 +482,11 @@ public class OpenWnnClauseConverterJAJP {
             dict.setDictionary(WnnDictionary.INDEX_USER_DICTIONARY, FREQ_USER, FREQ_USER); 
             dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
 
-            words = new ArrayList();
-            mIndepWordBag.put(input, words);
-
-            dict.searchWord(WnnDictionary.SEARCH_EXACT, WnnDictionary.ORDER_BY_FREQUENCY, input);
+            words = new ArrayList<WnnWord>();
             WnnWord word;
             if (all) {
+            	mAllIndepWordBag.put(input, words);
+                dict.searchWord(WnnDictionary.SEARCH_EXACT, WnnDictionary.ORDER_BY_FREQUENCY, input);
                 /* store all words */
                 while ((word = dict.getNextWord()) != null) {
                     if (input.equals(word.stroke)) {
@@ -502,10 +494,12 @@ public class OpenWnnClauseConverterJAJP {
                     }
                 }
             } else {
+            	mIndepWordBag.put(input, words);
+                dict.searchWord(WnnDictionary.SEARCH_EXACT, WnnDictionary.ORDER_BY_FREQUENCY, input);
                 /* store a word which has an unique part of speech tag */
                 while ((word = dict.getNextWord()) != null) {
                     if (input.equals(word.stroke)) {
-                        Iterator list = words.iterator();
+                        Iterator<WnnWord> list = words.iterator();
                         boolean found = false;
                         while (list.hasNext()) {
                             WnnWord w = (WnnWord)list.next();

@@ -14,11 +14,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
+<!-- candidate list -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	      android:orientation="vertical"
 	      android:layout_width="fill_parent"
 	      android:layout_height="wrap_content"
-	      android:background="#BD000000"
 	      >
 
   <ScrollView android:id="@+id/candview_scroll"
@@ -27,15 +27,15 @@
 	      android:fadingEdgeLength="0px"
 	      android:scrollbars="vertical"
 	      >
-    <jp.co.omronsoft.openwnn.TextCandidatesView android:id="@+id/text_candidates_view"
+    <EditText android:id="@+id/text_candidates_view"
 	      android:layout_width="fill_parent" 
 	      android:layout_height="wrap_content"
-	      android:background="#00000000"
+	      android:background="@color/candidate_background"
 	      android:textColor="#FFFFFFFF"
 	      android:cursorVisible="true"
 	      android:textColorHighlight="#BDFF8800"
 	      android:paddingLeft="10px"
-	      android:paddingRight="30px"
+	      android:paddingRight="10px"
 	      android:paddingTop="10px"
 	      />
   </ScrollView>

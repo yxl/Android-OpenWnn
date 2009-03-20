@@ -65,7 +65,17 @@ public class SymbolList implements WnnEngine {
     /**
      * Key string to get normal symbol list for Chinese
      */
-    public static final String SYMBOL_CHINESE = "c";
+    public static final String SYMBOL_CHINESE_ALPHA = "c1";
+
+    /**
+     * Key string to get normal symbol list for Chinese
+     */
+    public static final String SYMBOL_CHINESE_KANA = "c2";
+
+    /**
+     * Key string to get normal symbol list for Chinese
+     */
+    public static final String SYMBOL_CHINESE_ETC = "c3";
 
     /**
      * Key string to get EMOJI symbol list for Japanese
@@ -87,7 +97,7 @@ public class SymbolList implements WnnEngine {
     /**
      * Symbols data
      */
-    protected HashMap<String, ArrayList> mSymbols;
+    protected HashMap<String,ArrayList<String>> mSymbols;
 
     /**
      * OpenWnn which has this instance
@@ -110,12 +120,12 @@ public class SymbolList implements WnnEngine {
     /**
      * Constructor
      *
-     * @param parent  OpenWnn instance using this instance
-     * @param lang    Language (<code>LANG_EN</code> or <code>LANG_JA</code>)
+     * @param parent  OpenWnn instance which uses this.
+     * @param lang    Language ({@code LANG_EN}, {@code LANG_JA} or {@code LANG_ZHCN})
      */
     public SymbolList(OpenWnn parent, int lang) {
         mWnn = parent;
-        mSymbols = new HashMap();
+        mSymbols = new HashMap<String, ArrayList<String>>();
 
         switch (lang) {
         case LANG_EN:
@@ -129,16 +139,15 @@ public class SymbolList implements WnnEngine {
             mSymbols.put(SYMBOL_ENGLISH, getXmlfile(R.xml.symbols_latin1_list));
             mSymbols.put(SYMBOL_JAPANESE, getXmlfile(R.xml.symbols_japan_list));
             mSymbols.put(SYMBOL_JAPANESE_FACE, getXmlfile(R.xml.symbols_japan_face_list));
-            /* EMOJI (in the future)
-              mSymbols.put(SYMBOL_JAPANESE_FACE, getXmlfile(R.xml.symbols_japan_emoji_list));
-            */
+            mSymbols.put(SYMBOL_JAPANESE_EMOJI, getXmlfile(R.xml.symbols_japan_emoji_list));
             mCurrentList = mSymbols.get(SYMBOL_ENGLISH);
             break;
         case LANG_ZHCN:
             /* symbols for Chinese IME */
-            mSymbols.put(SYMBOL_ENGLISH, getXmlfile(R.xml.symbols_latin1_list));
-            mSymbols.put(SYMBOL_CHINESE, getXmlfile(R.xml.symbols_china_list));
-            mCurrentList = mSymbols.get(SYMBOL_CHINESE);
+            mSymbols.put(SYMBOL_CHINESE_ALPHA, getXmlfile(R.xml.symbols_china_list_alpha));
+            mSymbols.put(SYMBOL_CHINESE_KANA, getXmlfile(R.xml.symbols_china_list_kana));
+            mSymbols.put(SYMBOL_CHINESE_ETC, getXmlfile(R.xml.symbols_china_list_etc));
+            mCurrentList = mSymbols.get(SYMBOL_CHINESE_ALPHA);
             break;
         }        
 
@@ -149,9 +158,9 @@ public class SymbolList implements WnnEngine {
      * Get a attribute value from a XML resource.
      *
      * @param xrp   XML resource
-     * @param name  attribute name
+     * @param name  The attribute name
      *
-     * @return the value of the attribute
+     * @return The value of the attribute
      */
     private String getXmlAttribute(XmlResourceParser xrp, String name) {
         int resId = xrp.getAttributeResourceValue(null, name, 0);
@@ -165,9 +174,9 @@ public class SymbolList implements WnnEngine {
     /**
      * Load a symbols list from XML resource.
      *
-     * @param int   XML resource id
+     * @param id  XML resource id
      *
-     * @return the symbols list
+     * @return The symbols list
      */
 	private ArrayList<String> getXmlfile(int id) {
         ArrayList<String> list = new ArrayList<String>();
@@ -200,7 +209,7 @@ public class SymbolList implements WnnEngine {
      * Set the dictionary
      *
      * @param listType  The list of symbol
-     * @return          <code>true</code> if valid type is specified; <code>false</code> if not;
+     * @return          {@code true} if valid type is specified; {@code false} if not;
      */
     public boolean setDictionary(String listType) {
         mCurrentList = mSymbols.get(listType);
@@ -235,6 +244,9 @@ public class SymbolList implements WnnEngine {
         return 1;
     }
 	
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnEngine#convert
+     */
     public int convert(ComposingText text) {
         return 0;
     }
@@ -296,6 +308,11 @@ public class SymbolList implements WnnEngine {
      */
     public boolean initializeDictionary(int dictionary) {return true;}
 
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary
+     */
+    public boolean initializeDictionary(int dictionary, int type) {return true;}
+    
     /**
      * @see jp.co.omronsoft.openwnn.WnnEngine#getUserDictionaryWords
      */

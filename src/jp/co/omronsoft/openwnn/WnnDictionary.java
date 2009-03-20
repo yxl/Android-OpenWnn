@@ -128,11 +128,11 @@ public interface WnnDictionary {
     public static final int POS_TYPE_KIGOU                          = 9;
 
 	/**
-     * Index of the user dictionary for setDictionary()
+     * Index of the user dictionary for {@link #setDictionary(int, int, int)}
      */
     public static final int INDEX_USER_DICTIONARY                   = -1;
     /**
-     * Index of the learn dictionary for setDictionary()
+     * Index of the learn dictionary for {@link #setDictionary(int, int, int)}
      */
     public static final int INDEX_LEARN_DICTIONARY                  = -2;
 
@@ -142,7 +142,7 @@ public interface WnnDictionary {
      * When the flag set true, the user dictionary is locked.
      * 
      *
-     * @param flag      true if the user dictionary is locked; false if the user dictionary is unlocked.
+     * @param flag      {@code true} if the user dictionary is locked; {@code false} if the user dictionary is unlocked.
      */
     public void setInUseState( boolean flag );
 
@@ -161,17 +161,17 @@ public interface WnnDictionary {
      *
      * <p>
 	 * A dictionary information contains parameters:<br>
-     * <code>base</code> is the bias of frequency for the dictionary.<br>
-     * <code>high</code> is the upper limit of frequency for the dictionary.
+     * {@code base} is the bias of frequency for the dictionary.<br>
+     * {@code high} is the upper limit of frequency for the dictionary.
      * </p>
-     * Searched word's frequency in the dictionary is mapped to the range from <code>base</code> to <code>high</code>.
+     * Searched word's frequency in the dictionary is mapped to the range from {@code base} to {@code high}.
      * <br>
-     * The maximum value of <code>base</code> and <code>high</code> is 1000.
-	 * To set a dictionary unused, specify -1 to <code>base</code> and <code>high</code>.
+     * The maximum value of {@code base} and {@code high} is 1000.
+	 * To set a dictionary unused, specify -1 to {@code base} and {@code high}.
      *
-	 * @param index		a dictionary index
-	 * @param base		the base frequency for the dictionary
-	 * @param high		the maximum frequency for the dictionary
+	 * @param index		A dictionary index
+	 * @param base		The base frequency for the dictionary
+	 * @param high		The maximum frequency for the dictionary
      *
 	 * @return
      *   0 if success; minus value(error code) if fail.
@@ -189,13 +189,13 @@ public interface WnnDictionary {
 	 * Sets a approximate pattern.
      *
 	 * This adds an approximate search pattern(replacement of character) to the search condition.
-     * The pattern rule is defined as replacing a character(<code>src</code>) to characters(<code>dst</code>).
+     * The pattern rule is defined as replacing a character({@code src}) to characters({@code dst}).
      * <br>
-     * The length of <code>src</code> must be 1 and the length of <code>dst</code> must be lower than 4.<br>
+     * The length of {@code src} must be 1 and the length of {@code dst} must be lower than 4.<br>
      * The maximum count of approximate patterns is 255.
      *
-	 * @param src		a character replace from
-	 * @param dst		characters replace to
+	 * @param src		A character replace from
+	 * @param dst		Characters replace to
      *
 	 * @return
      *   0 if success; minus value(error code) if fail.
@@ -206,7 +206,7 @@ public interface WnnDictionary {
 	 * Sets a predefined approximate pattern.
      *
 	 * The patterns included predefined approximate search pattern set specified by
-	 * <code>approxPattern</code> are added to the search condition.
+	 * {@code approxPattern} are added to the search condition.
 	 *
 	 * @param approxPattern		A predefined approximate pattern set
      * @see jp.co.omronsoft.openwnn.WnnDictionary#APPROX_PATTERN_EN_TOUPPER
@@ -222,7 +222,7 @@ public interface WnnDictionary {
 	/**
 	 * Search words from dictionaries with specified conditions.
      * <p>
-     * To get the searched word's information, use <code>getNextWord()</code>.<br>
+     * To get the searched word's information, use {@link #getNextWord()}.<br>
      * If a same word existed in the set of dictionary, the search result may contain some same words.<br>
      * <br>
      * If approximate patterns were set, the first word in search
@@ -245,13 +245,13 @@ public interface WnnDictionary {
      * </table>
      * </p>
      *
-	 * @param operation		the search operation
+	 * @param operation		The search operation
      * @see jp.co.omronsoft.openwnn.WnnDictionary#SEARCH_EXACT
      * @see jp.co.omronsoft.openwnn.WnnDictionary#SEARCH_PREFIX
-	 * @param order			the sort order
+	 * @param order			The sort order
      * @see jp.co.omronsoft.openwnn.WnnDictionary#ORDER_BY_FREQUENCY
      * @see jp.co.omronsoft.openwnn.WnnDictionary#ORDER_BY_KEY
-	 * @param keyString		the key string
+	 * @param keyString		The key string
      *
      * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
      *
@@ -263,15 +263,15 @@ public interface WnnDictionary {
     /**
 	 * Search words from dictionaries with specified conditions and previous word.
      * <p>
-     * For using link search function, specify the <code>wnnWord</code> as previous word and
-     * set <code>SEARCH_LINK</code> mode to <code>operation</code>. The other arguments are
-     * the same as <code>searchWord(int operation, int order, String keyString)</code>.
+     * For using link search function, specify the {@code wnnWord} as previous word and
+     * set {@code SEARCH_LINK} mode to {@code operation}. The other arguments are
+     * the same as {@link #searchWord(int operation, int order, String keyString)}.
      * <p>
      * If the prediction dictionary for reading is set to use, the previous word must contain
-     * the <code>stroke</code> and the <code>candidate</code> information. If the prediction dictionary
-     * for part of speech is set to use, the previous word must contain the <code>partOfSpeech</code> information.
+     * the {@code stroke} and the {@code candidate} information. If the prediction dictionary
+     * for part of speech is set to use, the previous word must contain the {@code partOfSpeech} information.
 	 *
-     * @param wnnWord       the previous word
+     * @param wnnWord       The previous word
      * @see jp.co.omronsoft.openwnn.WnnDictionary#searchWord
      */
 	public int searchWord(int operation, int order, String keyString, WnnWord wnnWord );
@@ -279,7 +279,7 @@ public interface WnnDictionary {
 	/**
 	 * Retrieve a searched word information.
      *
-     * It returns a word information from top of the <code>searchWord()</code>'s result.
+     * It returns a word information from top of the {@code searchWord()}'s result.
      * To get all word's information of the result, call this method repeatedly until it returns null.
      *
 	 * @return
@@ -287,25 +287,37 @@ public interface WnnDictionary {
 	 */
 	public WnnWord getNextWord( );
 
+	/**
+	 * Retrieve a searched word information with condition of length.
+     *
+     * It returns a word information from top of the {@code searchWord()}'s result.
+     * To get all word's information of the result, call this method repeatedly until it returns null.
+     *
+     * @param length >0 if only the result of specified length is retrieved; 0 if no condition exist
+	 * @return
+     *  An instance of WnnWord; null if no result or an error occurs.
+	 */
+	public WnnWord getNextWord( int length );
+
     /**
      * Retrieve all word in the user dictionary.
      *
-     * @return the array of WnnWord objects.
+     * @return The array of WnnWord objects.
      */
     public WnnWord[] getUserDictionaryWords( );
 
     /**
      * Retrieve the connect matrix.
      *
-     * @return the array of the connect matrix; null if an error occurs.
+     * @return The array of the connect matrix; null if an error occurs.
      */
     public byte[][] getConnectMatrix( );
 
     /**
      * Retrieve the part of speech information specified POS type.
      *
-     * @param type  the type of a part of speech
-     * @return      the part of speech information; null if invalid type is specified or  an error occurs.
+     * @param type  The type of a part of speech
+     * @return      The part of speech information; null if invalid type is specified or  an error occurs.
      *
      * @see jp.co.omronsoft.openwnn.WnnDictionary#POS_TYPE_V1
      * @see jp.co.omronsoft.openwnn.WnnDictionary#POS_TYPE_V2
@@ -332,41 +344,41 @@ public interface WnnDictionary {
     /**
      * Add the words to user dictionary.
      *
-     * @param word  the array of word
+     * @param word  The array of word
      */
     public int addWordToUserDictionary( WnnWord[] word );
     /**
      * Add the word to user dictionary.
      *
-     * @param word  the word
+     * @param word  The word
      */
     public int addWordToUserDictionary( WnnWord word );
 
     /**
      * Remove the words from user dictionary.
      *
-     * @param word  the array of word
+     * @param word  The array of word
      */
     public int removeWordFromUserDictionary( WnnWord[] word );
     /**
      * Remove the word from user dictionary.
      *
-     * @param word  the word
+     * @param word  The word
      */
     public int removeWordFromUserDictionary( WnnWord word );
 
     /**
      * Learn the word.
      *
-     * @param word  the word for learning
+     * @param word  The word for learning
      */
     public int learnWord( WnnWord word );
 
     /**
      * Learn the word with connection.
      *
-     * @param word          the word for learning
-     * @param previousWord  the word for link learning
+     * @param word          The word for learning
+     * @param previousWord  The word for link learning
      */
     public int learnWord( WnnWord word, WnnWord previousWord );
 }
