@@ -345,7 +345,7 @@ public class OpenWnnZHCN extends OpenWnn {
         mInputViewManager  = new DefaultSoftKeyboardZH();
 
         mConverter = mConverterZHCN = new OpenWnnEngineZHCN(
-                "/data/data/jp.co.omronsoft.openwnn/lib/libWnnZHCNDic.so",
+                "/system/lib/libWnnZHCNDic.so",
                 "/data/data/jp.co.omronsoft.openwnn/writableZHCN.dic");
 
         mConverterEN = new OpenWnnEngineEN("/data/data/jp.co.omronsoft.openwnn/writableEN.dic");
@@ -2171,4 +2171,3 @@ public class OpenWnnZHCN extends OpenWnn {
     }
 
 }
-

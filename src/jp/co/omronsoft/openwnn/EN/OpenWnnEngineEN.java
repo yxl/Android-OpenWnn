@@ -76,7 +76,7 @@ public class OpenWnnEngineEN implements WnnEngine {
         mOutputNum = 0;
 
         mDictionary = new OpenWnnDictionaryImpl( 
-            "/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so",
+            "/system/lib/libWnnEngDic.so",
             writableDictionaryName);
 
         mDictionary.clearDictionary( );
