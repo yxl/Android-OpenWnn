@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.inputmethodservice.InputMethodService;
 import android.os.Handler;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -41,8 +42,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.View;
 import android.view.KeyCharacterMap;
 import android.text.method.MetaKeyKeyListener;
-import android.provider.Settings;
-import android.view.WindowManager;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -55,85 +54,72 @@ import java.util.regex.Matcher;
 public class OpenWnnJAJP extends OpenWnn {
     /**
      * Mode of the convert engine (Full-width KTAKANA).
-     * Use with OpenWnn.CHANGE_MODE event.
+     * Use with {@code OpenWnn.CHANGE_MODE} event.
      */
     public static final int ENGINE_MODE_FULL_KATAKANA = 101;
 
     /**
      * Mode of the convert engine (Half-width KATAKANA).
-     * Use with OpenWnn.CHANGE_MODE event.
+     * Use with {@code OpenWnn.CHANGE_MODE} event.
      */
     public static final int ENGINE_MODE_HALF_KATAKANA = 102;
 
     /**
      * Mode of the convert engine (EISU-KANA conversion).
-     * Use with OpenWnn.CHANGE_MODE event.
+     * Use with {@code OpenWnn.CHANGE_MODE} event.
      */
     public static final int ENGINE_MODE_EISU_KANA = 103;
 
     /**
      * Mode of the convert engine (Symbol list).
-     * Use with OpenWnn.CHANGE_MODE event.
+     * Use with {@code OpenWnn.CHANGE_MODE} event.
      */
     public static final int ENGINE_MODE_SYMBOL = 104;
 
     /**
      * Mode of the convert engine (Keyboard type is QWERTY).
-     * Use with OpenWnn.CHANGE_MODE event to change ambiguous searching pattern.
+     * Use with {@code OpenWnn.CHANGE_MODE} event to change ambiguous searching pattern.
      */
     public static final int ENGINE_MODE_OPT_TYPE_QWERTY = 105;
 
     /**
      * Mode of the convert engine (Keyboard type is 12-keys).
-     * Use with OpenWnn.CHANGE_MODE event to change ambiguous searching pattern.
+     * Use with {@code OpenWnn.CHANGE_MODE} event to change ambiguous searching pattern.
      */
     public static final int ENGINE_MODE_OPT_TYPE_12KEY = 106;
 
-    /** never move cursor in to the composing text (adapting to IMF's specification change) */
-    private static final boolean WA_CANNOT_SET_CURSOR_IN_TEXT = true;
+    /** Never move cursor in to the composing text (adapting to IMF's specification change) */
+    private static final boolean FIX_CURSOR_TEXT_END = true;
 
-    /**
-     * Highlight color style for the converted clause
-     */
-    private static final CharacterStyle SPAN_CONVERT_BGCOLOR_HL  = new BackgroundColorSpan(0xFF8888FF);
+    /** Whether using Emoji or not */
+    private static final boolean ENABLE_EMOJI_LIMITATION = true;
 
-    /**
-     * Highlight color style for the selected string 
-     */
-    private static final CharacterStyle SPAN_EXACT_BGCOLOR_HL  = new BackgroundColorSpan(0xFF66CDAA);
+    /** Highlight color style for the converted clause */
+    private static final CharacterStyle SPAN_CONVERT_BGCOLOR_HL   = new BackgroundColorSpan(0xFF8888FF);
+    /** Highlight color style for the selected string  */
+    private static final CharacterStyle SPAN_EXACT_BGCOLOR_HL     = new BackgroundColorSpan(0xFF66CDAA);
+    /** Highlight color style for EISU-KANA conversion */
+    private static final CharacterStyle SPAN_EISUKANA_BGCOLOR_HL  = new BackgroundColorSpan(0xFF9FB6CD);
+    /** Highlight color style for the composing text */
+    private static final CharacterStyle SPAN_REMAIN_BGCOLOR_HL    = new BackgroundColorSpan(0xFFF0FFFF);
+    /** Underline style for the composing text */
+    private static final CharacterStyle SPAN_UNDERLINE            = new UnderlineSpan();
 
-    /**
-     * Underline style for the composing text
-     */
-    private static final CharacterStyle SPAN_UNDERLINE   = new UnderlineSpan();
-
-    /** 
-     * IME's status for <code>mStatus</code>(no input/no candidates).
-     */
-    private static final int STATUS_INIT = 0x0000;
-
-    /** 
-     * IME's status for <code>mStatus</code>(input characters).
-     */
-    private static final int STATUS_INPUT = 0x0001;
-
-    /** 
-     * IME's status for <code>mStatus</code>(input functional keys).
-     */
+    /** IME's status for {@code mStatus} input/no candidates). */
+    private static final int STATUS_INIT            = 0x0000;
+    /** IME's status for {@code mStatus}(input characters). */
+    private static final int STATUS_INPUT           = 0x0001;
+    /** IME's status for {@code mStatus}(input functional keys). */
     private static final int STATUS_INPUT_EDIT      = 0x0003;
-
-    /** 
-     * IME's status for <code>mStatus</code>(all candidates are displaied)
-     */
+    /** IME's status for {@code mStatus}(all candidates are displayed). */
     private static final int STATUS_CANDIDATE_FULL  = 0x0010;
 
-    /**
-     * Alphabet pattern
-     */
+    /** Alphabet pattern */
     private static final Pattern ENGLISH_CHARACTER = Pattern.compile(".*[a-zA-Z]$");
 
     /**
-     * private area character code got by <code>KeyEvent.getUnicodeChar()</code>
+     *  Private area character code got by {@link KeyEvent#getUnicodeChar()}.
+     *   (SHIFT+ALT+X G1 specific)
      */
     private static final int PRIVATE_AREA_CODE = 61184;
 
@@ -141,61 +127,61 @@ public class OpenWnnJAJP extends OpenWnn {
     private static final int LIMIT_INPUT_NUMBER = 30;
 
     /** Bit flag for English auto commit mode (ON) */
-    private static final int AUTO_COMMIT_ENGLISH_ON = 0x0000;
+    private static final int AUTO_COMMIT_ENGLISH_ON      = 0x0000;
     /** Bit flag for English auto commit mode (OFF) */
-    private static final int AUTO_COMMIT_ENGLISH_OFF = 0x0001;
+    private static final int AUTO_COMMIT_ENGLISH_OFF     = 0x0001;
     /** Bit flag for English auto commit mode (symbol list) */
     private static final int AUTO_COMMIT_ENGLISH_SYMBOL  = 0x0010;
 
 
     /** Convert engine's state */
     private class EngineState {
-        /** Definition for <code>EngineState.*</code> (invalid) */
+        /** Definition for {@code EngineState.*} (invalid) */
         public static final int INVALID = -1;
 
-        /** Definition for <code>EngineState.dictionarySet</code> (Japanese) */
+        /** Definition for {@code EngineState.dictionarySet} (Japanese) */
         public static final int DICTIONARYSET_JP = 0;
 
-        /** Definition for <code>EngineState.dictionarySet</code> (English) */
+        /** Definition for {@code EngineState.dictionarySet} (English) */
         public static final int DICTIONARYSET_EN = 1;
 
-        /** Definition for <code>EngineState.convertType</code> (prediction/no conversion) */
+        /** Definition for {@code EngineState.convertType} (prediction/no conversion) */
         public static final int CONVERT_TYPE_NONE = 0;
 
-        /** Definition for <code>EngineState.convertType</code> (consecutive clause conversion) */
+        /** Definition for {@code EngineState.convertType} (consecutive clause conversion) */
         public static final int CONVERT_TYPE_RENBUN = 1;
 
-        /** Definition for <code>EngineState.convertType</code> (EISU-KANA conversion) */
+        /** Definition for {@code EngineState.convertType} (EISU-KANA conversion) */
         public static final int CONVERT_TYPE_EISU_KANA = 2;
 
-        /** Definition for <code>EngineState.temporaryMode</code> (change back to the normal dictionary) */
+        /** Definition for {@code EngineState.temporaryMode} (change back to the normal dictionary) */
         public static final int TEMPORARY_DICTIONARY_MODE_NONE = 0;
 
-        /** Definition for <code>EngineState.temporaryMode</code> (change to the symbol dicitonary) */
+        /** Definition for {@code EngineState.temporaryMode} (change to the symbol dictionary) */
         public static final int TEMPORARY_DICTIONARY_MODE_SYMBOL = 1;
 
-        /** Definition for <code>EngineState.temporaryMode</code> (change to the user dicitonary) */
+        /** Definition for {@code EngineState.temporaryMode} (change to the user dictionary) */
         public static final int TEMPORARY_DICTIONARY_MODE_USER = 2;
 
-        /** Definition for <code>EngineState.preferenceDictionary</code> (no prefrence dictionary) */
+        /** Definition for {@code EngineState.preferenceDictionary} (no preference dictionary) */
         public static final int PREFERENCE_DICTIONARY_NONE = 0;
 
-        /** Definition for <code>EngineState.preferenceDictionary</code> (person's name) */
+        /** Definition for {@code EngineState.preferenceDictionary} (person's name) */
         public static final int PREFERENCE_DICTIONARY_PERSON_NAME = 1;
 
-        /** Definition for EngineState.preferenceDictionary (place name) */
+        /** Definition for {@code EngineState.preferenceDictionary} (place name) */
         public static final int PREFERENCE_DICTIONARY_POSTAL_ADDRESS = 2;
 
-        /** Definition for EngineState.preferenceDictionary (email/URI) */
+        /** Definition for {@code EngineState.preferenceDictionary} (email/URI) */
         public static final int PREFERENCE_DICTIONARY_EMAIL_ADDRESS_URI = 3;
 
-        /** Definition for <code>EngineState.keyboard</code> (undefined) */
+        /** Definition for {@code EngineState.keyboard} (undefined) */
         public static final int KEYBOARD_UNDEF = 0;
 
-        /** Definition for <code>EngineState.keyboard</code> (undefined) */
+        /** Definition for {@code EngineState.keyboard} (QWERTY) */
         public static final int KEYBOARD_QWERTY = 1;
 
-        /** Definition for <code>EngineState.keyboard</code> (undefined) */
+        /** Definition for {@code EngineState.keyboard} (12-keys) */
         public static final int KEYBOARD_12KEY  = 2;
 
         /** Set of dictionaries */
@@ -215,7 +201,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is consecutive clause(RENBUNSETSU) conversion.
-         * @return <code>true</code> if current type of conversion is consecutive clause conversion.
+         * @return {@code true} if current type of conversion is consecutive clause conversion.
          */
         public boolean isRenbun() {
             return convertType == CONVERT_TYPE_RENBUN;
@@ -223,7 +209,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is EISU-KANA conversion.
-         * @return <code>true</code> if current type of conversion is EISU-KANA conversion.
+         * @return {@code true} if current type of conversion is EISU-KANA conversion.
          */
         public boolean isEisuKana() {
             return convertType == CONVERT_TYPE_EISU_KANA;
@@ -231,7 +217,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is no conversion.
-         * @return <code>true</code> if no conversion is executed currently.
+         * @return {@code true} if no conversion is executed currently.
          */
         public boolean isConvertState() {
             return convertType != CONVERT_TYPE_NONE;
@@ -239,10 +225,18 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Check whether or not the mode is "symbol list".
-         * @return <code>true</code> if the mode is "symbol list".
+         * @return {@code true} if the mode is "symbol list".
          */
         public boolean isSymbolList() {
             return temporaryMode == TEMPORARY_DICTIONARY_MODE_SYMBOL;
+        }
+
+        /**
+         * Check whether or not the current language is English.
+         * @return {@code true} if the current language is English.
+         */
+        public boolean isEnglish() {
+            return dictionarySet == DICTIONARYSET_EN;
         }
     }
 
@@ -278,7 +272,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /** Symbol lists to display when the symbol key is pressed */
     private static final String[] SYMBOL_LISTS = {
-        SymbolList.SYMBOL_JAPANESE_FACE, SymbolList.SYMBOL_JAPANESE, SymbolList.SYMBOL_ENGLISH
+        SymbolList.SYMBOL_JAPANESE_FACE, SymbolList.SYMBOL_JAPANESE_EMOJI, SymbolList.SYMBOL_JAPANESE, SymbolList.SYMBOL_ENGLISH
     };
 
     /** Current symbol list */
@@ -302,10 +296,19 @@ public class OpenWnnJAJP extends OpenWnn {
     /** Whether prediction is active or not. */
     private boolean mEnablePrediction = true;
 
-    /** Enable mistyping correction or not */
-    private boolean mEnableSpellCorrection;
+    /** Whether using the converter */
+    private boolean mEnableConverter = true;
 
-    /** auto commit state (in English mode) */
+    /** Whether displaying the symbol list */
+    private boolean mEnableSymbolList = true;
+
+    /** Whether being able to use Emoji */
+    private boolean mEnableEmoji = false;
+
+    /** Enable mistyping spell correction or not */
+    private boolean mEnableSpellCorrection = true;
+
+    /** Auto commit state (in English mode) */
     private int mDisableAutoCommitEnglishMask = AUTO_COMMIT_ENGLISH_ON;
 
     /** Whether removing a space before a separator or not. (in English mode) */
@@ -317,7 +320,7 @@ public class OpenWnnJAJP extends OpenWnn {
     /** Number of committed clauses on consecutive clause conversion */
     private int mCommitCount = 0;
 
-    /** Target layer of the <code>ComposingText</code> */
+    /** Target layer of the {@link ComposingText} */
     private int mTargetLayer = 0;
 
     /** Current orientation of the display */
@@ -346,13 +349,10 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /** Auto caps mode */
     private boolean mAutoCaps = false;
+    
+    /** The candidate filter */
+    private CandidateFilter mFilter;
 
-    /** current hard keyboard state */
-    private int mHardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-    /**  */
-    private int mSoftKeyboardModeBack = DefaultSoftKeyboard.KEYMODE_JA_FULL_HIRAGANA;
-    /** current hard keyboard state */
-    private int mSoftKeyboardTypeBack = DefaultSoftKeyboard.KEYBOARD_QWERTY;
 
     /**
      * Constructor
@@ -368,6 +368,7 @@ public class OpenWnnJAJP extends OpenWnn {
         mPreConverter = mPreConverterHiragana = new Romkan();
         mPreConverterFullKatakana = new RomkanFullKatakana();
         mPreConverterHalfKatakana = new RomkanHalfKatakana();
+        mFilter = new CandidateFilter();
 
         mDisplayText = new SpannableStringBuilder();
         mAutoHideMode = false;
@@ -398,13 +399,11 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /** @see jp.co.omronsoft.openwnn.OpenWnn#onCreateInputView */
     @Override public View onCreateInputView() {
-        /* initialize the hard keyboard state (G1 specific) */
-        WindowManager wm = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
-        if (wm.getDefaultDisplay().getWidth() != 320) {
-            mHardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-        } else {
-            mHardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
-        }
+    	int hiddenState = getResources().getConfiguration().hardKeyboardHidden;
+    	boolean hidden = (hiddenState == Configuration.HARDKEYBOARDHIDDEN_YES);
+    	((DefaultSoftKeyboardJAJP) mInputViewManager).setHardKeyboardHidden(hidden);
+    	((TextCandidatesViewManager)
+    			mCandidatesViewManager).setHardKeyboardHidden(hidden);
 
         return super.onCreateInputView();
     }
@@ -435,17 +434,20 @@ public class OpenWnnJAJP extends OpenWnn {
         /* hardware keyboard support */
         mHardShift = 0;
         mHardAlt   = 0;
-        /* auto caps mode */
-        try {
-            mAutoCaps = (Settings.System.getInt(getContentResolver(), Settings.System.TEXT_AUTO_CAPS) != 0);
-        } catch (Exception ex) {
-            mAutoCaps = false;
-        }
+        updateMetaKeyStateDisplay();
 
         /* initialize the engine's state */
         fitInputType(pref, attribute);
 
         ((TextCandidatesViewManager)mCandidatesViewManager).setAutoHide(true);
+    }
+
+    /** @see jp.co.omronsoft.openwnn.OpenWnn#hideWindow */
+    @Override public void hideWindow() {
+        mComposingText.clear();
+        mInputViewManager.onUpdateState(this);
+        mInputViewManager.closing();
+        super.hideWindow();
     }
 
     /** @see jp.co.omronsoft.openwnn.OpenWnn#onComputeInsets */
@@ -493,27 +495,11 @@ public class OpenWnnJAJP extends OpenWnn {
                 }
 
                 /* Hardware keyboard */
-                mHardKeyboardHidden = newConfig.hardKeyboardHidden;
-                if (mHardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-                    /* back up the current software keyboard state */
-                    mSoftKeyboardTypeBack = ((DefaultSoftKeyboardJAJP) mInputViewManager).getKeyboardType();
-                    mSoftKeyboardModeBack = ((DefaultSoftKeyboardJAJP) mInputViewManager).getKeyMode();
-                    
-                    /* change to Qwerty mode if using hard keyboard (G1 specific) */
-                    ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyboardType(DefaultSoftKeyboard.KEYBOARD_QWERTY);
-                    
-                    if (mPreConverter == null) {
-                        /* set default mode for English or direct input */
-                        ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyMode(DefaultSoftKeyboard.KEYMODE_JA_HALF_ALPHABET);
-                    } else {
-                        /* set default mode for Japanese */
-                        ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyMode(DefaultSoftKeyboard.KEYMODE_JA_FULL_HIRAGANA);
-                    }
-                } else {
-                    /* restore the current software keyboard state */
-                    ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyboardType(mSoftKeyboardTypeBack);
-                    ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyMode(mSoftKeyboardModeBack);
-                }
+                int hiddenState = newConfig.hardKeyboardHidden;
+                boolean hidden = (hiddenState == Configuration.HARDKEYBOARDHIDDEN_YES);
+                ((DefaultSoftKeyboardJAJP) mInputViewManager).setHardKeyboardHidden(hidden);
+                    ((TextCandidatesViewManager)
+                     mCandidatesViewManager).setHardKeyboardHidden(hidden);
             }
         } catch (Exception ex) {
             /* do nothing if an error occurs. */
@@ -566,8 +552,25 @@ public class OpenWnnJAJP extends OpenWnn {
             changeEngineMode(ev.mode);
             break;
         case OpenWnnEvent.UPDATE_CANDIDATE:
-            updateCandidateView();
+            if (mEngineState.isRenbun()) {
+                mComposingText.setCursor(ComposingText.LAYER1,
+                                         mComposingText.toString(ComposingText.LAYER1).length());
+                mExactMatchMode = false;
+                updateViewStatusForPrediction(true, true);
+            } else {
+                updateCandidateView();
+            }
             return true;
+
+        case OpenWnnEvent.CHANGE_INPUT_VIEW:
+        	setInputView(onCreateInputView());
+            return true;
+
+        case OpenWnnEvent.CANDIDATE_VIEW_TOUCH:
+            boolean ret;
+                ret = ((TextCandidatesViewManager)mCandidatesViewManager).onTouchSync();
+            return ret;
+
         default:
             break;
         }
@@ -577,11 +580,17 @@ public class OpenWnnJAJP extends OpenWnn {
             return false;
         }
 
+        KeyEvent keyEvent = ev.keyEvent;
+        int keyCode = 0;
+        if (keyEvent != null) {
+            keyCode = keyEvent.getKeyCode();
+        }
+        
         /* notice a break the sequence of input to the converter */
         View candidateView = mCandidatesViewManager.getCurrentView();
         if ((candidateView != null) && !candidateView.isShown()
             && (mComposingText.size(0) == 0)) {
-            if (mConverter != null) {
+            if (isEnableL2Converter()) {
                 disableAutoDeleteSpace(ev);
                 mConverter.breakSequence();
             }
@@ -589,31 +598,37 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /* change back the dictionary if necessary */
         if (!((ev.code == OpenWnnEvent.SELECT_CANDIDATE)
-              || (ev.code == OpenWnnEvent.CHANGE_MODE)
-              || (ev.code == OpenWnnEvent.LIST_CANDIDATES_NORMAL)
-              || (ev.code == OpenWnnEvent.LIST_CANDIDATES_FULL))) {
-
-            int prevTemp = mEngineState.temporaryMode;
-            state = new EngineState();
-            state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_NONE;
-            updateEngineState(state);
+        		|| (ev.code == OpenWnnEvent.CHANGE_MODE)
+        		|| (ev.code == OpenWnnEvent.LIST_CANDIDATES_NORMAL)
+        		|| (ev.code == OpenWnnEvent.LIST_CANDIDATES_FULL)
+        		|| ((keyEvent != null)
+        				&& ((keyCode == KeyEvent.KEYCODE_ALT_LEFT)
+        						||(keyCode == KeyEvent.KEYCODE_ALT_RIGHT)
+        						||(keyEvent.isAltPressed() && (keyCode == KeyEvent.KEYCODE_SPACE)))))) {
+        	state = new EngineState();
+        	state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_NONE;
+        	updateEngineState(state);
         }
 
         if (ev.code == OpenWnnEvent.LIST_CANDIDATES_FULL) {
-            mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_FULL);
             mStatus |= STATUS_CANDIDATE_FULL;
+            mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_FULL);
+            return true;
+        } else if (ev.code == OpenWnnEvent.LIST_CANDIDATES_NORMAL) {
+            mStatus &= ~STATUS_CANDIDATE_FULL;
+            mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
             return true;
         }
 
         boolean ret = false;
         switch (ev.code) {
         case OpenWnnEvent.INPUT_CHAR:
-            if ((mConverter == null) && (mPreConverter == null)) {
+            if ((mPreConverter == null) && !isEnableL2Converter()) {
                 /* direct input (= full-width alphabet/number input) */
                 commitText(false);
                 commitText(new String(ev.chars));
                 mCandidatesViewManager.clearCandidates();
-            } else if (mConverter == null) {
+            } else if (!isEnableL2Converter()) {
                 processSoftKeyboardCodeWithoutConversion(ev.chars);
             } else {
                 processSoftKeyboardCode(ev.chars);
@@ -665,11 +680,10 @@ public class OpenWnnJAJP extends OpenWnn {
 
         case OpenWnnEvent.INPUT_KEY:
             /* update shift/alt state */
-            int keyCode = ev.keyEvent.getKeyCode();
             switch (keyCode) {
             case KeyEvent.KEYCODE_ALT_LEFT:
             case KeyEvent.KEYCODE_ALT_RIGHT:
-                if (ev.keyEvent.getRepeatCount() == 0) {
+                if (keyEvent.getRepeatCount() == 0) {
                     if (++mHardAlt > 2) { mHardAlt = 0; }
                 }
                 updateMetaKeyStateDisplay();
@@ -677,7 +691,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
             case KeyEvent.KEYCODE_SHIFT_LEFT:
             case KeyEvent.KEYCODE_SHIFT_RIGHT:
-                if (ev.keyEvent.getRepeatCount() == 0) {
+                if (keyEvent.getRepeatCount() == 0) {
                     if (++mHardShift > 2) { mHardShift = 0; }
                 }
                 updateMetaKeyStateDisplay();
@@ -685,14 +699,14 @@ public class OpenWnnJAJP extends OpenWnn {
             }
 
             /* handle other key event */
-            ret = processKeyEvent(ev.keyEvent);
+            ret = processKeyEvent(keyEvent);
             break;
 
         case OpenWnnEvent.INPUT_SOFT_KEY:
-            ret = processKeyEvent(ev.keyEvent);
+            ret = processKeyEvent(keyEvent);
             if (!ret) {
-                mInputConnection.sendKeyEvent(ev.keyEvent);
-                mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, ev.keyEvent.getKeyCode()));
+                mInputConnection.sendKeyEvent(keyEvent);
+				mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyEvent.getKeyCode()));
                 ret = true;
             }
             break;
@@ -709,19 +723,9 @@ public class OpenWnnJAJP extends OpenWnn {
             break;
 
         case OpenWnnEvent.COMMIT_COMPOSING_TEXT:
-            if (mEngineState.isConvertState()) {
-                commitConvertingText();
-            } else {
-                mComposingText.setCursor(ComposingText.LAYER1,
-                                         mComposingText.size(ComposingText.LAYER1));
-                mStatus = commitText(true);
-            }
+            commitAllText();
             break;
-        }
-
-        if (mCandidatesViewManager.getViewType() == CandidatesViewManager.VIEW_TYPE_FULL) {
-            mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
-            mStatus &= ~STATUS_CANDIDATE_FULL;
+            
         }
 
         return ret;
@@ -750,10 +754,10 @@ public class OpenWnnJAJP extends OpenWnn {
     }
 
     /**
-     * Create a <code>StrSegment</code> from a character code.
+     * Create a {@link StrSegment} from a character code.
      * <br>
-     * @param charCode character code
-     * @return <code>StrSegment</code> created; null if an error occurs.
+     * @param charCode A character code
+     * @return {@link StrSegment} created; null if an error occurs.
      */
     private StrSegment createStrSegment(int charCode) {
         if (charCode == 0) {
@@ -765,8 +769,8 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Key event handler.
      *
-     * @param ev  a key event
-     * @return <code>true</code> if the event is handled in this method.
+     * @param ev  A key event
+     * @return {@code true} if the event is handled in this method.
      */
     private boolean processKeyEvent(KeyEvent ev) {
         int key = ev.getKeyCode();
@@ -819,39 +823,13 @@ public class OpenWnnJAJP extends OpenWnn {
             
             if (str == null) {
                 return true;
-            } else if (edit.inputType == EditorInfo.TYPE_CLASS_PHONE) {
-                /* commit directly */
-                appendStrSegment(str);
-                commitText(true);
-                return true;
             }
 
             /* append the character to the composing text if the character is not TAB */
             if (str.string.charAt(0) != '\u0009') {
-                boolean commit = false;
-                if (mPreConverter == null) {
-                    Matcher m = mEnglishAutoCommitDelimiter.matcher(str.string);
-                    if (m.matches()) {
-                        mEnableAutoInsertSpace = false;
-                        commitText(true);
-                        mEnableAutoInsertSpace = true;
-
-                        commit = true;
-                    }
-                    appendStrSegment(str);
-                } else {
-                    appendStrSegment(str);
-                    mPreConverter.convert(mComposingText);
-                }
-
-                if (commit) {
-                    commitText(true);
-                } else {
-                    mStatus = STATUS_INPUT;
-                    updateViewStatusForPrediction(true, true);
-                }
+                processHardwareKeyboardInputChar(str);
                 return true;
-            }else{
+            } else {
             	commitText(true);
             	commitText(str.string);
             	return true;
@@ -859,46 +837,8 @@ public class OpenWnnJAJP extends OpenWnn {
 
         } else if (key == KeyEvent.KEYCODE_SPACE) {
             /* H/W space key */
-            if (ev.isShiftPressed()) {
-                /* change Japanese <-> English mode */
-                mHardAlt = 0;
-                mHardShift = 0;
-                updateMetaKeyStateDisplay();
-                mConverter = mConverterJAJP;
-                if (isEnglishPrediction()) {
-                    /* English mode to Japanese mode */
-                    ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyMode(DefaultSoftKeyboard.KEYMODE_JA_FULL_HIRAGANA);
-                } else {
-                    /* Japanese mode to English mode */
-                    ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyMode(DefaultSoftKeyboard.KEYMODE_JA_HALF_ALPHABET);
-                }
-                return true;
-
-            } else if (ev.isAltPressed()) {
-                /* display the symbol list (G1 specific. same as KEYCODE_SYM) */
-                mStatus = commitText(true);
-                changeEngineMode(ENGINE_MODE_SYMBOL);
-                mHardAlt = 0;
-                updateMetaKeyStateDisplay();
-                return true;
-                
-            } else if (isEnglishPrediction()) {
-                /* Auto commit if English mode */
-                if (mComposingText.size(0) == 0) {
-                    commitText(" ");
-                } else {
-                    commitText(true);
-                    commitSpaceJustOne();
-                }
-                return true;
-                
-            } else {
-                /* start consecutive clause conversion if Japanese mode */
-                if (mComposingText.size(0) != 0) {
-                    startConvert(EngineState.CONVERT_TYPE_RENBUN);
-                    return true;
-                }
-            }
+            processHardwareKeyboardSpaceKey(ev);
+            return true;
 
         } else if (key == KeyEvent.KEYCODE_SYM) {
             /* display the symbol list */
@@ -930,25 +870,27 @@ public class OpenWnnJAJP extends OpenWnn {
 
             case KeyEvent.KEYCODE_BACK:
                 if (mCandidatesViewManager.getViewType() == CandidatesViewManager.VIEW_TYPE_FULL) {
-                    mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
                     mStatus &= ~STATUS_CANDIDATE_FULL;
+                    mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
                 } else {
                     if (!mEngineState.isConvertState()) {
-                        mComposingText.clear();
+                        initializeScreen();
+                        if (mConverter != null) {
+                            mConverter.init();
+                        }
+                    } else {
+                        mCandidatesViewManager.clearCandidates();
+                        mStatus = STATUS_INPUT_EDIT;
+                        mExactMatchMode = false;
+                        mComposingText.setCursor(ComposingText.LAYER1,
+                                                 mComposingText.toString(ComposingText.LAYER1).length());
+                        updateViewStatusForPrediction(true, true);
                     }
-                    mStatus = STATUS_INPUT_EDIT;
-                    if (mConverter != null) {
-                        mConverter.init();
-                    }
-                    mExactMatchMode = false;
-                    mComposingText.setCursor(ComposingText.LAYER1,
-                                             mComposingText.toString(ComposingText.LAYER1).length());
-                    updateViewStatusForPrediction(true, true);
                 }
                 return true;
 
             case KeyEvent.KEYCODE_DPAD_LEFT:
-                if (mConverter == null) {
+            	if (!isEnableL2Converter()) {
                     commitText(false);
                     return false;
                 } else {
@@ -957,7 +899,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 }
 
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-                if (mConverter == null) {
+            	if (!isEnableL2Converter()) {
                     commitText(false);
                     return false;
                 } else {
@@ -982,7 +924,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 /* displaying relational prediction candidates */
                 switch (key) {
                 case KeyEvent.KEYCODE_DPAD_LEFT:
-                    if (mConverter != null) {
+                    if (isEnableL2Converter()) {
                         /* initialize the converter */
                         mConverter.init();
                     }
@@ -991,7 +933,7 @@ public class OpenWnnJAJP extends OpenWnn {
                     return false;
 
                 case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    if (mConverter != null) {
+                    if (isEnableL2Converter()) {
                         /* initialize the converter */
                         mConverter.init();
                     }
@@ -1016,13 +958,105 @@ public class OpenWnnJAJP extends OpenWnn {
         return false;
     }
 
+    /**
+     * Handle the space key event from the Hardware keyboard.
+     * @param ev  The space key event
+     */
+    private void processHardwareKeyboardSpaceKey(KeyEvent ev) {
+        /* H/W space key */
+        if (ev.isShiftPressed()) {
+            /* change Japanese <-> English mode */
+            mHardAlt = 0;
+            mHardShift = 0;
+            updateMetaKeyStateDisplay();
+            if (mEngineState.isEnglish()) {
+                ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyMode(DefaultSoftKeyboard.KEYMODE_JA_FULL_HIRAGANA);
+            mConverter = mConverterJAJP;
+            } else {
+                ((DefaultSoftKeyboardJAJP) mInputViewManager).changeKeyMode(DefaultSoftKeyboard.KEYMODE_JA_HALF_ALPHABET);
+            mConverter = mConverterEN;
+            }
+            mCandidatesViewManager.clearCandidates();
+
+        } else if(ev.isAltPressed()){
+            /* display the symbol list (G1 specific. same as KEYCODE_SYM) */
+            commitAllText();
+
+            changeEngineMode(ENGINE_MODE_SYMBOL);
+            mHardAlt = 0;
+            updateMetaKeyStateDisplay();
+
+        } else if (isEnglishPrediction()) {
+            /* Auto commit if English mode */
+            if (mComposingText.size(0) == 0) {
+                commitText(" ");
+                mCandidatesViewManager.clearCandidates();
+            } else {
+                commitText(true);
+                commitSpaceJustOne();
+            }
+
+        } else {
+            /* start consecutive clause conversion if Japanese mode */
+            if (mComposingText.size(0) == 0) {
+                commitText(" ");
+                mCandidatesViewManager.clearCandidates();
+            } else {
+                startConvert(EngineState.CONVERT_TYPE_RENBUN);
+            }
+        }
+    }
+
+    /**
+     * Handle the character code from the hardware keyboard except the space key.
+     *
+     * @param str  The input character
+     */
+    private void processHardwareKeyboardInputChar(StrSegment str) {
+        if (isEnableL2Converter()) {
+            boolean commit = false;
+            if (mPreConverter == null) {
+                Matcher m = mEnglishAutoCommitDelimiter.matcher(str.string);
+                if (m.matches()) {
+                    mEnableAutoInsertSpace = false;
+                    commitText(true);
+                    mEnableAutoInsertSpace = true;
+                    
+                    commit = true;
+                }
+                appendStrSegment(str);
+            } else {
+                appendStrSegment(str);
+                mPreConverter.convert(mComposingText);
+            }
+            
+            if (commit) {
+                commitText(true);
+            } else {
+                mStatus = STATUS_INPUT;
+                updateViewStatusForPrediction(true, true);
+            }
+        } else {
+            appendStrSegment(str);
+            boolean completed = true;
+            if (mPreConverter != null) {
+                completed = mPreConverter.convert(mComposingText);
+            }
+
+            if (completed) {
+                commitText(false);
+            } else {
+                updateViewStatus(ComposingText.LAYER1, false, true);
+            }
+        }
+    }
+
     /** Thread for updating the candidates view */
     private final Runnable updatePredictionRunnable = new Runnable() {
             public void run() {
                 int candidates = 0;
                 int cursor = mComposingText.getCursor(ComposingText.LAYER1);
-
-                if (mConverter != null) {
+            if (isEnableL2Converter() || mEngineState.isSymbolList()) {
                     if (mExactMatchMode) {
                         /* exact matching */
                         candidates = mConverter.predict(mComposingText, 0, cursor);
@@ -1088,10 +1122,8 @@ public class OpenWnnJAJP extends OpenWnn {
                 mComposingText.moveCursor(ComposingText.LAYER1, 1);
             }
         } else {
-            if (isEnglishPrediction()
-                && (mComposingText.getCursor(ComposingText.LAYER1)
-                    < mComposingText.size(ComposingText.LAYER1))) {
-
+            if (mComposingText.getCursor(ComposingText.LAYER1)
+                    < mComposingText.size(ComposingText.LAYER1)) {
                 mComposingText.moveCursor(ComposingText.LAYER1, 1);
             }
         }
@@ -1106,7 +1138,8 @@ public class OpenWnnJAJP extends OpenWnn {
      * Handle a key event which is not right or left key when the
      * composing text is empty and some candidates are shown.
      *
-     * @param ev  a key event
+     * @param ev  A key event
+     * @return {@code true} if this consumes the event; {@code false} if not.
      */
     boolean processKeyEventNoInputCandidateShown(KeyEvent ev) {
         boolean ret = true;
@@ -1127,8 +1160,13 @@ public class OpenWnnJAJP extends OpenWnn {
         case KeyEvent.KEYCODE_MENU:
             return true;
 
-        default:
+        case KeyEvent.KEYCODE_DPAD_CENTER:
+        case KeyEvent.KEYCODE_BACK:
+        	ret = true;
             break;
+        
+        default:
+            return true;
         }
 
         if (mConverter != null) {
@@ -1141,9 +1179,9 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Update views and the display of the composing text for predict mode.
      *
-     * @param updateCandidates  <code>true</code> to update the candidates view
+     * @param updateCandidates  {@code true} to update the candidates view
      * @param updateEmptyText
-     *   <code>false</code> to update the composing text if it is not empty; <code>true</code> to update always 
+     *   {@code false} to update the composing text if it is not empty; {@code true} to update always.
      */
     private void updateViewStatusForPrediction(boolean updateCandidates, boolean updateEmptyText) {
         EngineState state = new EngineState();
@@ -1157,9 +1195,9 @@ public class OpenWnnJAJP extends OpenWnn {
      * Update views and the display of the composing text.
      *
      * @param layer  display layer of the composing text
-     * @param updateCandidates  <code>true</code> to update the candidates view
+     * @param updateCandidates  {@code true} to update the candidates view
      * @param updateEmptyText
-     *   <code>false</code> to update the composing text if it is not empty; <code>true</code> to update always 
+     *   {@code false} to update the composing text if it is not empty; {@code true} to update always.
      */
     private void updateViewStatus(int layer, boolean updateCandidates, boolean updateEmptyText) {
         mTargetLayer = layer;
@@ -1170,11 +1208,6 @@ public class OpenWnnJAJP extends OpenWnn {
         /* notice to the input view */
         mInputViewManager.onUpdateState(this);
 
-        /* set the candidates view to the normal size */
-        if (mCandidatesViewManager.getViewType() != CandidatesViewManager.VIEW_TYPE_NORMAL) {
-            mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
-            mStatus &= ~STATUS_CANDIDATE_FULL;
-        }
         /* set the text for displaying as the composing text */
         mDisplayText.clear();
         mDisplayText.insert(0, mComposingText.toString(layer));
@@ -1183,15 +1216,32 @@ public class OpenWnnJAJP extends OpenWnn {
         int cursor = mComposingText.getCursor(layer);
         if ((mInputConnection != null) && (mDisplayText.length() != 0 || updateEmptyText)) {
             if (cursor != 0) {
-                if (mExactMatchMode && (!mEngineState.isEisuKana())) {
+                int highlightEnd = 0;
+
+                if ((mExactMatchMode && (!mEngineState.isEisuKana()))
+                    || (FIX_CURSOR_TEXT_END && isEnglishPrediction()
+                        && (cursor < mComposingText.size(ComposingText.LAYER1)))){
+
                     mDisplayText.setSpan(SPAN_EXACT_BGCOLOR_HL, 0, cursor,
+                                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    highlightEnd = cursor;
+
+                } else if (FIX_CURSOR_TEXT_END && mEngineState.isEisuKana()) {
+                    mDisplayText.setSpan(SPAN_EISUKANA_BGCOLOR_HL, 0, cursor,
+                                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    highlightEnd = cursor;
+
+                } else if (layer == ComposingText.LAYER2) {
+                    highlightEnd = mComposingText.toString(layer, 0, 0).length();
+
+                    mDisplayText.setSpan(SPAN_CONVERT_BGCOLOR_HL, 0,
+                                         highlightEnd,
                                          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
 
-                if (layer == ComposingText.LAYER2) {
-                    /* highlights the first segment */
-                    mDisplayText.setSpan(SPAN_CONVERT_BGCOLOR_HL, 0,
-                                         mComposingText.toString(layer, 0, 0).length(),
+                if (FIX_CURSOR_TEXT_END && (highlightEnd != 0)) {
+                    mDisplayText.setSpan(SPAN_REMAIN_BGCOLOR_HL, highlightEnd,
+                                         mComposingText.toString(layer).length(),
                                          Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
@@ -1200,6 +1250,9 @@ public class OpenWnnJAJP extends OpenWnn {
                                  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             int displayCursor = mComposingText.toString(layer, 0, cursor - 1).length();
+            if (FIX_CURSOR_TEXT_END) {
+                displayCursor = (cursor == 0) ?  0 : 1;
+            } 
             /* update the composing text on the EditView */
             mInputConnection.setComposingText(mDisplayText, displayCursor);
         }
@@ -1212,7 +1265,7 @@ public class OpenWnnJAJP extends OpenWnn {
         switch (mTargetLayer) {
         case ComposingText.LAYER0:
         case ComposingText.LAYER1:
-            if (mEnablePrediction || mEngineState.isSymbolList()) {
+            if (mEnablePrediction || mEngineState.isSymbolList() || mEngineState.isEisuKana()) {
                 /* update the candidates view */
                 if ((mComposingText.size(ComposingText.LAYER1) != 0)
                     && !mEngineState.isConvertState()) {
@@ -1220,7 +1273,7 @@ public class OpenWnnJAJP extends OpenWnn {
                     mDelayUpdateHandler.postDelayed(updatePredictionRunnable, 250);
                 } else {
                     mDelayUpdateHandler.removeCallbacks(updatePredictionRunnable);
-                    mDelayUpdateHandler.postDelayed(updatePredictionRunnable, 0);
+                    updatePredictionRunnable.run();
                 }
             } else {
                 mDelayUpdateHandler.removeCallbacks(updatePredictionRunnable);
@@ -1252,7 +1305,7 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Commit the displaying composing text.
      *
-     * @param learn  <code>true</code> to register the committed string to the learning dictionary.
+     * @param learn  {@code true} to register the committed string to the learning dictionary.
      */
     private int commitText(boolean learn) {
         if (isEnglishPrediction()) {
@@ -1287,9 +1340,21 @@ public class OpenWnnJAJP extends OpenWnn {
     }
 
     /**
+     */
+    private void commitAllText() {
+        if (mEngineState.isConvertState()) {
+            commitConvertingText();
+        } else {
+            mComposingText.setCursor(ComposingText.LAYER1,
+                                     mComposingText.size(ComposingText.LAYER1));
+            mStatus = commitText(true);
+        }
+    }
+
+    /**
      * Commit a word.
      *
-     * @param word  a word to commit
+     * @param word  A word to commit
      */
     private int commitText(WnnWord word) {
         if (mConverter != null) {
@@ -1301,24 +1366,23 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Commit a string.
      *
-     * @param str  a string to commit
+     * @param str  A string to commit
      */
     private void commitText(String str) {
-        mInputConnection.commitText(str, str.length());
+        mInputConnection.commitText(str, (FIX_CURSOR_TEXT_END ? 1 : str.length()));
         mEnableAutoDeleteSpace = true;
-
-
         updateViewStatusForPrediction(false, false);
     }
 
     /**
-     * Commit a string through <code>InputConnection</code>.
+     * Commit a string through {@link InputConnection}.
      *
-     * @param string  a string to commit
+     * @param string  A string to commit
      */
     private int commitTextThroughInputConnection(String string) {
         int layer = mTargetLayer;
-        mInputConnection.commitText(string, string.length());
+
+        mInputConnection.commitText(string, (FIX_CURSOR_TEXT_END ? 1 : string.length()));
         int cursor = mComposingText.getCursor(layer);
         if (cursor > 0) {
             mComposingText.deleteStrSegment(layer, 0, mComposingText.getCursor(layer) - 1);
@@ -1353,16 +1417,16 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Returns whether it is English prediction mode or not.
      *
-     * @return <code>true</code> if it is English prediction mode; otherwise, <code>false</code>.
+     * @return {@code true} if it is English prediction mode; otherwise, {@code false}.
      */
     private boolean isEnglishPrediction() {
-        return ((mConverter != null) && (mPreConverter == null));
+        return (mEngineState.isEnglish() && isEnableL2Converter());
     }
 
     /**
      * Change the conversion engine and the letter converter(Romaji-to-Kana converter).
      *
-     * @param mode  engine's mode to be changed
+     * @param mode  Engine's mode to be changed
      * @see jp.co.omronsoft.openwnn.OpenWnnEvent.Mode
      * @see jp.co.omronsoft.openwnn.JAJP.DefaultSoftKeyboardJAJP
      */
@@ -1391,17 +1455,18 @@ public class OpenWnnJAJP extends OpenWnn {
             return;
 
         case ENGINE_MODE_SYMBOL:
-            state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_SYMBOL;
-            updateEngineState(state);
-            updateViewStatusForPrediction(true, true);
+            if (mEnableSymbolList) {
+                state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_SYMBOL;
+                updateEngineState(state);
+                updateViewStatusForPrediction(true, true);
+            }
             return;
 
         default:
             break;
         }
 
-        mComposingText.delete(ComposingText.LAYER1, false);
-        updateViewStatusForPrediction(true, true);
+        initializeScreen();
 
         state = new EngineState();
         state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_NONE;
@@ -1454,7 +1519,7 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Update the conversion engine's state.
      *
-     * @param state  engine's state to be updated
+     * @param state  Engine's state to be updated
      */
     private void updateEngineState(EngineState state) {
         EngineState myState = mEngineState;
@@ -1520,11 +1585,17 @@ public class OpenWnnJAJP extends OpenWnn {
                 if (++mCurrentSymbol >= SYMBOL_LISTS.length) {
                     mCurrentSymbol = 0;
                 }
+                if (!mEnableEmoji) {
+                    if (SYMBOL_LISTS[mCurrentSymbol] == SymbolList.SYMBOL_JAPANESE_EMOJI) {
+                        if (++mCurrentSymbol >= SYMBOL_LISTS.length) {
+                            mCurrentSymbol = 0;
+                        }
+                    }
+                }
                 mConverterSymbolEngineBack.setDictionary(SYMBOL_LISTS[mCurrentSymbol]);
                 mConverter = mConverterSymbolEngineBack;
                 mDisableAutoCommitEnglishMask |= AUTO_COMMIT_ENGLISH_SYMBOL;
                 break;
-
 
             default:
                 break;
@@ -1564,7 +1635,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Set dictionaries to be used.
-     * @param mode  definition of dictionaries
+     * @param mode  Definition of dictionaries
      */
     private void setDictionary(int mode) {
         int target = mode;
@@ -1616,7 +1687,7 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Handle a toggle key input event.
      *
-     * @param table  table of toggle characters
+     * @param table  Table of toggle characters
      */
     private void processSoftKeyboardToggleChar(String[] table) {
         if (table == null) {
@@ -1641,9 +1712,16 @@ public class OpenWnnJAJP extends OpenWnn {
         }
 
         if (!toggled) {
+            if (!isEnableL2Converter()) {
+                commitText(false);
+            }
+
             String str = table[0];
             /* shift on */
-            if (isEnglishPrediction() && getShiftKeyState(getCurrentInputEditorInfo()) == 1) {
+            if (mAutoCaps
+                && isEnglishPrediction()
+                && (getShiftKeyState(getCurrentInputEditorInfo()) == 1)) {
+
                 char top = table[0].charAt(0);
                 if (Character.isLowerCase(top)) {
                     str = Character.toString(Character.toUpperCase(top));
@@ -1660,7 +1738,7 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Handle character input from the software keyboard without listing candidates.
      *
-     * @param chars input character(s)
+     * @param chars  The input character(s)
      */
     private void processSoftKeyboardCodeWithoutConversion(char[] chars) {
         if (chars == null) {
@@ -1687,7 +1765,7 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Handle character input from the software keyboard.
      *
-     * @param chars input character(s)
+     * @param chars   The input character(s)
      */
     private void processSoftKeyboardCode(char[] chars) {
         if (chars == null) {
@@ -1741,9 +1819,13 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Start consecutive clause conversion or EISU-KANA conversion mode.
      *
-     * @param convertType conversion type(<code>EngineState.CONVERT_TYPE_*</code>)
+     * @param convertType The conversion type({@code EngineState.CONVERT_TYPE_*})
      */
     private void startConvert(int convertType) {
+        if (!isEnableL2Converter()) {
+            return;
+        }
+
         if (mEngineState.convertType != convertType) {
             /* adjust the cursor position */
             if (!mExactMatchMode) {
@@ -1787,7 +1869,7 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Auto commit a word in English (on half-width alphabet mode).
      *
-     * @return  <code>true</code> if auto-committed; otherwise, <code>false</code>.
+     * @return  {@code true} if auto-committed; otherwise, {@code false}.
      */
     private boolean autoCommitEnglish() {
         if (isEnglishPrediction() && (mDisableAutoCommitEnglishMask == AUTO_COMMIT_ENGLISH_ON)) {
@@ -1827,7 +1909,7 @@ public class OpenWnnJAJP extends OpenWnn {
      *
      * @param editor  The editor
      *
-     * @return State id of the shift key (0:off, 1:on)
+     * @return State Id of the shift key (0:off, 1:on)
      */
     protected int getShiftKeyState(EditorInfo editor) {
         return (getCurrentInputConnection().getCursorCapsMode(editor.inputType) == 0) ? 0 : 1;
@@ -1837,6 +1919,29 @@ public class OpenWnnJAJP extends OpenWnn {
      * Display current meta-key state.
      */
     private void updateMetaKeyStateDisplay() {
+        int mode = 0;
+        if(mHardShift == 0 && mHardAlt == 0){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_OFF;
+        }else if(mHardShift == 1 && mHardAlt == 0){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_ON_ALT_OFF;
+        }else if(mHardShift == 2  && mHardAlt == 0){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_LOCK_ALT_OFF;
+        }else if(mHardShift == 0 && mHardAlt == 1){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_ON;
+        }else if(mHardShift == 0 && mHardAlt == 2){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_LOCK;
+        }else if(mHardShift == 1 && mHardAlt == 1){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_ON_ALT_ON;
+        }else if(mHardShift == 1 && mHardAlt == 2){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_ON_ALT_LOCK;
+        }else if(mHardShift == 2 && mHardAlt == 1){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_LOCK_ALT_ON;
+        }else if(mHardShift == 2 && mHardAlt == 2){
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_LOCK_ALT_LOCK;
+        }else{
+            mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_OFF;
+        }
+        ((DefaultSoftKeyboard) mInputViewManager).updateIndicator(mode);
     }
 
     /**
@@ -1879,10 +1984,22 @@ public class OpenWnnJAJP extends OpenWnn {
         mEnableLearning   = preference.getBoolean("opt_enable_learning", true);
         mEnablePrediction = preference.getBoolean("opt_prediction", true);
         mEnableSpellCorrection = preference.getBoolean("opt_spell_correction", true);
-        mDisableAutoCommitEnglishMask &= ~AUTO_COMMIT_ENGLISH_ON;
+        mDisableAutoCommitEnglishMask &= ~AUTO_COMMIT_ENGLISH_OFF;
         int preferenceDictionary = EngineState.PREFERENCE_DICTIONARY_NONE;
+        mEnableConverter = true;
+        mEnableSymbolList = true;
+        mEnableEmoji = false;
+        mAutoCaps = preference.getBoolean("auto_caps", true);
 
-        if ((info.inputType & EditorInfo.TYPE_MASK_CLASS) ==  EditorInfo.TYPE_CLASS_TEXT) {
+        switch (info.inputType & EditorInfo.TYPE_MASK_CLASS) {
+        case EditorInfo.TYPE_CLASS_NUMBER:
+        case EditorInfo.TYPE_CLASS_DATETIME:
+        case EditorInfo.TYPE_CLASS_PHONE:
+            mEnableConverter = false;
+            break;
+
+        case EditorInfo.TYPE_CLASS_TEXT:
+
             switch (info.inputType & EditorInfo.TYPE_MASK_VARIATION) {
             case EditorInfo.TYPE_TEXT_VARIATION_PERSON_NAME:
                 preferenceDictionary = EngineState.PREFERENCE_DICTIONARY_PERSON_NAME;
@@ -1890,7 +2007,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
                 mEnableLearning = false;
-                mEnablePrediction = false;
+                mEnableConverter = false;
                 mDisableAutoCommitEnglishMask |= AUTO_COMMIT_ENGLISH_OFF;
                 break;
 
@@ -1904,25 +2021,52 @@ public class OpenWnnJAJP extends OpenWnn {
                 preferenceDictionary = EngineState.PREFERENCE_DICTIONARY_POSTAL_ADDRESS;
                 break;
 
+            case EditorInfo.TYPE_TEXT_VARIATION_PHONETIC:
+                mEnableLearning = false;
+                mEnableConverter = false;
+                mEnableSymbolList = false;
+                break;
+
             default:
                 break;
             }
+            break;
+
+        default:
+            break;
         }
+
+        if (ENABLE_EMOJI_LIMITATION) {
+            Bundle bundle = info.extras;
+            if (bundle != null) {
+                mEnableEmoji = bundle.getBoolean("allowEmoji");
+            }
+        } else {
+            mEnableEmoji = true;
+        }
+        if (mEnableEmoji) {
+        	mConverterEN.setFilter(null);
+        	mConverterJAJP.setFilter(null);
+        } else {
+        	mFilter.setFilter(CandidateFilter.FILTER_EMOJI);
+        	mConverterEN.setFilter(mFilter);
+        	mConverterJAJP.setFilter(mFilter);
+        }
+
+
         EngineState state = new EngineState();
         state.preferenceDictionary = preferenceDictionary;
         state.convertType = EngineState.CONVERT_TYPE_NONE;
-        if (mHardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-            /* change to Qwerty mode if using hard keyboard (G1 specific) */
-            state.keyboard = EngineState.KEYBOARD_QWERTY;
-        }
+        state.keyboard = mEngineState.keyboard;
         updateEngineState(state);
+        updateMetaKeyStateDisplay();
     }
     
     /**
-     * Append a <code>StrSegment</code> to the composing text
+     * Append a {@link StrSegment} to the composing text
      * <br>
      * If the length of the composing text exceeds
-     * <code>LIMIT_INPUT_NUMBER</code>, the appending operation is ignored.
+     * {@code LIMIT_INPUT_NUMBER}, the appending operation is ignored.
      *
      * @param  str  Input segment
      */
@@ -1937,7 +2081,7 @@ public class OpenWnnJAJP extends OpenWnn {
     }
 
     /**
-     * Commit the consecutive clause conversion
+     * Commit the consecutive clause conversion.
      */
     private void commitConvertingText() {
         if (mEngineState.isConvertState()) {
@@ -1947,7 +2091,7 @@ public class OpenWnnJAJP extends OpenWnn {
             }
 
             String text = mComposingText.toString(ComposingText.LAYER2);
-            mInputConnection.commitText(text, text.length());
+            mInputConnection.commitText(text, (FIX_CURSOR_TEXT_END ? 1 : text.length()));
             initializeScreen();
         }
     }
@@ -1971,8 +2115,8 @@ public class OpenWnnJAJP extends OpenWnn {
     /**
      * Whether the tail of the string is alphabet or not.
      *
-     * @param  str  string
-     * @return <code>true</code> if the tail is alphabet; <code>false</code> if otherwise.
+     * @param  str  The string
+     * @return {@code true} if the tail is alphabet; {@code false} if otherwise.
      */
     private boolean isAlphabetLast(String str) {
         Matcher m = ENGLISH_CHARACTER.matcher(str);
@@ -1982,7 +2126,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Disable auto-delete-space.
-     * @param ev  event
+     * @param ev  An event
      */
     private void disableAutoDeleteSpace(OpenWnnEvent ev) {
         if (mEnableAutoDeleteSpace) {
@@ -1999,6 +2143,8 @@ public class OpenWnnJAJP extends OpenWnn {
             try {
                 if ((ev.code == OpenWnnEvent.INPUT_KEY) || (ev.code == OpenWnnEvent.INPUT_SOFT_KEY)) {
                     input = new String(Character.toChars(ev.keyEvent.getUnicodeChar(0)));
+                } else if (ev.code == OpenWnnEvent.INPUT_CHAR) {
+                	input = new String(ev.chars);
                 }
             } catch (Exception e) {
                 input = null;
@@ -2022,5 +2168,23 @@ public class OpenWnnJAJP extends OpenWnn {
         }
         super.onFinishInput();
     }
+
+    /**
+     * Check whether or not the converter is active.
+     * @return {@code true} if the converter is active.
+     */
+    private boolean isEnableL2Converter() {
+        if (mConverter == null || !mEnableConverter) {
+            return false;
+        }
+
+        if (mEngineState.isEnglish() && !mEnablePrediction) {
+            return false;
+        }
+
+        return true;
+    }
+
 }
+
 

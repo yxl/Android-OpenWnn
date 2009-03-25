@@ -17,9 +17,7 @@
 package jp.co.omronsoft.openwnn;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.DatabaseUtils;
-import android.database.sqlite.*;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -117,7 +115,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     /** The base frequency of learning dictionary */
     protected static final int OFFSET_FREQUENCY_OF_LEARN_DICTIONARY = 2000;
 
-    /**
+    /*
      * Constants to define the upper limit of query.
 	 *
 	 * That is used to fix the size of query expression.
@@ -131,8 +129,8 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     /**
      * Constants to define the turn around time of query.
      * <br>
-	 * It can be set between 1 to MAX_LENGTH_OF_QUERY. If the length of query
-	 * string is shorter than FAST_QUERY_LENGTH, the simple search logic is applied.
+	 * It can be set between 1 to {@code MAX_LENGTH_OF_QUERY}. If the length of query
+	 * string is shorter than {@code FAST_QUERY_LENGTH}, the simple search logic is applied.
 	 * Therefore, the turn around time for short query string is fast so that it is short.
 	 * However, the difference of turn around time at the border length grows big.
 	 * the value should be fixed carefully.
@@ -208,7 +206,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     protected int mFrequencyOffsetOfLearnDictionary = -1;
 
 	/*
-	 * DEFINITION OF METHOD
+	 * DEFINITION OF METHODS
 	 */
 	/**
 	 * The constructor of this class without writable dictionary.
@@ -322,7 +320,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 	/**
 	 * Create the table of writable dictionary
      *
-     * @param tableName     the name of table
+     * @param tableName     The name of table
      */
     protected void createDictionaryTable( String tableName ) {
         String sqlStr = "create table if not exists " + tableName +
@@ -343,7 +341,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     }
 
 	/**
-     * Free the SQLiteDatabase of writable dictionary 
+     * Free the {@link SQLiteDatabase} of writable dictionary 
      */
     protected void freeDatabase( ) {
 		freeCursor();
@@ -355,7 +353,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         }
     }
 	/**
-     * Free the SQLiteCursor of writable dictionary 
+     * Free the {@link SQLiteCursor} of writable dictionary 
      */
     protected void freeCursor( ) {
     	if( mDbCursor != null) {
@@ -427,10 +425,10 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     /**
      * Query to the database
      *
-     * @param keyString		the key string
-     * @param wnnWord       the previous word for link search
-     * @param operation     the search operation
-     * @param order			the type of sort order
+     * @param keyString		The key string
+     * @param wnnWord       The previous word for link search
+     * @param operation     The search operation
+     * @param order			The type of sort order
      */
     protected void createQuery( String keyString, WnnWord wnnWord, int operation, int order) {
         int newTypeOfQuery, maxBindsOfQuery;
@@ -453,7 +451,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
         case WnnDictionary.SEARCH_PREFIX:
         case WnnDictionary.SEARCH_LINK:
-        	/* Select the suitable paramters for the query */
+        	/* Select the suitable parameters for the query */
         	if( keyString.length() <= FAST_QUERY_LENGTH ) {
                 if( wnnWord != null ) {
             		querySqlOrderByFreq = mFastLinkQuerySqlOrderByFreq; 
@@ -526,7 +524,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
     		mTypeOfQuery = newTypeOfQuery;
     	} else {
-    		/* If the cursor is exist, bind new arguments and requery words (DO NOT recompile the query string) */
+    		/* If the cursor is exist, bind new arguments and re-query words (DO NOT recompile the query string) */
             try {
         		mDbCursor.setSelectionArguments( queryArgs );
         		mDbCursor.requery( );
@@ -582,7 +580,11 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
         /* Search to fixed dictionary */
 		if( this.mWnnWork != 0 ) {
-			return OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
+			int ret = OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
+			if (mCountCursor > 0) {
+				ret = 1;
+			}
+			return ret;
 		} else {
 			return -1;
 		}
@@ -623,7 +625,11 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         OpenWnnDictionaryImplJni.selectWord( this.mWnnWork );
 
 		if( this.mWnnWork != 0 ) {
-			return OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
+			int ret = OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
+			if (mCountCursor > 0) {
+				ret = 1;
+			}
+			return ret;
 		} else {
 			return -1;
 		}
@@ -633,15 +639,23 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 	 * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
 	 */
 	public WnnWord getNextWord( ) {
+        return getNextWord( 0 );
+    }
+
+	/**
+	 * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
+	 */
+	public WnnWord getNextWord( int length ) {
 		if( this.mWnnWork != 0 ) {
             if( mDbDic != null && mDbCursor != null && mCountCursor > 0 ) {
                 /* If the user/learn dictionary is queried, get the result from the user/learn dictionary */
 				WnnWord result = new WnnWord( );
             	try {
-                    /* Skip results if that is not contained the type of search */
+                    /* Skip results if that is not contained the type of search or length of stroke is not equal specified length */
                     while( mCountCursor > 0 &&
-                           ( ( mFrequencyOffsetOfUserDictionary < 0  && mDbCursor.getInt( 4 ) == TYPE_NAME_USER ) ||
-                             ( mFrequencyOffsetOfLearnDictionary < 0 && mDbCursor.getInt( 4 ) == TYPE_NAME_LEARN ) ) ) {
+                           ( ( mFrequencyOffsetOfUserDictionary < 0  && mDbCursor.getInt( 4 ) == TYPE_NAME_USER      ) ||
+                             ( mFrequencyOffsetOfLearnDictionary < 0 && mDbCursor.getInt( 4 ) == TYPE_NAME_LEARN     ) ||
+                             ( length > 0                            && mDbCursor.getString( 0 ).length( ) != length ) ) ) {
                         mDbCursor.moveToNext();
                         mCountCursor--;
                     }
@@ -679,7 +693,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
             }
 
             /* Get the result from fixed dictionary */
-			int res = OpenWnnDictionaryImplJni.getNextWord( this.mWnnWork );
+			int res = OpenWnnDictionaryImplJni.getNextWord( this.mWnnWork, length );
 			if( res > 0 ) {
 				WnnWord result = new WnnWord( );
                 if( result != null ) {
@@ -991,6 +1005,9 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
     /**
      * Learn the word with connection.
+     * @param word           The word to learn
+     * @param previousWord   The word which is selected previously.
+     * @return 0 if success; minus value if fail.
      */
     public int learnWord( WnnWord word, WnnWord previousWord ) {
         if( mDbDic != null ) {

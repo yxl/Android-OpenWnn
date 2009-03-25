@@ -38,10 +38,9 @@ public class UserDictionaryToolsEditEN extends UserDictionaryToolsEdit {
      *
      * @param focusView         The view
      * @param focusPairView     The pair view
-     * @param wordsCount        The number of words
      */
-    public UserDictionaryToolsEditEN(View focusView, View focusPairView, int wordsCount) {
-        super(focusView, focusPairView, wordsCount);
+    public UserDictionaryToolsEditEN(View focusView, View focusPairView) {
+        super(focusView, focusPairView);
         initialize();
     }
 

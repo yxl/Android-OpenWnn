@@ -17,9 +17,9 @@
 <resources>
   <!-- common part -->
     <!-- Engine -->
-    <string name="openwnn_system_dictionary_japanese">/system/lib/libWnnJpnDic.so</string>
+    <string name="openwnn_system_dictionary_japanese">/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so</string>
     <string name="openwnn_writable_dictionary_japanese">/data/data/jp.co.omronsoft.openwnn/writableJAJP.dic</string>
-    <string name="openwnn_system_dictionary_english">/system/lib/libWnnEngDic.so</string>
+    <string name="openwnn_system_dictionary_english">/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so</string>
     <string name="openwnn_writable_dictionary_english">/data/data/jp.co.omronsoft.openwnn/writableEN.dic</string>
 
     <!-- Preferences -->
@@ -33,56 +33,71 @@
     <string name="preference_key_vibration_title"> Vibrate on Key Press </string>
     <string name="preference_key_vibration_summary"> Enable key click vibration. </string>
 
-    <string name="preference_preview_title"> Preview on Key Press </string>
-    <string name="preference_preview_summary"> Popup pressed key preview. </string>
+    <string name="preference_preview_title"> Key preview </string>
+    <string name="preference_preview_summary"> Enable key preview. </string>
+
+    <string name="preference_auto_caps_title"> Auto Capitalization </string>
+    <string name="preference_auto_caps_summary"> Automatically capitalize the 1st char of a sentence in alphabet mode. </string>
+
+    <string name="preference_keyboard_skin_title">Keyboard Image</string>
+    <string name="preference_keyboard_skin_summary">Change keyboard image.</string>
+
+    <string name="preference_keyboard_android_default">Default</string>
+    <string name="preference_keyboard_simple">Simple</string>
+    <string name="preference_keyboard_glass">Glass</string>
+    <string name="preference_keyboard_wood">Wood</string>
+    <string name="preference_keyboard_light">Light</string>
+    <string name="preference_keyboard_kyoto">Kyoto</string>
+    <string name="preference_keyboard_typewriter">Typewriter</string>
+    <string name="preference_keyboard_default">Dark</string>
 
     <string name="preference_conversion_menu">Conversion</string>
 
-    <string name="preference_prediction_title">Predict Words</string>
-    <string name="preference_prediction_summary">Display predicted words.</string>
+    <string name="preference_prediction_title">Word Prediction</string>
+    <string name="preference_prediction_summary">Display predicted words as conversion candidates.</string>
 
-    <string name="preference_correct_spell_title">Correct Mistyping Spell</string>
-    <string name="preference_correct_spell_summary">Display words corrected mistyping spell.</string>
+    <string name="preference_correct_spell_title">Typing Error Correction</string>
+    <string name="preference_correct_spell_summary">Display predicted words for correcting typing error.</string>
 
-    <string name="preference_input_learning_title">Learning Words</string>
-    <string name="preference_input_learning_summary">Learn words input.</string>
+    <string name="preference_input_learning_title">Input Word Learning</string>
+    <string name="preference_input_learning_summary">Learn input words.</string>
 
     <string name="preference_aboutime_menu"> About IME </string>
 
     <string name="preference_dictionary_menu"> Dictionary </string>
-    <string name="preference_dictionary_menu_ja"> Japan Dictionary </string>
-    <string name="preference_dictionary_menu_en"> English Dictionary </string>
-    <string name="preference_dictionary_menu_zhcn"> Chinese Dictionary </string>   
-    
+    <string name="preference_dictionary_menu_ja"> Japanese User Dictionary </string>
+    <string name="preference_dictionary_menu_en"> English User Dictionary </string>
+    <string name="preference_dictionary_menu_zhcn"> Chinese User Dictionary </string>   
+
     <string name="preference_user_dictionary">User Dictionary</string>
 
     <string name="preference_user_dictionary_edit_words_title">User Dictionary</string>
-    <string name="preference_user_dictionary_edit_words_summary">List/add/edit/delete words in the user dictionary.</string>
-    <string name="preference_user_dictionary_edit_words_summary_ja">List/add/edit/delete words in the user Japan dictionary.</string>
-    <string name="preference_user_dictionary_edit_words_summary_en">List/add/edit/delete words in the user English dictionary.</string>
-    <string name="preference_user_dictionary_edit_words_summary_zhcn">List/add/edit/delete words in the user Chinese dictionary.</string>
-    
+    <string name="preference_user_dictionary_edit_words_summary">List/add/edit/delete words in user dictionary.</string>
+    <string name="preference_user_dictionary_edit_words_summary_ja">List/add/edit/delete words in Japanese user dictionary.</string>
+    <string name="preference_user_dictionary_edit_words_summary_en">List/add/edit/delete words in English user dictionary.</string>
+    <string name="preference_user_dictionary_edit_words_summary_zhcn">List/add/edit/delete words in Chinese user dictionary.</string>
+
     <string name="preference_user_dictionary_clear_learning_title">Clear Learning Dictionary</string>
-    <string name="preference_user_dictionary_clear_learning_summary">Clear all words in the learning dictionary.</string>
+    <string name="preference_user_dictionary_clear_learning_summary">Remove all words from learning dictionary.</string>
 
     <string name="preference_user_dictionary_clear_user_title">Clear User Dictionary</string>
-    <string name="preference_user_dictionary_clear_user_summary">Clear all words in the user dictionary.</string>
+    <string name="preference_user_dictionary_clear_user_summary">Remove all words from user dictionary.</string>
 
     <!-- Dialog Messages -->
     <string name="dialog_button_ok">OK</string>
     <string name="dialog_button_cancel">Cancel</string>
     <string name="dialog_button_close">Close</string>
 
-    <string name="dialog_clear_user_dictionary_message">Clear the user dictionary?</string>
-    <string name="dialog_clear_learning_dictionary_message">Clear the learning dictionary?</string>
+    <string name="dialog_clear_user_dictionary_message">Clear user dictionary?</string>
+    <string name="dialog_clear_learning_dictionary_message">Clear learning dictionary?</string>
     <string name="dialog_clear_user_dictionary_done">Cleared.</string>
     <string name="dialog_clear_learning_dictionary_done">Cleared.</string>
 
     <!-- user dictionary -->
-    <string name="user_dictionary_list_words">Registerd words</string>
-    <string name="user_dictionary_list_words_en">English Dictionary Registerd words</string>
-    <string name="user_dictionary_list_words_ja">Japan Dictionary Registerd words</string>
-    <string name="user_dictionary_list_words_zhcn">Chinese Dictionary Registerd words</string>
+    <string name="user_dictionary_list_words">Registered words</string>
+    <string name="user_dictionary_list_words_en">Registered words in English User Dic</string>
+    <string name="user_dictionary_list_words_ja">Registered words in Japanese User Dic</string>
+    <string name="user_dictionary_list_words_zhcn">Registered words in Chinese User Dic</string>
     <string name="user_dictionary_edit_words">Edit</string>
     <string name="user_dictionary_title_read">Reading</string>
     <string name="user_dictionary_title_candidate">Word</string>
@@ -90,7 +105,7 @@
     <string name="user_dictionary_edit">Edit</string>
     <string name="user_dictionary_delete">Delete</string>
     <string name="user_dictionary_delete_confirm">Delete the selected word?</string>
-    <string name="user_dictionary_delete_complete">Deleted</string>
+    <string name="user_dictionary_delete_complete">Deleted.</string>
     <string name="user_dictionary_delete_fail">Fail to delete it</string>
     <string name="user_dictionary_words_duplication_message">Already registered.</string>
     <string name="user_dictionary_over_max_text_size_message">Length of the string exceeds the limit.</string>
@@ -100,20 +115,20 @@
 
   <!-- IME dependency -->
     <!-- OpenWnn English -->
-    <string name="openwnn_english_copyright">Ver.1.10\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_english_copyright">Ver.1.10-20090318\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_english">OpenWnn English</string>
     <string name="openwnn_english_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so</string>
     <string name="openwnn_english_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableEN.dic</string>
     <string name="en_word_separators">.,;:!?</string>
 
     <!-- OpenWnn Japanese -->
-    <string name="openwnn_japanese_copyright">Ver.1.10\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_japanese_copyright">Ver.1.10-20090318\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_japanese">OpenWnn Japanese</string>
     <string name="openwnn_japanese_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so</string>
     <string name="openwnn_japanese_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableJAJP.dic</string>
 
-    <!-- OpenWnn China -->
-    <string name="openwnn_china_copyright">Ver.1.10\nOMRON SOFTWARE Co., Ltd.</string>
+    <!-- OpenWnn Chinese -->
+    <string name="openwnn_china_copyright">Ver.1.10-20090318\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_china">OpenWnn Chinese</string>
     <string name="openwnn_china_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnZHCNDic.so</string>
 <!-- After Config Change -->
@@ -122,7 +137,7 @@
 
   <!-- Candidate Delete -->
     <string name="button_candidate_delete">Delete learning?</string>
-    <string name="button_candidate_cancel">Cancel</string>
+      <string name="button_candidate_cancel">Close</string>
 
   <!-- Key top -->
     <string name="key_left_arrow">↤</string>
@@ -134,7 +149,7 @@
     <string name="key_switch_keyboard">KBD</string>
 
     <string name="key_12key_emoji_kigo">絵記顔</string>
-    <string name="key_12key_A">゛゜ 大/小</string>
+    <string name="key_12key_A">゛゜ 大小</string>
     <string name="key_12key_kutoten">、。</string>
     <string name="key_12key_eisuu_kana">英数カナ</string>
 
@@ -216,13 +231,17 @@
     <string name="key_12key_switch_full_alphabet">Ａ</string>
     <string name="key_12key_switch_full_number">１</string>
     <string name="key_12key_switch_half_katakana">ｶﾅ</string>
-    <string name="key_12key_switch_half_alphabet">aA</string>
+    <string name="key_12key_switch_half_alphabet">AB</string>
     <string name="key_12key_switch_half_number">12</string>
 
     <string name="key_qwerty_half_comma">､</string>
     <string name="key_qwerty_half_period">｡</string>
     <string name="key_qwerty_half_tyouon">ｰ</string>
 
+    <string name="key_12key_undo">Undo</string>
+
+    <string name="indicator_caps">CAPS</string>
+    <string name="indicator_alt">ALT</string>
 
 </resources>
 

@@ -105,10 +105,10 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_sea
 /*
  * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
  * Method:    getNextWord
- * Signature: (J)I
+ * Signature: (JI)I
  */
 JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getNextWord
-  (JNIEnv *, jclass, jlong);
+  (JNIEnv *, jclass, jlong, jint);
 
 /*
  * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni

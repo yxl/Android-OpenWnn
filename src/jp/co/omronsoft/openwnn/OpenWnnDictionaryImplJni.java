@@ -22,7 +22,7 @@ package jp.co.omronsoft.openwnn;
  * @author Copyright (C) 2008-2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnDictionaryImplJni {
-	/**
+	/*
 	 * DEFINITION OF CONSTANTS
 	 */
 	/**
@@ -231,13 +231,14 @@ public class OpenWnnDictionaryImplJni {
 	/**
 	 * Retrieve a word information.
      * A word information is stored to the internal work area. To retrieve a detail information,
-     * use getStroke(), getCandidate(), getFreqeuency(), or other get...() method.
+     * use {@code getStroke()}, {@code getCandidate()}, {@code getFreqeuency(),} or other {@code get...()} method.
      *
      * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
 	 * @param work      The internal work area
+     * @param length    >0 if only the result of specified length is retrieved; 0 if no condition exist
 	 * @return          0 if no result is retrieved; >0 if a result is retrieved; <0 if an error occur
 	 */
-	public static final native int getNextWord( long work );
+	public static final native int getNextWord( long work, int length );
 
 	/**
 	 * Retrieve the key string from the current word information.

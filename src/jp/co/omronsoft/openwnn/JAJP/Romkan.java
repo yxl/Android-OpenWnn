@@ -27,7 +27,7 @@ import android.content.SharedPreferences;
  */
 public class Romkan implements LetterConverter {
     /** HashMap for Romaji-to-Kana conversion (Japanese mode) */
-    private static final HashMap romkanTable = new HashMap() {{
+    private static final HashMap<String, String> romkanTable = new HashMap<String, String>() {{
         put("la", "\u3041");        put("xa", "\u3041");        put("a", "\u3042");
         put("li", "\u3043");        put("lyi", "\u3043");       put("xi", "\u3043");
         put("xyi", "\u3043");       put("i", "\u3044");         put("yi", "\u3044");
@@ -138,7 +138,7 @@ public class Romkan implements LetterConverter {
         put("+", "\uff0b"); put("=", "\uff1d"); put("(", "\uff08"); put(")", "\uff09");
         put("~", "\uff5e"); put("\"", "\uff02"); put("'", "\uff07"); put(":", "\uff1a"); put(";", "\uff1b");
         put("!", "\uff01"); put("^", "\uff3e"); put("\u00a5", "\uffe5"); put("$", "\uff04"); put("[", "\u300c");
-        put("]", "\u300d"); put("_", "\uff3f"); put("=", "\uff1d"); put("{", "\uff5b"); put("}", "\uff5d");
+        put("]", "\u300d"); put("_", "\uff3f"); put("{", "\uff5b"); put("}", "\uff5d");
         put("`", "\uff40"); put("<", "\uff1c"); put(">", "\uff1e"); put("\\", "\uff3c"); put("|", "\uff5c");
         put("1", "\uff11"); put("2", "\uff12"); put("3", "\uff13"); put("4", "\uff14"); put("5", "\uff15");
         put("6", "\uff16"); put("7", "\uff17"); put("8", "\uff18"); put("9", "\uff19"); put("0", "\uff10");
@@ -172,8 +172,12 @@ public class Romkan implements LetterConverter {
             for (int i = start; i < 3; i++) {
                 key.append(str[i].string);
             }
-            String match = (String)Romkan.romkanTable.get(key.toString().toLowerCase());
+            boolean upper = Character.isUpperCase(key.charAt(key.length() - 1));
+            String match = Romkan.romkanTable.get(key.toString().toLowerCase());
             if (match != null) {
+                if (upper) {
+                    match = match.toUpperCase();
+                }
                 StrSegment[] out;
                 if (match.length() == 1) {
                     out = new StrSegment[1];

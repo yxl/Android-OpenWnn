@@ -18,7 +18,7 @@ package jp.co.omronsoft.openwnn;
 
 /**
  * This class defines information of a segment in a string, such as a character, a word or a clause.
- * It is used to represent the layers of the composing text (<code>ComposingText</code>).
+ * It is used to represent the layers of the composing text ({@link ComposingText}).
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD. All rights reserved.
  */

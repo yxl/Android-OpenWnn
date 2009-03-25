@@ -3,9 +3,9 @@ LOCAL_PATH:= $(call my-dir)
 #----------------------------------------------------------------------
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libWnnEngDic
-
 LOCAL_MODULE_TAGS := optional
+
+LOCAL_MODULE := libWnnEngDic
 
 # All of the source files that we will compile.
 LOCAL_SRC_FILES := \

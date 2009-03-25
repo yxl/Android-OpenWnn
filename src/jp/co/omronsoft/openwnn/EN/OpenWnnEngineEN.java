@@ -19,11 +19,7 @@ package jp.co.omronsoft.openwnn.EN;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-import jp.co.omronsoft.openwnn.ComposingText;
-import jp.co.omronsoft.openwnn.OpenWnnDictionaryImpl;
-import jp.co.omronsoft.openwnn.WnnDictionary;
-import jp.co.omronsoft.openwnn.WnnEngine;
-import jp.co.omronsoft.openwnn.WnnWord;
+import jp.co.omronsoft.openwnn.*;
 import android.content.SharedPreferences;
 import android.util.Log;
 
@@ -37,19 +33,25 @@ public class OpenWnnEngineEN implements WnnEngine {
     public static final int DICT_DEFAULT              = 0;
     /** Dictionary for mistype correction */
     public static final int DICT_FOR_CORRECT_MISTYPE  = 1;
+    /** Score(frequency value) of word in the learning dictionary */
+    public static final int FREQ_LEARN = 600;
+    /** Score(frequency value) of word in the user dictionary */
+    public static final int FREQ_USER = 500;
 
     /** OpenWnn dictionary */
 	private   WnnDictionary mDictionary;
     /** Word list */
-    private ArrayList        mConvResult;
+    private ArrayList<WnnWord> mConvResult;
     /** HashMap for checking duplicate word */
-    private HashMap     mCandTable;
+    private HashMap<String, WnnWord> mCandTable;
     /** Input string */
     private String        mInputString;
     /** Searching string */
     private String        mSearchKey;
     /** Number of output candidates */
     private int           mOutputNum;
+    /** The candidate filter */
+    private CandidateFilter mFilter = null;
     
     /**
      * Candidate's case
@@ -68,8 +70,8 @@ public class OpenWnnEngineEN implements WnnEngine {
      * @param writableDictionaryName  writable dictionary file name(null if not use)
      */
     public OpenWnnEngineEN(String writableDictionaryName) {
-        mConvResult = new ArrayList();
-        mCandTable = new HashMap();
+        mConvResult = new ArrayList<WnnWord>();
+        mCandTable = new HashMap<String, WnnWord>();
         mSearchKey = null;
         mOutputNum = 0;
 
@@ -79,11 +81,11 @@ public class OpenWnnEngineEN implements WnnEngine {
 
         mDictionary.clearDictionary( );
         
-        mDictionary.setDictionary( 0, 400, 550 );
-        mDictionary.setDictionary( 1, 400, 550 );
-        mDictionary.setDictionary( 2, 400, 550 );
-        mDictionary.setDictionary( WnnDictionary.INDEX_USER_DICTIONARY, 0, 0 );
-        mDictionary.setDictionary( WnnDictionary.INDEX_LEARN_DICTIONARY, 0, 0 );
+        mDictionary.setDictionary(0, 400, 550);
+        mDictionary.setDictionary(1, 400, 550);
+        mDictionary.setDictionary(2, 400, 550);
+        mDictionary.setDictionary(WnnDictionary.INDEX_USER_DICTIONARY, FREQ_USER, FREQ_USER);
+        mDictionary.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
 
         mDictionary.setApproxPattern(WnnDictionary.APPROX_PATTERN_EN_QWERTY_NEAR);
 
@@ -94,7 +96,7 @@ public class OpenWnnEngineEN implements WnnEngine {
      * Get a candidate.
      *
      * @param index  index of candidate
-     * @return a candidate; <code>null</code> if no candidate for the index.
+     * @return a candidate; {@code null} if no candidate for the index.
      */
     private WnnWord getCandidate(int index) {
         WnnWord word;
@@ -142,17 +144,20 @@ public class OpenWnnEngineEN implements WnnEngine {
         if (index >= mConvResult.size()) {
             return null;
         }
-        return (WnnWord)mConvResult.get(index);
+        return mConvResult.get(index);
     }
 
     /**
      * Add a word to the candidates list if there is no duplication.
      * @param word  a word
-     * @return <code>true</code> if the word is added to the list; <code>false</code> if not.
+     * @return {@code true} if the word is added to the list; {@code false} if not.
      */
     private boolean addCandidate(WnnWord word) {
         if (word.candidate == null || mCandTable.containsKey(word.candidate)) {
             return false;
+        }
+        if (mFilter != null && !mFilter.isAllowed(word)) {
+        	return false;
         }
         mCandTable.put(word.candidate, word);
         mConvResult.add(word);
@@ -170,7 +175,7 @@ public class OpenWnnEngineEN implements WnnEngine {
      * Set dictionary.
      *
      * @param type  type of dictionary (DIC_DEFAULT or DIC_FOR_CORRECT_MISTYPE)
-     * @return <code>true</code> if the dictionary is changed; <code>false</code> if not.
+     * @return {@code true} if the dictionary is changed; {@code false} if not.
      */
     public boolean setDictionary(int type) {
         if (type == DICT_FOR_CORRECT_MISTYPE) {
@@ -191,7 +196,7 @@ public class OpenWnnEngineEN implements WnnEngine {
      * capitalization later.
      *
      * @param  input  input string
-     * @return <code>true</code> if the search key is set; <code>false</code> if not.
+     * @return {@code true} if the search key is set; {@code false} if not.
      */
     private boolean setSearchKey(String input) {
         if (input.length() == 0) {
@@ -217,7 +222,15 @@ public class OpenWnnEngineEN implements WnnEngine {
 
         return true;
     }
-
+    
+    /**
+     * Set the candidate filter
+     * @param filter
+     */
+    public void setFilter(CandidateFilter filter) {
+    	mFilter = filter;
+    }
+    
     /***********************************************************************
      * WnnEngine's interface
      **********************************************************************/
@@ -250,8 +263,8 @@ public class OpenWnnEngineEN implements WnnEngine {
         if (input.length() > 2) {
             dict.setDictionary(2, 400, 550);
         }
-        dict.setDictionary( WnnDictionary.INDEX_USER_DICTIONARY, 0, 0 );
-        dict.setDictionary( WnnDictionary.INDEX_LEARN_DICTIONARY, 0, 0 );
+        dict.setDictionary(WnnDictionary.INDEX_USER_DICTIONARY, FREQ_USER, FREQ_USER);
+        dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
         
         /* search dictionaries */
         dict.searchWord(WnnDictionary.SEARCH_PREFIX, WnnDictionary.ORDER_BY_FREQUENCY, mSearchKey);
@@ -338,6 +351,11 @@ public class OpenWnnEngineEN implements WnnEngine {
             return true;
         }
         return false;
+    }
+    
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary */
+    public boolean initializeDictionary(int dictionary, int type) {
+    	return initializeDictionary(dictionary);
     }
 
     /** @see jp.co.omronsoft.openwnn.WnnEngine#getUserDictionaryWords */

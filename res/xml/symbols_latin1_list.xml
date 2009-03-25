@@ -39,7 +39,7 @@
   <string value="\?"/>
   <string value="\@"/>
   <string value="["/>
-  <string value="\"/>
+  <string value="\\"/>
   <string value="]"/>
   <string value="^"/>
   <string value="_"/>

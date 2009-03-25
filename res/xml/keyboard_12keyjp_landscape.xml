@@ -44,7 +44,7 @@
         <Key android:codes="-207" android:keyLabel="@string/key_12key_7"/>
         <Key android:codes="-208" android:keyLabel="@string/key_12key_8"/>
         <Key android:codes="-209" android:keyLabel="@string/key_12key_9"/>
-        <Key android:codes="-215" android:keyLabel="@string/key_space" android:isRepeatable="true" android:keyEdgeFlags="right" />
+        <Key android:codes="-215" android:keyIcon="@drawable/key_12key_space" android:iconPreview="@drawable/key_12key_space_b" android:isRepeatable="true" android:keyEdgeFlags="right" />
     </Row>
     
     <Row android:rowEdgeFlags="bottom">

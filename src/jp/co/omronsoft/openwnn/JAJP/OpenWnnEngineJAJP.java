@@ -16,9 +16,15 @@
 
 package jp.co.omronsoft.openwnn.JAJP;
 
-import android.content.SharedPreferences;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Arrays;
 
+import jp.co.omronsoft.openwnn.CandidateFilter;
 import jp.co.omronsoft.openwnn.ComposingText;
+import jp.co.omronsoft.openwnn.OpenWnn;
 import jp.co.omronsoft.openwnn.OpenWnnDictionaryImpl;
 import jp.co.omronsoft.openwnn.StrSegmentClause;
 import jp.co.omronsoft.openwnn.WnnClause;
@@ -26,12 +32,8 @@ import jp.co.omronsoft.openwnn.WnnDictionary;
 import jp.co.omronsoft.openwnn.WnnEngine;
 import jp.co.omronsoft.openwnn.WnnSentence;
 import jp.co.omronsoft.openwnn.WnnWord;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import android.content.SharedPreferences;
+import android.util.Log;
 
 /**
  * OpenWnn engine for Japanese IME
@@ -67,6 +69,11 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /** Keyboard type (Qwerty) */
 	public static final int KEYBOARD_QWERTY = 2;
     
+    /** Score(frequency value) of word in the learning dictionary */
+    public static final int FREQ_LEARN = 600;
+    /** Score(frequency value) of word in the user dictionary */
+    public static final int FREQ_USER = 500;
+
     /** Maximum limit length of output */
     public static final int MAX_OUTPUT_LENGTH = 50;
     
@@ -111,6 +118,9 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 
     /** A result of consecutive clause conversion */
     private WnnSentence mConvertSentence;
+    
+    /** The candidate filter */
+    private CandidateFilter mFilter = null;
 
     /**
      * Constructor
@@ -151,7 +161,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
                 dict.setDictionary(2, 245, 245);
                 dict.setDictionary(3, 100, 244);
                 
-                dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, 0, 0);
+                dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
             } else {
                 dict.setDictionary(0, 100, 400);
                 if (strlen > 1) {
@@ -160,8 +170,8 @@ public class OpenWnnEngineJAJP implements WnnEngine {
                 dict.setDictionary(2, 245, 245);
                 dict.setDictionary(3, 100, 244);
                 
-                dict.setDictionary(WnnDictionary.INDEX_USER_DICTIONARY, 0, 0);
-                dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, 0, 0);
+                dict.setDictionary(WnnDictionary.INDEX_USER_DICTIONARY, FREQ_USER, FREQ_USER);
+                dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
                 if (mKeyboardType != KEYBOARD_QWERTY) {
                     dict.setApproxPattern(WnnDictionary.APPROX_PATTERN_JAJP_12KEY_NORMAL);
                 }
@@ -235,7 +245,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
      * <br>
      * This method adds a word to the result buffer if there is not
      * the same one in the buffer and the length of the candidate
-     * string is not longer than <code>MAX_OUTPUT_LENGTH</code>.
+     * string is not longer than {@code MAX_OUTPUT_LENGTH}.
      *
      * @param word   a word to be add
      * @return  true if the word added; false if not.
@@ -245,6 +255,9 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 				|| word.candidate.length() > MAX_OUTPUT_LENGTH) {
 			return false;
 		}
+        if (mFilter != null && !mFilter.isAllowed(word)) {
+        	return false;
+        }
         mCandTable.put(word.candidate, word);
         mConvResult.add(word);
         return true;
@@ -267,7 +280,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
      * Set dictionary type.
      *
      * @param type  type of dictionary
-     * @return <code>true</code> if the dictionary is changed; <code>false</code> if not.
+     * @return {@code true} if the dictionary is changed; {@code false} if not.
      */
     public boolean setDictionary(int type) {
     	mDictType = type;
@@ -275,7 +288,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     }
 
     /**
-     * Set the search key and the search mode from <code>ComposingText</code>.
+     * Set the search key and the search mode from {@link ComposingText}.
      *
      * @param text    input text
      * @param maxLen  maximum length to convert
@@ -319,6 +332,15 @@ public class OpenWnnEngineJAJP implements WnnEngine {
         mKeyboardType = keyboardType;
     }
 
+    /**
+     * Set the candidate filter
+     * @param filter
+     */
+    public void setFilter(CandidateFilter filter) {
+    	mFilter = filter;
+    	mClauseConverter.setFilter(filter);
+    }
+    
     /***********************************************************************
      * WnnEngine's interface
      **********************************************************************/
@@ -539,6 +561,13 @@ public class OpenWnnEngineJAJP implements WnnEngine {
         return false;
     }
 
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary
+     */
+    public boolean initializeDictionary(int dictionary, int type) {
+    	return initializeDictionary(dictionary);
+    }
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#getUserDictionaryWords */
     public WnnWord[] getUserDictionaryWords( ) {
         /* get words in the user dictionary */
@@ -552,7 +581,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
         return result;
     }
 
-    /* <code>WnnWord</code> comparator for listing up words in the user dictionary */
+    /* {@link WnnWord} comparator for listing up words in the user dictionary */
     private class WnnWordComparator implements java.util.Comparator {
         public int compare(Object object1, Object object2) {
             WnnWord wnnWord1 = (WnnWord) object1;

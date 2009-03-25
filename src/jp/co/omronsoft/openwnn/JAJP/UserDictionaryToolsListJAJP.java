@@ -17,8 +17,6 @@
 package jp.co.omronsoft.openwnn.JAJP;
 
 import jp.co.omronsoft.openwnn.*;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 /**
@@ -39,12 +37,12 @@ public class UserDictionaryToolsListJAJP extends UserDictionaryToolsList {
     /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#headerCreate */
     @Override protected void headerCreate() {
       getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
-      R.layout.user_dictionary_tools_list_header_ja);
+    		  R.layout.user_dictionary_tools_list_header_ja);
     }
 
     /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#createUserDictionaryToolsEdit */
-    @Override protected UserDictionaryToolsEdit createUserDictionaryToolsEdit(View view1, View view2, int wordCount) {
-        return new UserDictionaryToolsEditJAJP(view1, view2, wordCount);
+    @Override protected UserDictionaryToolsEdit createUserDictionaryToolsEdit(View view1, View view2) {
+        return new UserDictionaryToolsEditJAJP(view1, view2);
     }
 
     /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#sendEventToIME */

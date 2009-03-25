@@ -16,9 +16,11 @@
 
 package jp.co.omronsoft.openwnn.EN;
 
-import jp.co.omronsoft.openwnn.*;
-import android.os.Bundle;
-import android.util.Log;
+import jp.co.omronsoft.openwnn.OpenWnnEN;
+import jp.co.omronsoft.openwnn.OpenWnnEvent;
+import jp.co.omronsoft.openwnn.R;
+import jp.co.omronsoft.openwnn.UserDictionaryToolsEdit;
+import jp.co.omronsoft.openwnn.UserDictionaryToolsList;
 import android.view.View;
 import android.view.Window;
 /**
@@ -31,6 +33,7 @@ public class UserDictionaryToolsListEN extends UserDictionaryToolsList {
      * Constructor
      */
     public UserDictionaryToolsListEN() {
+        new OpenWnnEN(this);
         mListViewName = "jp.co.omronsoft.openwnn.EN.UserDictionaryToolsListEN";
         mEditViewName = "jp.co.omronsoft.openwnn.EN.UserDictionaryToolsEditEN";
         mPackageName  = "jp.co.omronsoft.openwnn";
@@ -43,8 +46,8 @@ public class UserDictionaryToolsListEN extends UserDictionaryToolsList {
     }
 
     /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#createUserDictionaryToolsEdit */
-    @Override protected UserDictionaryToolsEdit createUserDictionaryToolsEdit(View view1, View view2, int wordCount) {
-        return new UserDictionaryToolsEditEN(view1, view2, wordCount);
+    @Override protected UserDictionaryToolsEdit createUserDictionaryToolsEdit(View view1, View view2) {
+        return new UserDictionaryToolsEditEN(view1, view2);
     }
 
     /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#sendEventToIME */

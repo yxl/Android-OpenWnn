@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * The container of a sentence
+ * The container of a sentence.
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
@@ -56,9 +56,9 @@ public class WnnSentence extends WnnWord {
                 this.attribute = headClause.attribute;
             } else {
                 StringBuffer candidate = new StringBuffer();
-                Iterator ci = clauses.iterator();
+                Iterator<WnnClause> ci = clauses.iterator();
                 while (ci.hasNext()) {
-                    WnnClause clause = (WnnClause)ci.next();
+                    WnnClause clause = ci.next();
                     candidate.append(clause.candidate);
                 }
                 WnnClause lastClause = (WnnClause)clauses.get(clauses.size() - 1);
@@ -87,7 +87,7 @@ public class WnnSentence extends WnnWord {
         this.partOfSpeech = clause.partOfSpeech;
         this.attribute = clause.attribute;
 
-        this.elements = new ArrayList();
+        this.elements = new ArrayList<WnnClause>();
         this.elements.add(clause);
     }
 
@@ -105,7 +105,7 @@ public class WnnSentence extends WnnWord {
         this.partOfSpeech = new WnnPOS(prev.partOfSpeech.left, clause.partOfSpeech.right);
         this.attribute = prev.attribute;
 
-        this.elements = new ArrayList();
+        this.elements = new ArrayList<WnnClause>();
         this.elements.addAll(prev.elements);
         this.elements.add(clause);
     }
@@ -125,7 +125,7 @@ public class WnnSentence extends WnnWord {
             this.frequency = head.frequency;
             this.partOfSpeech = head.partOfSpeech;
             this.attribute = head.attribute;
-            this.elements = new ArrayList();
+            this.elements = new ArrayList<WnnClause>();
             this.elements.add(head);
         } else {
             /* consecutive clauses */
@@ -136,7 +136,7 @@ public class WnnSentence extends WnnWord {
             this.partOfSpeech = new WnnPOS(head.partOfSpeech.left, tail.partOfSpeech.right);
             this.attribute = 2;
             
-            this.elements = new ArrayList();
+            this.elements = new ArrayList<WnnClause>();
             this.elements.add(head);
             this.elements.addAll(tail.elements);
         }

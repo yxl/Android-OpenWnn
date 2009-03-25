@@ -17,19 +17,16 @@
 package jp.co.omronsoft.openwnn;
 
 import android.view.View;
-import android.widget.LinearLayout;
-import android.view.View.OnTouchListener;
-import android.view.MotionEvent;
-import android.widget.Button;
-import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.graphics.Typeface;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
-import android.widget.Toast;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import java.util.*;
-
+import android.content.res.*;
 import android.os.Vibrator;
 import android.media.MediaPlayer;
 import android.content.Context;
@@ -44,7 +41,7 @@ import android.util.Log;
 public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKeyboardActionListener {
 	/*
 	 *----------------------------------------------------------------------
-	 * keycodes for a software keyboard
+	 * key codes for a software keyboard
 	 *----------------------------------------------------------------------
 	 */
     /** Change the keyboard language */
@@ -150,6 +147,9 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
 	/** Current keyboard view */
 	protected KeyboardView mKeyboardView;
 	
+	protected LinearLayout mMainView;
+	protected RelativeLayout mSubView;
+	
 	/** Current keyboard definition */
 	protected Keyboard mCurrentKeyboard;
 	
@@ -237,10 +237,33 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /** Chinese key-mode (Half-width number) */
 	public static final int KEYMODE_CN_HALF_NUMBER   = 4;
 	
+	/* key-modes for HARD */
+    /** HARD key-mode (SHIFT_OFF_ALT_OFF) */
+    public static final int HARD_KEYMODE_SHIFT_OFF_ALT_OFF     = 2;
+    /** HARD key-mode (SHIFT_ON_ALT_OFF) */
+    public static final int HARD_KEYMODE_SHIFT_ON_ALT_OFF      = 3;
+    /** HARD key-mode (SHIFT_OFF_ALT_ON) */
+    public static final int HARD_KEYMODE_SHIFT_OFF_ALT_ON      = 4;
+    /** HARD key-mode (SHIFT_ON_ALT_ON) */
+    public static final int HARD_KEYMODE_SHIFT_ON_ALT_ON       = 5;
+	/** HARD key-mode (SHIFT_LOCK_ALT_OFF) */
+    public static final int HARD_KEYMODE_SHIFT_LOCK_ALT_OFF    = 6;
+    /** HARD key-mode (SHIFT_LOCK_ALT_ON) */
+    public static final int HARD_KEYMODE_SHIFT_LOCK_ALT_ON     = 7;
+    /** HARD key-mode (SHIFT_LOCK_ALT_LOCK) */
+    public static final int HARD_KEYMODE_SHIFT_LOCK_ALT_LOCK   = 8;
+    /** HARD key-mode (SHIFT_OFF_ALT_LOCK) */
+    public static final int HARD_KEYMODE_SHIFT_OFF_ALT_LOCK    = 9;
+    /** HARD key-mode (SHIFT_ON_ALT_LOCK) */
+    public static final int HARD_KEYMODE_SHIFT_ON_ALT_LOCK     = 10;
+
+    /** Whether the H/W keyboard is hidden. */
+    protected boolean mHardKeyboardHidden = true;
+
 	/**
 	 * Status of the composing text
 	 * <br>
-	 * True if there is no composing text.
+	 * {@code true} if there is no composing text.
 	 */
 	protected boolean mNoInput = true;
 	
@@ -252,7 +275,6 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
 	
 	/** Key toggle cycle table currently using */
 	protected String[] mCurrentCycleTable;
-
 
 	/**
      * Constructor
@@ -332,7 +354,7 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /**
      * Get the keyboard when some characters are input or no character is input.
      *
-     * @param inputed  <code>true</code> for some characters are input; <code>false</code> for no input.
+     * @param inputed  {@code true} for some characters are input; {@code false} for no input.
      * @return keyboard view
      */
     protected Keyboard getKeyboardInputed(boolean inputed) {
@@ -470,7 +492,7 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
      * Change the keyboard.
      *
      * @param keyboard  The new keyboard
-     * @return          <code>true</code> if the keyboard is changed; <code>false</code> if not changed.
+     * @return          {@code true} if the keyboard is changed; {@code false} if not changed.
      */
     protected boolean changeKeyboard(Keyboard keyboard) {
 
@@ -487,10 +509,10 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
             return false;
         }
     }
-
     /** @see jp.co.omronsoft.openwnn.InputViewManager#initView */
     public View initView(OpenWnn parent, int width, int height) {
         mWnn = parent;
+        mDisplayMode = (width == 320)? PORTRAIT : LANDSCAPE;
 
         /*
          * create keyboards & the view.
@@ -498,19 +520,123 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
          * create keyboards every time.
          */
         createKeyboards(parent);
-        mKeyboardView = (KeyboardView) mWnn.getLayoutInflater().inflate(R.layout.default_keyboard, null);
+
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(parent);
+        String skin = pref.getString("keyboard_skin",
+                                     mWnn.getResources().getString(R.string.keyboard_skin_id_default));
+        Log.d("OpenWnn", "keyboard_skin="+skin);
+        int id = parent.getResources().getIdentifier(skin, "layout", "jp.co.omronsoft.openwnn");
+
+        mKeyboardView = (KeyboardView) mWnn.getLayoutInflater().inflate(id, null);
 		mKeyboardView.setOnKeyboardActionListener(this);
         mCurrentKeyboard = null;
 
-        return null;
-    }
+        mMainView = (LinearLayout) parent.getLayoutInflater().inflate(R.layout.keyboard_default_main, null);
+        mSubView = (RelativeLayout) parent.getLayoutInflater().inflate(R.layout.keyboard_default_sub, null);
+        if (mDisplayMode == LANDSCAPE && !mHardKeyboardHidden) { 
+            mMainView.addView(mSubView);
+            mSubView.setPadding(1, 2, 1, 2);
+            
+            Resources res = mWnn.getResources();
+            mSubView.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            TextView text_1 = (TextView)mSubView.findViewById(R.id.shift);
+            TextView text_2 = (TextView)mSubView.findViewById(R.id.alt);
 
+            text_1.setPadding(5, 0, 40, 0);
+            text_2.setPadding(5, 0, 5, 0);
+            
+            text_1.setTypeface(Typeface.DEFAULT_BOLD);
+            text_2.setTypeface(Typeface.DEFAULT_BOLD);
+        }
+        if(mKeyboardView != null){
+            mMainView.addView(mKeyboardView);
+        }
+        
+        return mMainView;
+    }
+    
+    /**
+     * Update the SHFIT/ALT keys indicator.
+     * 
+     * @param mode  The state of SHIFT/ALT keys.
+     */
+    public void updateIndicator(int mode) {
+        Resources res = mWnn.getResources();
+        TextView text_1 = (TextView)mSubView.findViewById(R.id.shift);
+
+        TextView text_2 = (TextView)mSubView.findViewById(R.id.alt);
+
+        switch (mode) {
+        case HARD_KEYMODE_SHIFT_OFF_ALT_OFF:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_off));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_off));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            break;
+        case HARD_KEYMODE_SHIFT_ON_ALT_OFF:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_on));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_off));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            break;
+        case HARD_KEYMODE_SHIFT_LOCK_ALT_OFF:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_lock));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_off));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_background_lock));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            break;
+        case HARD_KEYMODE_SHIFT_OFF_ALT_ON:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_off));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_on));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            break;
+        case HARD_KEYMODE_SHIFT_OFF_ALT_LOCK:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_off));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_lock));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_background_lock));
+            break;
+        case HARD_KEYMODE_SHIFT_ON_ALT_ON:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_on));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_on));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            break;
+        case HARD_KEYMODE_SHIFT_ON_ALT_LOCK:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_on));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_lock));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_background_lock));
+            break;
+        case HARD_KEYMODE_SHIFT_LOCK_ALT_ON:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_lock));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_on));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_background_lock));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            break;
+        case HARD_KEYMODE_SHIFT_LOCK_ALT_LOCK:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_lock));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_lock));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_background_lock));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_background_lock));
+            break;
+        default:
+            text_1.setTextColor(res.getColor(R.color.indicator_textcolor_caps_off));
+            text_2.setTextColor(res.getColor(R.color.indicator_textcolor_alt_off));
+            text_1.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            text_2.setBackgroundColor(res.getColor(R.color.indicator_textbackground_default));
+            break;
+        }
+        return;
+    }
+    
     /** @see jp.co.omronsoft.openwnn.InputViewManager#getCurrentView */
     public View getCurrentView() {
         if (mCurrentKeyboard == null) {
             return null;
         }
-        return mKeyboardView;
+        return mMainView;
     }
 
     /** @see jp.co.omronsoft.openwnn.InputViewManager#onUpdateState */
@@ -582,9 +708,6 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /** @see android.inputmethodservice.KeyboardView.OnKeyboardActionListener#onKey */
     public void onKey(int primaryCode, int[] keyCodes) { }
 
-    /** @see android.inputmethodservice.KeyboardView.OnKeyboardActionListener#onText */
-    public void onText(CharSequence text) { }
-    
     /** @see android.inputmethodservice.KeyboardView.OnKeyboardActionListener#swipeRight */
     public void swipeRight() { }
 
@@ -610,10 +733,13 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
             try { mSound.seekTo(0); mSound.start(); } catch (Exception ex) { }
         }
     }
+    
+    /** @see android.inputmethodservice.KeyboardView.OnKeyboardActionListener#onText */
+    public void onText(CharSequence text) {}
 
     /**
      * Get current key mode.
-     * @return current key mode
+     * @return Current key mode
      */
     public int getKeyMode() {
         return mCurrentKeyMode;
@@ -621,10 +747,18 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
 
     /**
      * Get current keyboard type.
-     * @return current keyboard type
+     * @return Current keyboard type
      */
     public int getKeyboardType() {
         return mCurrentKeyboardType;
     }
-}
 
+    /**
+     * Set the H/W keyboard's state.
+     * @param hidden {@code true} if hidden.
+     */
+    public void setHardKeyboardHidden(boolean hidden) {
+        mHardKeyboardHidden = hidden;
+    }
+
+}

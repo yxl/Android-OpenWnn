@@ -28,6 +28,17 @@
 			android:title="@string/preference_preview_title"
 			android:summary="@string/preference_preview_summary"
 			android:defaultValue="true" />
+    <CheckBoxPreference android:key="auto_caps"
+			android:title="@string/preference_auto_caps_title"
+			android:summary="@string/preference_auto_caps_summary"
+			android:defaultValue="true" />
+    <jp.co.omronsoft.openwnn.JAJP.KeyboardListPreferenceJAJP
+                        android:key="keyboard_skin"
+			android:title="@string/preference_keyboard_skin_title"
+			android:summary="@string/preference_keyboard_skin_summary"
+			android:entries="@array/keyboard_skin"
+			android:entryValues="@array/keyboard_skin_id"
+			android:defaultValue="keyboard_default" />
   </PreferenceCategory>
     
   <PreferenceCategory android:title="@string/preference_conversion_menu">
@@ -42,7 +53,8 @@
     <CheckBoxPreference android:key="opt_spell_correction"
 			android:title="@string/preference_correct_spell_title"
 			android:summary="@string/preference_correct_spell_summary"
-			android:defaultValue="true" />
+			android:defaultValue="true"
+			android:dependency="opt_prediction" />
   </PreferenceCategory>
     
   <PreferenceCategory android:title="@string/preference_dictionary_menu">
@@ -73,7 +85,7 @@
 		      android:negativeButtonText="@string/dialog_button_cancel"/>
   
   </PreferenceCategory>
-
+  
   <PreferenceCategory android:title="@string/preference_aboutime_menu">
     <Preference android:key="openwnn_version" 
 			style="?android:preferenceInformationStyle"

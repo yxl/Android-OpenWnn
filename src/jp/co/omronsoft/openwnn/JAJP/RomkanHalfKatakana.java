@@ -27,7 +27,7 @@ import android.content.SharedPreferences;
  */
 public class RomkanHalfKatakana implements LetterConverter {
     /** HashMap for Romaji-to-Kana conversion (Japanese mode) */
-    private static final HashMap mRomkanTable = new HashMap() {{
+    private static final HashMap<String, String> mRomkanTable = new HashMap<String, String>() {{
         put("la", "\uff67");         put("xa", "\uff67");         put("a", "\uff71");
         put("li", "\uff68");         put("lyi", "\uff68");        put("xi", "\uff68");
         put("xyi", "\uff68");        put("i", "\uff72");          put("yi", "\uff72");

@@ -20,7 +20,7 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 /**
- * Control panel preference class
+ * Control panel preference class for English IME.
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */

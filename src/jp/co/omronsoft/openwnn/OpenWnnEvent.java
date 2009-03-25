@@ -20,7 +20,7 @@ import android.view.KeyEvent;
 import java.util.*;
 
 /**
- * Definition of event message used by OpenWnn framework
+ * Definition of event message used by OpenWnn framework.
  *
  * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
@@ -41,14 +41,14 @@ public class OpenWnnEvent {
     /**
      * Convert.
      * <br>
-     * This event makes <code>OpenWnn</code> to display conversion candidates from <code>ComposingText</code>.
+     * This event makes {@link OpenWnn} to display conversion candidates from {@link ComposingText}.
      */
     public static final int CONVERT = 0xF0000002;
 
     /**
      * Predict.
      * <br>
-     * This event makes <code>OpenWnn</code> to display prediction candidates from <code>ComposingText</code>.
+     * This event makes {@link OpenWnn} to display prediction candidates from {@link ComposingText}.
      */
     public static final int PREDICT = 0xF0000008;
 
@@ -74,14 +74,14 @@ public class OpenWnnEvent {
     /**
      * Insert character(s).
      * <br>
-     * This event input specified character(s)(<code>chars</code>) into the cursor position.
+     * This event input specified character({@code chars}) into the cursor position.
      */
     public static final int INPUT_CHAR = 0xF0000006;
 
     /**
      * Toggle a character.
      * <br>
-     * This event changes a character at cursor position with specified rule(<code>toggleMap</code>).
+     * This event changes a character at cursor position with specified rule({@code toggleMap}).
      * This is used for multi-tap keyboard.
      */
     public static final int TOGGLE_CHAR = 0xF000000C;
@@ -94,15 +94,15 @@ public class OpenWnnEvent {
     /**
      * Input key.
      * <br>
-     * This event processes a <code>keyEvent</code>.
+     * This event processes a {@code keyEvent}.
      */
     public static final int INPUT_KEY  = 0xF0000007;
 
     /**
      * Input Soft key.
      * <br>
-     * This event processes a <code>keyEvent</code>.
-     * If the event is not processed in <code>OpenWnn</code>, the event is thrown to the IME's client.
+     * This event processes a {@code keyEvent}.
+     * If the event is not processed in {@link OpenWnn}, the event is thrown to the IME's client.
      */
     public static final int INPUT_SOFT_KEY  = 0xF000000E;
 
@@ -130,13 +130,13 @@ public class OpenWnnEvent {
      * Constant definition class of engine's mode
      */
     public static final class Mode {
-        /** Default (use both of the letterConverter and the WnnEngine) */
+        /** Default (use both of the letterConverter and the {@link WnnEngine}) */
         public static final int DEFAULT      = 0;
-        /** Direct input (not use the letterConverter and the WnnEngine) */
+        /** Direct input (not use the letterConverter and the {@link WnnEngine}) */
         public static final int DIRECT       = 1;
-        /** Do not use the letterConverter */
+        /** Do not use the {@link LetterConverter} */
         public static final int NO_LV1_CONV  = 2;
-        /** Do not use the WnnEngine */
+        /** Do not use the {@link WnnEngine} */
         public static final int NO_LV2_CONV  = 3;
     }
 
@@ -168,14 +168,14 @@ public class OpenWnnEvent {
     /**
      * List words in the user dictionary.
      * <br>
-     * To get words from the list, use <code>GET_WORD</code> event.
+     * To get words from the list, use {@code GET_WORD} event.
      */
     public static final int LIST_WORDS_IN_USER_DICTIONARY = 0xF0000015;
 
     /**
      * Get a word from the user dictionary.
      * <br>
-     * Get a word from top of the list made by <code>LIST_WORDS_IN_USER_DICTIONARY</code>.
+     * Get a word from top of the list made by {@code LIST_WORDS_IN_USER_DICTIONARY}.
      */
     public static final int GET_WORD  = 0xF0000018;
 
@@ -194,6 +194,25 @@ public class OpenWnnEvent {
      */
     public static final int UPDATE_CANDIDATE = 0xF0000019; 
 
+    /**
+     * Edit words in the user dictionary.
+     */
+    public static final int EDIT_WORDS_IN_USER_DICTIONARY = 0xF000001A;
+
+    /**
+     * Undo
+     */
+    public static final int UNDO  = 0xF000001B;
+
+    /**
+     * Change input view
+     */
+    public static final int CHANGE_INPUT_VIEW = 0xF000001C;
+
+    /**
+     * Touch the candidate view.
+     */
+    public static final int CANDIDATE_VIEW_TOUCH = 0xF000001D;
 
     /** Event code */
     public int code = UNDEFINED;
@@ -208,35 +227,35 @@ public class OpenWnnEvent {
     /** Mapping table for toggle input */
     public String[]  toggleTable = null;
     /** Mapping table for toggle input */
-    public HashMap replaceTable = null;
+    public HashMap<?,?> replaceTable = null;
     /** Word's information */
     public WnnWord  word = null;
     /** Error code */ 
     public int errorCode;
     
     /**
-     * Generate OpenWnnEvent
+     * Generate {@link OpenWnnEvent}
      *
-     * @param code      the code
+     * @param code      The code
      */
     public OpenWnnEvent(int code) {
         this.code = code;
     }
     /**
-     * Generate OpenWnnEvent for changing the mode
+     * Generate {@link OpenWnnEvent} for changing the mode
      *
-     * @param code      the code
-     * @param mode      the mode
+     * @param code      The code
+     * @param mode      The mode
      */
     public OpenWnnEvent(int code, int mode) {
         this.code = code;       
         this.mode = mode;
     }
     /**
-     * Generate OpenWnnEvent for a inputing character
+     * Generate {@link OpenWnnEvent} for a inputing character
      *
-     * @param code      the code
-     * @param c         the inputing character
+     * @param code      The code
+     * @param c         The inputing character
      */
     public OpenWnnEvent(int code, char c) {
         this.code = code;       
@@ -244,61 +263,61 @@ public class OpenWnnEvent {
         this.chars[0] = c;
      }
     /**
-     * Generate OpenWnnEvent for inputing characters
+     * Generate {@link OpenWnnEvent} for inputing characters
      *
-     * @param code      the code
-     * @param c         the array of inputing character
+     * @param code      The code
+     * @param c         The array of inputing character
      */
     public OpenWnnEvent(int code, char c[]) {
         this.code = code;       
         this.chars = c;
     }
     /**
-     * Generate OpenWnnEvent for toggle inputing a character
+     * Generate {@link OpenWnnEvent} for toggle inputing a character
      *
-     * @param code          the code
-     * @param toggleTable   the array of toggle inputing a character
+     * @param code          The code
+     * @param toggleTable   The array of toggle inputing a character
      */
     public OpenWnnEvent(int code, String[] toggleTable) {
         this.code = code;
         this.toggleTable = toggleTable;
     }
     /**
-     * Generate OpenWnnEvent for replacing a character
+     * Generate {@link OpenWnnEvent} for replacing a character
      *
-     * @param code          the code
-     * @param replaceTable  the replace table
+     * @param code          The code
+     * @param replaceTable  The replace table
      */
-    public OpenWnnEvent(int code, HashMap replaceTable) {
+    public OpenWnnEvent(int code, HashMap<?,?> replaceTable) {
         this.code = code;
         this.replaceTable = replaceTable;
     }
     /**
-     * Generate OpenWnnEvent from KeyEvent
+     * Generate {@link OpenWnnEvent} from {@link KeyEvent}
      * <br>
-     * same as <code>OpenWnnEvent(INPUT_KEY, ev)</code>.
+     * This constructor is same as {@code OpenWnnEvent(INPUT_KEY, ev)}.
      *
-     * @param ev    the key event
+     * @param ev    The key event
      */
     public OpenWnnEvent(KeyEvent ev) {
         this.code = INPUT_KEY;
         this.keyEvent = ev;
     }
     /**
-     * Generate OpenWnnEvent from KeyEvent
+     * Generate {@link OpenWnnEvent} from {@link KeyEvent}
      *
-     * @param code      the code
-     * @param ev        the key event
+     * @param code      The code
+     * @param ev        The key event
      */
     public OpenWnnEvent(int code, KeyEvent ev) {
         this.code = code;
         this.keyEvent = ev;
     }
     /**
-     * Generate OpenWnnEvent for selecting a candidate
+     * Generate {@link OpenWnnEvent} for selecting a candidate
      *
-     * @param code      the code
-     * @param word      the selected candidate
+     * @param code      The code
+     * @param word      The selected candidate
      */
     public OpenWnnEvent(int code, WnnWord word) {
         this.code = code;       
@@ -306,11 +325,11 @@ public class OpenWnnEvent {
     }
 
     /**
-     * Generate OpenWnnEvent for dictionary management
+     * Generate {@link OpenWnnEvent} for dictionary management
      *
-     * @param code      the code
-     * @param dict      the type of dictionary
-     * @param word      the selected candidate
+     * @param code      The code
+     * @param dict      The type of dictionary
+     * @param word      The selected candidate
      */
     public OpenWnnEvent(int code, int dict, WnnWord word) {
         this.code = code;
