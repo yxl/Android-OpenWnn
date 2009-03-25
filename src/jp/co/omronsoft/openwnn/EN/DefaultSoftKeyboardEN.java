@@ -20,10 +20,8 @@ import jp.co.omronsoft.openwnn.DefaultSoftKeyboard;
 import jp.co.omronsoft.openwnn.OpenWnn;
 import jp.co.omronsoft.openwnn.OpenWnnEvent;
 import jp.co.omronsoft.openwnn.R;
-import jp.co.omronsoft.openwnn.SymbolList;
 import android.content.SharedPreferences;
 import android.inputmethodservice.Keyboard;
-import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -62,13 +60,13 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
      * Nothing will be done if no pop-up keyboard is displaying.
      */
     public void dismissPopupKeyboard() {
-        try {
-            if (mKeyboardView != null) {
-                mKeyboardView.handleBack();
-            }
-        } catch (Exception ex) {
-            /* ignore */
-        }
+    	try {
+    		if (mKeyboardView != null) {
+    			mKeyboardView.handleBack();
+    		}
+    	} catch (Exception ex) {
+    		/* ignore */
+    	}
     }
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#createKeyboards */
@@ -123,21 +121,25 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
      ***********************************************************************/
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#initView */
     @Override public View initView(OpenWnn parent, int width, int height) {
-        super.initView(parent, width, height);
-		
-        /* default setting */
-        mCurrentLanguage     = LANG_EN;
-        mCurrentKeyboardType = KEYBOARD_QWERTY;
-        mShiftOn             = KEYBOARD_SHIFT_OFF;
-        mCurrentKeyMode      = KEYMODE_EN_ALPHABET;
-        mDisplayMode         = (width == 320)? PORTRAIT : LANDSCAPE;
-		
-        Keyboard kbd = mKeyboard[mCurrentLanguage][mDisplayMode][mCurrentKeyboardType][mShiftOn][mCurrentKeyMode][0];
-        if (kbd == null) {
-            return null;
-        }
-        changeKeyboard(kbd);
-        return mKeyboardView;
+        View view = super.initView(parent, width, height);
+	
+    	/* default setting */
+    	mCurrentLanguage     = LANG_EN;
+    	mCurrentKeyboardType = KEYBOARD_QWERTY;
+    	mShiftOn             = KEYBOARD_SHIFT_OFF;
+    	mCurrentKeyMode      = KEYMODE_EN_ALPHABET;
+    	mDisplayMode         = (width == 320)? PORTRAIT : LANDSCAPE;
+
+    	Keyboard kbd = mKeyboard[mCurrentLanguage][mDisplayMode][mCurrentKeyboardType][mShiftOn][mCurrentKeyMode][0];
+    	if (kbd == null) {
+    		if(mDisplayMode == LANDSCAPE){
+    			return view;
+    		}
+    		return null;
+    	}
+    	mCurrentKeyboard = null;
+    	changeKeyboard(kbd);
+    	return view;
     }
 	
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#setPreferences */
@@ -145,11 +147,7 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
         super.setPreferences(pref, editor);
 
         /* auto caps mode */
-        try {
-            mAutoCaps = (Settings.System.getInt(mWnn.getContentResolver(), Settings.System.TEXT_AUTO_CAPS) != 0);
-        } catch (Exception ex) {
-            mAutoCaps = false;
-        }
+        mAutoCaps = pref.getBoolean("auto_caps", true);
 
         switch (editor.inputType & EditorInfo.TYPE_MASK_CLASS) {
         case EditorInfo.TYPE_CLASS_NUMBER:
@@ -297,4 +295,5 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
         }
     }
 }
+
 

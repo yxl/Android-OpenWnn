@@ -74,8 +74,8 @@ public interface WnnEngine {
      * Japanese, Pinyin to Kanji convert in Chinese, Hangul to Hanja
      * convert in Korean, etc.
      *
-     * The result of conversion is set into the layer 2 in the <code>ComposingText</code>.
-     * To get other candidates of each clause, call <code>makeCandiateListOf()</code>
+     * The result of conversion is set into the layer 2 in the {@link ComposingText}.
+     * To get other candidates of each clause, call {@link #makeCandidateListOf(int)}.
      *
      * @param text    The input string
      *
@@ -105,14 +105,14 @@ public interface WnnEngine {
      * Get a candidate.
      * <br>
      *
-     * After <code>predict()</code> or <code>makeCandidateListOf()</code> or
-     * <code>searchWords()</code>, call this method to get the
+     * After {@link #predict(ComposingText, int, int)} or {@link #makeCandidateListOf(int)} or
+     * {@code searchWords()}, call this method to get the
      * results.  This method will return a candidate in decreasing
-     * frequency order for <code>predict()</code> and
-     * <code>makeCandidateListOf()</code>, in increasing character code order for
-     * <code>searchDictionary()</code>.
+     * frequency order for {@link #predict(ComposingText, int, int)} and
+     * {@link #makeCandidateListOf(int)}, in increasing character code order for
+     * {@code searchWords()}.
      *
-     * @return The candidate; <code>null</code> if there is no more candidate.
+     * @return The candidate; {@code null} if there is no more candidate.
      */
     public WnnWord getNextCandidate();
 
@@ -120,7 +120,7 @@ public interface WnnEngine {
      * Retrieve the list of registered words.
      * <br>
      *
-     * @return <code>null</code> if no word is registered; <code>the array of WnnWord</code> if some words is registered.
+     * @return {@code null} if no word is registered; the array of {@link WnnWord} if some words is registered.
      */
     public WnnWord[] getUserDictionaryWords();
 
@@ -133,7 +133,7 @@ public interface WnnEngine {
      * of the word.
      *
      * @param word  The selected word
-     * @return <code>true</code> if success; <code>false</code> if fail or not supported.
+     * @return {@code true} if success; {@code false} if fail or not supported.
      */
     public boolean learn(WnnWord word);
 
@@ -151,7 +151,7 @@ public interface WnnEngine {
      * <br>
      *
      * @param word  A word to delete
-     * @return <code>true</code> if success; <code>false</code> if fail or not supported.
+     * @return {@code true} if success; {@code false} if fail or not supported.
      */
     public boolean deleteWord(WnnWord word);
 
@@ -159,10 +159,20 @@ public interface WnnEngine {
      * Delete all words from the user's dictionary.
      * <br>
      *
-     * @param dictionary  <code>DICTIONARY_TYPE_LEARN</code> or <code>DICTIONARY_TYPE_USER</code>
-     * @return <code>true</code> if success; <code>false</code> if fail or not supported.
+     * @param dictionary  {@code DICTIONARY_TYPE_LEARN} or {@code DICTIONARY_TYPE_USER}
+     * @return {@code true} if success; {@code false} if fail or not supported.
      */
     public boolean initializeDictionary(int dictionary);
+
+    /**
+     * Delete all words from the user's dictionary of the specified language.
+     * <br>
+     *
+     * @param dictionary  {@code DICTIONARY_TYPE_LEARN} or {@code DICTIONARY_TYPE_USER}
+     * @param type  dictionary type (language, etc...)
+     * @return {@code true} if success; {@code false} if fail or not supported.
+     */
+    public boolean initializeDictionary(int dictionary, int type);
 
     /**
      * Set preferences.
@@ -191,8 +201,8 @@ public interface WnnEngine {
      *
      * This method is used when to make a list of other candidates of
      * the clause which is in the result of consecutive clause
-     * conversion(<code>convert()</code>).
-     * To get the elements of the list, call <code>getNextCandidate()</code>.
+     * conversion({@link #convert(ComposingText)}).
+     * To get the elements of the list, call {@link #getNextCandidate()}.
      *
      * @param clausePosition  The position of a clause
      * @return Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.

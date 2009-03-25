@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
                             OpenWnn for Android README
 
-                          Internal Version (2009.3.5-E/J)
+                        Internal Version (2009.3.18-E/J/C)
                   
      (C) Copyright OMRON SOFTWARE Co., Ltd. 2008,2009 All Rights Reserved.
 -------------------------------------------------------------------------------
@@ -10,7 +10,7 @@
 
     OpenWnn for Android is a IME(Input Method Editor) package which
     works on Android's IMF(Input Method Framework).  This version
-    contains Japanese IME and English IME.
+    contains Japanese, Chinese and English IME.
 
 2. Contents
 
@@ -58,6 +58,9 @@
                 libwnnJpnDic/                                       |
                     Android.mk                                      |
                     *.c                                             |
+                libwnnZHCNDic/                                      |
+                    Android.mk                                      |
+                    *.c                                             |
 
             res/                                                    IME resource (XML, PNG)
 		drawable/                                           |
@@ -70,6 +73,8 @@
 		values/                                             |
 		    *.xml                                           |
 		values-ja/                                          |
+		    *.xml                                           |
+		values-zh-rCN                                       |
 		    *.xml                                           |
 		xml/                                                |
 		    *.xml                                           |
@@ -84,5 +89,9 @@
 				    *.java                          |
                                 JAJP/                               |
 				    *.java                          |
+                                ZH/                                 |
+				    *.java                          |
+                                    CN/                             |
+				        *.java                      |
 
 -------------------------------------------------------------------------------

@@ -96,7 +96,7 @@ public class ComposingText {
      * @param layer layer
      * @param pos   position (< 0 : the tail segment)
      *
-     * @return the segment; <code>null</code> if error occurs.
+     * @return the segment; {@code null} if error occurs.
      */
     public StrSegment getStrSegment(int layer, int pos) {
         try {
@@ -151,8 +151,8 @@ public class ComposingText {
      *
      * @param layer  the base layer
      * @param mod_from modified from
-     * @param mod_len  length after modified (# of StrSegments from <code>mod_from</code>)
-     * @param org_len  length before modified (# of StrSegments from <code>mod_from</code>)
+     * @param mod_len  length after modified (# of StrSegments from {@code mod_from})
+     * @param org_len  length before modified (# of StrSegments from {@code mod_from})
      */
     private void modifyUpper(int layer, int mod_from, int mod_len, int org_len) {
         if (layer >= MAX_LAYER - 1) {
@@ -273,7 +273,7 @@ public class ComposingText {
      * Insert a StrSegment at the cursor position(without merging to the previous segment).
      * <p>
      * @param layer1 insert to the layer
-     * @param layer2 never merge to the previous segment from <code>layer1</code> to <code>layer2</code>
+     * @param layer2 never merge to the previous segment from {@code layer1} to {@code layer2}.
      * @param str    string
      **/
     public void insertStrSegment(int layer1, int layer2, StrSegment str) {
@@ -463,9 +463,9 @@ public class ComposingText {
      *
      * @param layer layer
      *
-     * @return <code>ArrayList</code> of <code>StrSegment</code>; null if error
+     * @return {@link ArrayList} of {@link StrSegment}; null if error.
      **/
-    public ArrayList getStringLayer(int layer) {
+    public ArrayList<StrSegment> getStringLayer(int layer) {
         try {
             return mStringLayer[layer];
         } catch (Exception ex) {

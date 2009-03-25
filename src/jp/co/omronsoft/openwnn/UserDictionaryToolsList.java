@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
@@ -44,9 +43,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * User dictionary tool abstract class
+ * User dictionary tool abstract class.
  *
- * @author Copyright (C) 2008, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public abstract class UserDictionaryToolsList extends Activity
     implements View.OnClickListener, OnTouchListener, OnFocusChangeListener {
@@ -94,8 +93,6 @@ public abstract class UserDictionaryToolsList extends Activity
     /** Widgets which constitute this screen of activity */
     private Menu mMenu;
     private TableLayout mTableLayout;
-    private UserDictionaryToolsListFocus mTextCandidateListFocus;
-    private UserDictionaryToolsEdit mUserDictionaryToolsEdit;
     private static View sFocusingView = null;
     private static View sFocusingPairView = null;
 
@@ -113,9 +110,9 @@ public abstract class UserDictionaryToolsList extends Activity
     private boolean mDeleteMenuEnabled;
     private boolean mInitMenuEnabled;
 
-    /** <code>true</code> if the menu option is initialized */
+    /** {@code true} if the menu option is initialized */
     private boolean mInitializedMenu = false;
-    /** <code>true</code> if one of word is selected */
+    /** {@code true} if one of word is selected */
     private boolean mSelectedWords;
     /** The viewID which is selected */
     private int mSelectedViewID = -1;
@@ -130,7 +127,7 @@ public abstract class UserDictionaryToolsList extends Activity
      * Send the specified event to IME
      *
      * @param ev    The event object
-     * @return      <code>true</code> if this event is processed
+     * @return      {@code true} if this event is processed
      */
     protected abstract boolean sendEventToIME(OpenWnnEvent ev);
 
@@ -212,8 +209,7 @@ public abstract class UserDictionaryToolsList extends Activity
         }
         
         /* [menu] edit a word/delete a word */
-        if (mWordCount <= MIN_WORD_COUNT /* no word */
-            || mSelectedWords == false   /* no selected word */) {
+        if (mWordCount <= MIN_WORD_COUNT) {
             /* disable if no word is registered or no word is selected */
             mEditMenuEnabled = false;
             mDeleteMenuEnabled = false;
@@ -315,7 +311,7 @@ public abstract class UserDictionaryToolsList extends Activity
                 CharSequence focusPairString = ((TextView)sFocusingPairView).getText();
                 WnnWord wnnWordSearch = new WnnWord();
 
-                if (mSelectedViewID>=MAX_WORD_COUNT) {
+            if (mSelectedViewID > MAX_WORD_COUNT) {
                     wnnWordSearch.stroke = focusPairString.toString();
                     wnnWordSearch.candidate = focusString.toString();
                 } else {
@@ -331,9 +327,11 @@ public abstract class UserDictionaryToolsList extends Activity
                     Toast.makeText(getApplicationContext(),
                                    R.string.user_dictionary_delete_fail,
                                    Toast.LENGTH_LONG).show();
+                return;
                 }
  
                 int id = mSelectedViewID;
+            id = (MAX_WORD_COUNT < id) ? id - MAX_WORD_COUNT : id;
                 View v = null;
 
                 mTableLayout.removeView((View)sFocusingView.getParent());
@@ -386,6 +384,9 @@ public abstract class UserDictionaryToolsList extends Activity
                 Toast.makeText(getApplicationContext(), R.string.dialog_clear_user_dictionary_done,
                                Toast.LENGTH_LONG).show();
                 updateWordList();
+            if (mInitializedMenu) {
+                onCreateOptionsMenu(mMenu);
+            }
             }
         };
 
@@ -461,10 +462,10 @@ public abstract class UserDictionaryToolsList extends Activity
      * @param  focusPairView   The information of pair of view
      */
     public void wordEdit(View focusView, View focusPairView) {
-        if (mSelectedViewID >= MAX_WORD_COUNT) {
-            mUserDictionaryToolsEdit = createUserDictionaryToolsEdit(focusPairView, focusView, mWordCount);
+        if (mSelectedViewID > MAX_WORD_COUNT) {
+            createUserDictionaryToolsEdit(focusPairView, focusView);
         } else {
-            mUserDictionaryToolsEdit = createUserDictionaryToolsEdit(focusView, focusPairView, mWordCount);
+            createUserDictionaryToolsEdit(focusView, focusPairView);
         }
         screenTransition(Intent.ACTION_EDIT, mEditViewName);
     }
@@ -474,15 +475,14 @@ public abstract class UserDictionaryToolsList extends Activity
      *
      * @param  focusView        The information of view
      * @param  focusPairView    The information of pair of view
-     * @param  wordCount        The count of the registered words
      */
-    protected abstract UserDictionaryToolsEdit createUserDictionaryToolsEdit(View focusView, View focusPairView, int wordCount);
+    protected abstract UserDictionaryToolsEdit createUserDictionaryToolsEdit(View focusView, View focusPairView);
 
     /**
      * Delete the specified word
      *
      * @param  searchword       The information of searching
-     * @return <code>true</code> if success; <code>false</code> if fail
+     * @return {@code true} if success; {@code false} if fail.
      */
     public boolean deleteWord(WnnWord searchword) {
         OpenWnnEvent event = new OpenWnnEvent(OpenWnnEvent.LIST_WORDS_IN_USER_DICTIONARY,
@@ -595,7 +595,6 @@ public abstract class UserDictionaryToolsList extends Activity
                     mDelayUpdateHandler.postDelayed(updateWordListRunnable, 0);
                 } else {
                     mDelayUpdateHandler.removeCallbacks(updateWordListRunnable);
-                    headerCreate();
                     final TextView leftText = (TextView) findViewById(R.id.user_dictionary_tools_list_title_words_count);
                     leftText.setText(mWordCount + "/" + MAX_WORD_COUNT);
                     mHasCreatedList = true;
@@ -612,7 +611,7 @@ public abstract class UserDictionaryToolsList extends Activity
      * @param  position start position to create the list
      * @param  max      maximum number of words to display
      * @param  self     UserDictionaryToolsList
-     * @return <code>true</code> if more words undisplayed; <code>false</code> if no more.
+     * @return {@code true} if more words undisplayed; {@code false} if no more.
      */
     private boolean createWordList(int position ,int max, UserDictionaryToolsList self) {
         boolean ret = true;

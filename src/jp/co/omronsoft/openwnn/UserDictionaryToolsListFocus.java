@@ -32,7 +32,7 @@ public class UserDictionaryToolsListFocus extends TextView {
     /**
      * Constructor
      *
-     * @param  context       the context
+     * @param  context       The context
      */
     public UserDictionaryToolsListFocus(Context context) {
         super(context);
@@ -41,7 +41,7 @@ public class UserDictionaryToolsListFocus extends TextView {
     /**
      * Get the pair of view
      *
-     * @return               the information of the pair of view
+     * @return               The information of the pair of view
      */
     public View getPairView() {
         return mPairView;
@@ -50,7 +50,7 @@ public class UserDictionaryToolsListFocus extends TextView {
     /**
      * Set the pair of view
      *
-     * @param  pairView      the information of the pair of view
+     * @param  pairView      The information of the pair of view
      */
     public void setPairView(TextView pairView) {
         mPairView = pairView;

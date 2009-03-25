@@ -30,12 +30,18 @@
     <string name="preference_preview_title">キーポップアップ</string>
     <string name="preference_preview_summary">キー押下時にキーの刻印をポップアップさせます。</string>
 
+    <string name="preference_auto_caps_title">先頭大文字変換</string>
+    <string name="preference_auto_caps_summary">英字入力で文章先頭文字を自動的に大文字にします。</string>
+
+    <string name="preference_keyboard_skin_title">キーボードデザイン</string>
+    <string name="preference_keyboard_skin_summary">キーボードデザインを切り替えます。</string>
+
     <string name="preference_conversion_menu">変換設定</string>
 
     <string name="preference_prediction_title">予測変換</string>
     <string name="preference_prediction_summary">予測候補を表示します。</string>
 
-    <string name="preference_correct_spell_title">タイプミスの補正</string>
+    <string name="preference_correct_spell_title">タイプミス補正</string>
     <string name="preference_correct_spell_summary">タイプミスを補正した候補を表示します。</string>
 
     <string name="preference_input_learning_title">候補学習</string>
@@ -44,9 +50,9 @@
     <string name="preference_aboutime_menu">IMEについて</string>
     
     <string name="preference_dictionary_menu">辞書</string>
-    <string name="preference_dictionary_menu_ja">日本語辞書</string>
-    <string name="preference_dictionary_menu_en">英語辞書</string>
-    <string name="preference_dictionary_menu_zhcn">中国語辞書</string>
+    <string name="preference_dictionary_menu_ja">日本語ユーザー辞書</string>
+    <string name="preference_dictionary_menu_en">英語ユーザー辞書</string>
+    <string name="preference_dictionary_menu_zhcn">中国語ユーザー辞書</string>
 
     <string name="preference_user_dictionary">ユーザー辞書</string>
 
@@ -74,9 +80,9 @@
 
     <!-- user dictionary -->
     <string name="user_dictionary_list_words">単語一覧</string>
-    <string name="user_dictionary_list_words_en">英語辞書 単語一覧</string>
-    <string name="user_dictionary_list_words_ja">日本語辞書 単語一覧</string>
-    <string name="user_dictionary_list_words_zhcn">中国語辞書 単語一覧</string>
+    <string name="user_dictionary_list_words_en">英語ユーザー辞書 単語一覧</string>
+    <string name="user_dictionary_list_words_ja">日本語ユーザー辞書 単語一覧</string>
+    <string name="user_dictionary_list_words_zhcn">中国語ユーザー辞書 単語一覧</string>
     <string name="user_dictionary_edit_words">単語編集</string>
     <string name="user_dictionary_title_read">読み</string>
     <string name="user_dictionary_title_candidate">表記</string>
@@ -93,14 +99,17 @@
 
   <!-- IME dependency -->
     <!-- OpenWnn English -->
-    <string name="openwnn_english_copyright">Ver.1.10\nオムロン ソフトウェア(株)</string>
+    <string name="openwnn_english_copyright">Ver.1.10-20090318\nオムロン ソフトウェア(株)</string>
 
     <!-- OpenWnn Japanese -->
-    <string name="openwnn_japanese_copyright">Ver.1.10\nオムロン ソフトウェア(株)</string>
+    <string name="openwnn_japanese_copyright">Ver.1.10-20090318\nオムロン ソフトウェア(株)</string>
+
+    <!-- OpenWnn Chinese -->
+    <string name="openwnn_china_copyright">Ver.1.10-20090318\nオムロン ソフトウェア(株)</string>
 
   <!-- Candidate Delete -->
     <string name="button_candidate_delete">学習削除</string>
-    <string name="button_candidate_cancel">キャンセル</string>
+      <string name="button_candidate_cancel">閉じる</string>
 
 </resources>
 

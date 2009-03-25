@@ -44,7 +44,7 @@
         <Key android:codes="-207" android:keyIcon="@drawable/key_12key_hiragana7" android:iconPreview="@drawable/key_12key_hiragana7_b"/>
         <Key android:codes="-208" android:keyIcon="@drawable/key_12key_hiragana8" android:iconPreview="@drawable/key_12key_hiragana8_b"/>
         <Key android:codes="-209" android:keyIcon="@drawable/key_12key_hiragana9" android:iconPreview="@drawable/key_12key_hiragana9_b"/>
-        <Key android:codes="-215" android:keyLabel="@string/key_space" android:isRepeatable="true" android:keyEdgeFlags="right" />
+        <Key android:codes="-215" android:keyIcon="@drawable/key_12key_space" android:iconPreview="@drawable/key_12key_space_b" android:isRepeatable="true" android:keyEdgeFlags="right" />
     </Row>
     
     <Row android:rowEdgeFlags="bottom">

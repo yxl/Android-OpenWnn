@@ -16,10 +16,8 @@
 
 package jp.co.omronsoft.openwnn;
 
-import jp.co.omronsoft.openwnn.*;
-
 /**
- * <code>StrSegment</code> which includes a clause information for Japanese IME
+ * {@link StrSegment} which includes a clause information for Japanese IME
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD. All rights reserved.
  */

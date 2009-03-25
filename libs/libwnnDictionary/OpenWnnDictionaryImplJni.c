@@ -452,10 +452,10 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_sea
 /*
  * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
  * Method:    getNextWord
- * Signature: (J)I
+ * Signature: (JI)I
  */
 JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getNextWord
-  (JNIEnv *env, jobject obj, jlong wnnWork)
+  (JNIEnv *env, jclass obj, jlong wnnWork, jint length)
 {
 	NJ_JNIWORK*	work;
 
@@ -464,8 +464,17 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
         if( work->flag & NJ_JNI_FLAG_ENABLE_CURSOR ) {
             jint    result;
 
-    		/* Get a specified word and search a next word */
-    		result = ( jint )njx_get_word( &( work->wnnClass ), &( work->cursor ), &( work->result ) );
+       		/* Get a specified word and search a next word */
+            if( length <= 0 ) {
+        		result = ( jint )njx_get_word( &( work->wnnClass ), &( work->cursor ), &( work->result ) );
+            } else {
+                do {
+            		result = ( jint )njx_get_word( &( work->wnnClass ), &( work->cursor ), &( work->result ) );
+                    if( length == ( NJ_GET_YLEN_FROM_STEM( &( work->result.word ) ) + NJ_GET_YLEN_FROM_FZK( &( work->result.word ) ) ) ) {
+                        break;
+                    }
+                } while( result > 0 );
+            }
 
             /* If a result is found, enable getStroke, getCandidate, getFrequency methods */
             if( result > 0 ) {
