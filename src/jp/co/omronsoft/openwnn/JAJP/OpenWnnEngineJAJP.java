@@ -129,7 +129,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     public OpenWnnEngineJAJP(String writableDictionaryName) {
         /* load Japanese dictionary library */
         mDictionaryJP = new OpenWnnDictionaryImpl(
-            "/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so",
+            "/system/lib/libWnnJpnDic.so",
             writableDictionaryName );
 
         /* clear dictionary settings */
