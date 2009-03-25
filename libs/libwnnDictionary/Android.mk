@@ -20,9 +20,14 @@ LOCAL_SRC_FILES := \
 	engine/ndcommon.c \
 	engine/nj_str.c
 
+
+ifeq ($(TARGET_SIMULATOR),true)
+LOCAL_LDLIBS := -ldl
+else
 # for dynamic link library functions.
 LOCAL_SHARED_LIBRARIES := \
 	libdl
+endif
 
 # No static libraries.
 LOCAL_STATIC_LIBRARIES := 
