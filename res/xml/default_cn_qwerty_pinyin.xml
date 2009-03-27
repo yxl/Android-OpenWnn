@@ -71,7 +71,7 @@
     <Key android:codes="-106" android:keyLabel="SYM" android:keyWidth="10%p"/>
     <Key android:codes="12289" android:keyLabel="@string/key_qwerty_full_touten" android:keyWidth="10%p"/>
     <Key android:codes="32"
-	 android:keyIcon="@drawable/key_qwerty_space" android:iconPreview="@drawable/key_qwerty_space_b" 
+	 android:keyIcon="@drawable/key_qwerty_space_pinyin" android:iconPreview="@drawable/key_qwerty_space_pinyin_b" 
          android:keyWidth="30%p" android:isRepeatable="true"/>
     <Key android:codes="12290" android:keyLabel="@string/key_qwerty_full_kuten"  android:keyWidth="10%p"/>
     <Key android:codes="65311" android:keyLabel="@string/key_qwerty_full_question" android:keyWidth="10%p"/>

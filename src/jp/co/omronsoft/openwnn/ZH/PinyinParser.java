@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.co.omronsoft.openwnn.ZH;
 
 import java.util.ArrayList;
@@ -20,12 +21,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * The pinyin parser class for Chinese IME.
+ * 
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ */
 public class PinyinParser {
 	/** Maximum limit of PinYin length */
 	public static final int PINYIN_MAX_LENGTH = 6;
 
 	/** Consonants of PinYin */
-	private static HashMap<String, String> mConsonantMap = new HashMap<String, String>(){{
+	private static HashMap<String, String> mConsonantMap = new HashMap<String, String>() {{
 		put("b", "B"); put("B", "B");
 		put("p", "P"); put("P", "P");
 		put("m", "M"); put("M", "M");
@@ -52,7 +58,7 @@ public class PinyinParser {
 	}};
 
 	/**  PinYin table */
-	private static final HashMap<String, String> mPinyinMap = new HashMap<String, String>(){{
+	private static final HashMap<String, String> mPinyinMap = new HashMap<String, String>() {{
 		put("a", "A"); put("A", "A");
 		put("o", "O"); put("O", "O");
 		put("e", "E"); put("E", "E");
@@ -482,13 +488,11 @@ public class PinyinParser {
 		put("weng", "Weng"); put("Weng", "Weng");
 	}};
 
-
-
-
 	/**
 	 * Divide a string into list of PinYin.
-	 * @param input   The input string
-	 * @return The list of PinYin
+	 * 
+	 * @param input   	The input string
+	 * @return 		The list of PinYin
 	 */
 	public static final List<String> getPinyinList(String input) {
 		List<String> list = new ArrayList<String>();
@@ -525,8 +529,9 @@ public class PinyinParser {
 
 	/**
 	 * Convert a list of PinYin to a string.
-	 * @param pinyinList  List of PinYin
-	 * @return The concatenated string.
+	 * 
+	 * @param pinyinList  	List of PinYin
+	 * @return				The concatenated string.
 	 */
 	public static final String pinyinListToString(List<String> pinyinList) {
 		StringBuffer buf = new StringBuffer();
@@ -537,7 +542,13 @@ public class PinyinParser {
 		}
 		return buf.toString();
 	}
-	
+
+	/**
+	 * Check whether the specified string is pinyin or not.
+	 * 
+	 * @param input		The string
+	 * @return			{@code true} if string is pinyin; {@code false} if otherwise
+	 */
 	public static final boolean isPinyin(String input) {
 		if (input.length() == 0) {
 			return true;
@@ -550,10 +561,14 @@ public class PinyinParser {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * Check whether the specified string is single pinyin or not.
+	 * 
+	 * @param input		The string
+	 * @return			{@code true} if string is single pinyin; {@code false} if otherwise
+	 */
 	public static final boolean isSinglePinyin(String input) {
 		return mPinyinMap.containsKey(input);
 	}
-
-
 }

@@ -1714,7 +1714,7 @@ static NJ_HINDO get_hindo(NJ_CLASS *iwnn, NJ_SEARCH_LOCATION_SET *loctset,
     }
 
     
-    return calculate_hindo(loctset->loct.handle, dic_freq, &(loctset->dic_freq), loctset->dic_freq_max, loctset->dic_freq_min);
+    return calculate_hindo(loctset->loct.handle, dic_freq, &(loctset->dic_freq), 1000, 0);
 }
 
 NJ_INT16 njd_l_get_word(NJ_CLASS *iwnn, NJ_SEARCH_LOCATION_SET *loctset, NJ_WORD *word) {

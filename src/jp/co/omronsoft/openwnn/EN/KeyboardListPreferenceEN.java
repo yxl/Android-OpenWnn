@@ -22,10 +22,10 @@ import android.preference.ListPreference;
 import android.util.AttributeSet;
 
 /**
- * Keyboard image list dialog.
+ * The preference class of keyboard image list for English IME.
  * This class notices to {@code OpenWnnEN} that the keyboard image is changed.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.
  */
 public class KeyboardListPreferenceEN extends ListPreference{
     public KeyboardListPreferenceEN(Context context, AttributeSet attrs) {

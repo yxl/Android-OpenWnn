@@ -19,6 +19,7 @@ package jp.co.omronsoft.openwnn;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -34,8 +35,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * User dictionary's word editor abstract class.
- *
+ * The abstract class for user dictionary's word editor.
+ * 
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public abstract class UserDictionaryToolsEdit extends Activity implements View.OnClickListener {
@@ -67,6 +68,7 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
     private EditText mReadEditText;
     private EditText mCandidateEditText;
     private Button mEntryButton;
+    private Button mCancelButton;
 
     /** The word information which contains the previous information */
     private WnnWord mBeforeEditWnnWord;
@@ -119,12 +121,13 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
 
         /* get widgets */
         mEntryButton = (Button)findViewById(R.id.addButton);
+        mCancelButton = (Button)findViewById(R.id.cancelButton);
         mReadEditText = (EditText)findViewById(R.id.editRead);
         mCandidateEditText = (EditText)findViewById(R.id.editCandidate);
 
         /* set the listener */
         mEntryButton.setOnClickListener(this);
-        findViewById(R.id.cancelButton).setOnClickListener(this);
+        mCancelButton.setOnClickListener(this);
 
         /* initialize */
         mRequestState = STATE_UNKNOWN;
@@ -211,6 +214,10 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
 
     /** @see android.view.View.OnClickListener */
     public void onClick(View v) {
+
+        mEntryButton.setEnabled(false);
+        mCancelButton.setEnabled(false);
+
     	switch (v.getId()) {
             case R.id.addButton:
             	/* save the word */
@@ -287,7 +294,12 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
                 return new AlertDialog.Builder(UserDictionaryToolsEdit.this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setMessage(R.string.user_dictionary_words_duplication_message)
-                        .setPositiveButton(android.R.string.ok, null)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                mEntryButton.setEnabled(true);
+                                mCancelButton.setEnabled(true);
+                            }
+                        })
                         .setCancelable(true)
                         .create();
 
@@ -296,7 +308,12 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
             	return new AlertDialog.Builder(UserDictionaryToolsEdit.this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setMessage(R.string.user_dictionary_over_max_text_size_message)
-                        .setPositiveButton(android.R.string.ok, null)
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int witchButton) {
+                                mEntryButton.setEnabled(true);
+                                mCancelButton.setEnabled(true);
+                            }
+                        })
                         .setCancelable(true)
                         .create();
         }
@@ -306,9 +323,9 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
     /**
      * Add the word
      *
-     * @param  stroke        The stroke of the word
-     * @param  candidate    The string of the word
-     * @return                  {@code true} if success; {@code false} if fail.
+     * @param  stroke    	The stroke of the word
+     * @param  candidate 	The string of the word
+     * @return           	{@code true} if success; {@code false} if fail.
      */
     private boolean addDictionary(String stroke, String candidate) {
 

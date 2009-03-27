@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
                             OpenWnn for Android README
 
-                        Internal Version (2009.3.18-E/J/C)
+                                   Version 1.20
                   
      (C) Copyright OMRON SOFTWARE Co., Ltd. 2008,2009 All Rights Reserved.
 -------------------------------------------------------------------------------
@@ -28,7 +28,32 @@
         . IME resource                      (XML, PNG)
         . IME source code                   (Java)
 
-3. File constitution 
+3. Dictionary Libraries
+
+  [libWnnEngDic.so: English dictionary]
+      Index 0: English dictionary for normal prediction (high priority)
+      Index 1: English dictionary for normal prediction (middle priority)
+      Index 2: English dictionary for normal prediction (low priority)
+      Index 3: English dictionary for relative prediction #1
+      Index 4: English dictionary for relative prediction #2
+
+  [libWnnJpnDic.so: Japanese dictionary]
+      Index 0: Japanese dictionary for normal prediction (high priority)
+      Index 1: Japanese dictionary for normal prediction (low priority)
+      Index 2: Japanese dictionary for relative prediction #1
+      Index 3: Japanese dictionary for relative prediction #2
+      Index 4: Japanese dictionary for clause conversion (single Kanji)
+      Index 5: Japanese dictionary for clause conversion (basic words)
+      Index 6: Japanese dictionary for clause conversion (ancillary words)
+
+  [libWnnZHCNDic.so: Chinese dictionary]
+      Index 0: Chinese dictionary for normal prediction/conversion (high priority)
+      Index 1: Chinese dictionary for normal prediction/conversion (basic words)
+      Index 2: Chinese dictionary for normal prediction/conversion (single Kanji)
+      Index 3: Chinese dictionary for relative prediction #1
+      Index 4: Chinese dictionary for relative prediction #2
+
+4. File constitution 
 
     NOTICE                                                          Apache license paper
     README.txt                                                      This README

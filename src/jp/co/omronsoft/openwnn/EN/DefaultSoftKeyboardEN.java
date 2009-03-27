@@ -16,10 +16,7 @@
 
 package jp.co.omronsoft.openwnn.EN;
 
-import jp.co.omronsoft.openwnn.DefaultSoftKeyboard;
-import jp.co.omronsoft.openwnn.OpenWnn;
-import jp.co.omronsoft.openwnn.OpenWnnEvent;
-import jp.co.omronsoft.openwnn.R;
+import jp.co.omronsoft.openwnn.*;
 import android.content.SharedPreferences;
 import android.inputmethodservice.Keyboard;
 import android.view.KeyEvent;
@@ -29,9 +26,9 @@ import android.view.inputmethod.EditorInfo;
 import android.util.Log;
 
 /**
- * Default Software Keyboard for English IME
+ * The default Software Keyboard class for English IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
     /** 12-key keyboard [PHONE MODE] */
@@ -94,9 +91,8 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
     /**
      * Get the shift key state from the editor.
      *
-     * @param editor  editor
-     *
-     * @return state id of the shift key (0:off, 1:on)
+     * @param editor	The information of editor
+     * @return 		state ID of the shift key (0:off, 1:on)
      */
     private int getShiftKeyState(EditorInfo editor) {
         int caps = mWnn.getCurrentInputConnection().getCursorCapsMode(editor.inputType);
@@ -106,7 +102,7 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
     /**
      * Switch the keymode
      *
-     * @param keyMode keymode
+     * @param keyMode		Keymode
      */
 	private void changeKeyMode(int keyMode) {
 		Keyboard keyboard = super.getModeChangeKeyboard(keyMode);
@@ -286,14 +282,21 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
 		
         /* update shift key's state */
         if (!mCapsLock && primaryCode != KEYCODE_QWERTY_SHIFT) {
-            int shift = (mAutoCaps)? getShiftKeyState(mWnn.getCurrentInputEditorInfo()) : 0;
-            if (shift != mShiftOn) {
-                Keyboard kbd = getShiftChangeKeyboard(shift);
-                mShiftOn = shift;
+            if(mCurrentKeyMode != KEYMODE_EN_NUMBER){
+                int shift = (mAutoCaps)? getShiftKeyState(mWnn.getCurrentInputEditorInfo()) : 0;
+                if (shift != mShiftOn) {
+                    Keyboard kbd = getShiftChangeKeyboard(shift);
+                    mShiftOn = shift;
+                    changeKeyboard(kbd);
+                }
+            }else{
+                mShiftOn = KEYBOARD_SHIFT_OFF;
+                Keyboard kbd = getShiftChangeKeyboard(mShiftOn);
                 changeKeyboard(kbd);
             }
         }
     }
 }
+
 
 

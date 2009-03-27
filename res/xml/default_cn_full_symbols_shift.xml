@@ -22,7 +22,7 @@
       >
 
   <Row>
-    <Key android:codes="65281" android:keyLabel="@string/key_qwerty_full_exclamation_mark" android:keyEdgeFlags="left"/>
+    <Key android:codes="65372" android:keyLabel="@string/key_qwerty_full_vertical_bar" android:keyEdgeFlags="left"/>
     <Key android:codes="65282" android:keyLabel="＂" android:keyEdgeFlags="left"/>
     <Key android:codes="65283" android:keyLabel="@string/key_qwerty_full_number_sign"/>
     <Key android:codes="65284" android:keyLabel="@string/key_qwerty_full_dollar_sign"/>
@@ -56,8 +56,7 @@
     <Key android:codes="12299" android:keyLabel="》" />
     <Key android:codes="12304" android:keyLabel="【"/>
     <Key android:codes="12305" android:keyLabel="】"/>
-    <Key android:codes="65372" android:keyLabel="@string/key_qwerty_full_vertical_bar"/>
-    <Key android:codes="8212" android:keyLabel="——"/>
+    <Key android:codes="8212" android:keyLabel="——" android:keyWidth="20%p"/>
     <Key android:codes="65312" android:keyLabel="@string/key_qwerty_full_at_sign"/>
     <Key android:codes="-100"
      android:keyIcon="@drawable/key_qwerty_del" android:iconPreview="@drawable/key_qwerty_del_b"
@@ -74,7 +73,7 @@
      android:keyIcon="@drawable/key_qwerty_space" android:iconPreview="@drawable/key_qwerty_space_b" 
          android:keyWidth="30%p" android:isRepeatable="true"/>
     <Key android:codes="65294" android:keyLabel="@string/key_qwerty_full_period"/>
-    <Key android:codes="65311" android:keyLabel="@string/key_qwerty_full_question" android:keyWidth="10%p"/>
+    <Key android:codes="65281" android:keyLabel="@string/key_qwerty_full_exclamation_mark" android:keyWidth="10%p"/>
     <Key android:codes="-101"
      android:keyIcon="@drawable/key_qwerty_enter" android:iconPreview="@drawable/key_qwerty_enter_b" 
          android:keyWidth="15%p" android:keyEdgeFlags="right"/>

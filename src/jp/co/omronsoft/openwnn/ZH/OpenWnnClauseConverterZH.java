@@ -24,9 +24,9 @@ import java.util.LinkedList;
 import jp.co.omronsoft.openwnn.*;
 
 /**
- * OpenWnn Clause Converter for Japanese IME
+ * The OpenWnn Clause Converter class for Chinese IME.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnClauseConverterZH {
     /** Score(frequency value) of word in the learning dictionary */
@@ -108,7 +108,8 @@ public class OpenWnnClauseConverterZH {
     
     /**
      * Set the candidate filter
-     * @param filter
+     * 
+     * @param filter	The candidate filter
      */
     public void setFilter(CandidateFilter filter) {
     	mFilter = filter;
@@ -119,9 +120,8 @@ public class OpenWnnClauseConverterZH {
      * <br>
      * This method execute single clause conversion.
       *
-     * @param input  The input string
-     *
-     * @return The candidates of conversion; {@code null} if an error occurs.
+     * @param input		The input string
+     * @return			The candidates of conversion; {@code null} if an error occurs.
      */
     public Iterator<WnnClause> convert(String input) {	
     	/* do nothing if no dictionary is specified */
@@ -146,9 +146,8 @@ public class OpenWnnClauseConverterZH {
     /**
      * Consecutive clause conversion.
      *
-     * @param input       The input string
-     *
-     * @return The result of consecutive clause conversion; {@code null} if fail.
+     * @param input    The input string
+     * @return			The result of consecutive clause conversion; {@code null} if fail.
      */
     public WnnSentence consecutiveClauseConvert(String input) {
         LinkedList<WnnClause> clauses = new LinkedList<WnnClause>();
@@ -237,12 +236,11 @@ public class OpenWnnClauseConverterZH {
     /**
      * Single clause conversion.
      *
-     * @param clauseList  where to store the results
-     * @param input       input string
-     * @param terminal    part of speech tag at the terminal
-     * @param all         get all candidates or not
-     *
-     * @return {@code true} if a clause is add to the list; {@code false} if no clause is add to the list.
+     * @param clauseList	Where to store the results
+     * @param input			Input string
+     * @param terminal		Part of speech tag at the terminal
+     * @param all			Get all candidates or not
+     * @return				{@code true} if a clause is add to the list; {@code false} if no clause is add to the list.
      */
     private boolean singleClauseConvert(LinkedList<WnnClause> clauseList, String input, WnnPOS terminal, boolean all) {
         boolean ret = false;
@@ -272,14 +270,13 @@ public class OpenWnnClauseConverterZH {
     /**
      * Add valid clause to the candidates list.
      *
-     * @param clauseList  where to store the results
-     * @param input       input string
-     * @param stem        stem of the clause (a independent word)
-     * @param fzk         ancillary pattern
-     * @param terminal    part of speech tag at the terminal
-     * @param all         get all candidates or not
-     *
-     * @return {@code true} if add the clause to the list; {@code false} if not.
+     * @param clauseList	Where to store the results
+     * @param input			Input string
+     * @param stem			Stem of the clause (a independent word)
+     * @param fzk			Ancillary pattern
+     * @param terminal		Part of speech tag at the terminal
+     * @param all			Get all candidates or not
+     * @return				{@code true} if add the clause to the list; {@code false} if not.
      */
     private boolean addClause(LinkedList<WnnClause> clauseList, String input, WnnWord stem, WnnWord fzk,
                               WnnPOS terminal, boolean all) {
@@ -335,10 +332,11 @@ public class OpenWnnClauseConverterZH {
     }
 
     /**
-     * Check the part-of-speeches are connectible.
+     * Check the part-of-speeches are connectable.
      *
-     * @param right   The right attribute of the preceding word/clause
-     * @param left    The left attribute of the following word/clause
+     * @param right		The right attribute of the preceding word/clause
+     * @param left		The left attribute of the following word/clause
+     * @return			{@code true} if there are connectable; {@code false} if otherwise
      */
     private boolean connectible(int right, int left) {
         try {
@@ -355,12 +353,11 @@ public class OpenWnnClauseConverterZH {
      * <br>
      * If {@code all == false} and there is no prefix matching word, empty list is returned.
      * If there is a prefix matching word and there is no exact matching word,
-     *  the list which has the default candidate only is returned.
+     * the list which has the default candidate only is returned.
      *
      * @param input    The search key
      * @param all      {@code true}:list all. {@code false}:list words which has an unique part of speech tag.
-     *
-     * @return List of words; {@code null} if {@code input.length() == 0}.
+     * @return			List of words; {@code null} if {@code input.length() == 0}.
      */
     private ArrayList<WnnWord> getIndependentWords(String input, boolean all) {
         if (input.length() == 0) {
@@ -419,12 +416,11 @@ public class OpenWnnClauseConverterZH {
     /**
      * Add some words not including in the dictionary.
      * <br>
-     *
      * This method adds some words which are not in the dictionary.
      *
-     * @param input     input string
-     * @param wordList  list to store words
-     * @param all       get all candidates or not
+     * @param input			Input string
+     * @param wordList		List to store words
+     * @param all			Get all candidates or not
      */
     private void addAutoGeneratedCandidates(String input, ArrayList<WnnWord> wordList, boolean all) {
         wordList.add(defaultClause(input));
@@ -433,11 +429,10 @@ public class OpenWnnClauseConverterZH {
     /**
      * Get a default clause.
      * <br>
-     *
      * This method generates a clause which has a string same as input
      * and the default part-of-speech tag.
      *
-     * @param input     input string
+     * @param input		Input string
      */
     private WnnClause defaultClause(String input) {
         return (new WnnClause(input, input, mPosDefault, (CLAUSE_COST - 1) * input.length()));

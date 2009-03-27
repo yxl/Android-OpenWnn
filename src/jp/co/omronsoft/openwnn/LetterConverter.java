@@ -31,18 +31,17 @@ public interface LetterConverter {
      * Convert the layer #0 text(pressed key sequence) to layer #1 text(pre converted string).
      * <br>
      * This conversion is used for converting some key input to a character.
-     * For example, Latin capital letter conversion <it>(ex: "'"+"a" to "á")</it>",
-     * Romaji-to-Kana conversion in Japanese <it>(ex: "w"+"a" to "わ")</it>, 
+     * For example, Latin capital letter conversion <it>(ex: "'"+"a" to "&#x00E1;")</it>",
+     * Romaji-to-Kana conversion in Japanese <it>(ex: "w"+"a" to "&#x308F;")</it>, 
      * Hangul conversion in Korean.
      *
-     * @param text  The text data includes input sequence(layer #0) and output area(layer #1)
-     *
-     * @return {@code true} if conversion is completed; {@code false} if not.
+     * @param text  	The text data includes input sequence(layer #0) and output area(layer #1)
+     * @return 		{@code true} if conversion is completed; {@code false} if not.
      */
     public boolean convert(ComposingText text);
 
     /**
-     * Set preferences
+     * Reflect the preferences in the letter converter.
      *
      * @param pref      The preferences
      */

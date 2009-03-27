@@ -43,7 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * User dictionary tool abstract class.
+ * The abstract class for user dictionary tool.
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
@@ -147,8 +147,20 @@ public abstract class UserDictionaryToolsList extends Activity
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         setContentView(R.layout.user_dictionary_tools_list);
 
-        updateWordList();
+    }
 
+    /** @see android.app.Activity#onStart */
+    @Override protected void onStart() {
+        super.onStart();
+        sBeforeSelectedViewID = -1;
+        sJustBeforeActionTime = -1;
+        updateWordList();
+    }
+
+    /** @see android.app.Activity#onStop */
+    @Override protected void onStop() {
+        super.onStop();
+        mDelayUpdateHandler.removeCallbacks(updateWordListRunnable);
     }
 
     /**
@@ -391,7 +403,7 @@ public abstract class UserDictionaryToolsList extends Activity
         };
 
     
-    /** @see android view.View.OnClickListener#onClick */
+    /** @see android.view.View.OnClickListener#onClick */
     public void onClick(View arg0) {
     }
 
@@ -422,7 +434,7 @@ public abstract class UserDictionaryToolsList extends Activity
         return false;
     }
 
-    /** @see android.view.View.onFocusChangeListener#onFocusChange */
+    /** @see android.view.View.OnFocusChangeListener#onFocusChange */
     public void onFocusChange(View v, boolean hasFocus) {
 
         mSelectedViewID = ((TextView)v).getId();
@@ -481,8 +493,8 @@ public abstract class UserDictionaryToolsList extends Activity
     /**
      * Delete the specified word
      *
-     * @param  searchword       The information of searching
-     * @return {@code true} if success; {@code false} if fail.
+     * @param  searchword	The information of searching
+     * @return 			{@code true} if success; {@code false} if fail.
      */
     public boolean deleteWord(WnnWord searchword) {
         OpenWnnEvent event = new OpenWnnEvent(OpenWnnEvent.LIST_WORDS_IN_USER_DICTIONARY,
@@ -608,10 +620,10 @@ public abstract class UserDictionaryToolsList extends Activity
     /**
      * Create the list of words.
      *
-     * @param  position start position to create the list
-     * @param  max      maximum number of words to display
-     * @param  self     UserDictionaryToolsList
-     * @return {@code true} if more words undisplayed; {@code false} if no more.
+     * @param  position		Start position to create the list
+     * @param  max			Maximum number of words to display
+     * @param  self			UserDictionaryToolsList
+     * @return 			{@code true} if more words undisplayed; {@code false} if no more.
      */
     private boolean createWordList(int position ,int max, UserDictionaryToolsList self) {
         boolean ret = true;

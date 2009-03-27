@@ -17,7 +17,7 @@
 package jp.co.omronsoft.openwnn;
 
 /**
- * The container of a word
+ * The container class of a word.
  *
  * @author Copyright (C) 2008-2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */

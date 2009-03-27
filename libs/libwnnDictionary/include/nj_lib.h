@@ -223,8 +223,6 @@ typedef struct {
 typedef struct {
     NJ_HINDO           cache_freq;   
     NJ_DIC_FREQ        dic_freq;     
-    NJ_INT16           dic_freq_max; 
-    NJ_INT16           dic_freq_min; 
     NJ_SEARCH_LOCATION loct;         
 } NJ_SEARCH_LOCATION_SET;
 

@@ -20,9 +20,9 @@ import android.view.View;
 import android.content.SharedPreferences;
 
 /**
- * The interface of candidates view manager used by OpenWnn.
+ * The interface of candidates view manager used by {@link OpenWnn}.
  *
- * @author Copyright (C) 2008, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2008, 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public interface CandidatesViewManager {
     /** Size of candidates view (normal) */
@@ -54,39 +54,39 @@ public interface CandidatesViewManager {
     public static final int ATTRIBUTE_AUTO_GENERATED  = 4;
 
     /**
-     * Initialize the view
+     * Initialize the candidates view.
      *
      * @param parent    The OpenWnn object
      * @param width     The width of the display
      * @param height    The height of the display
      *
-     * @return The view created in the initialize process; {@code null} if cannot create a view.
+     * @return The candidates view created in the initialize process; {@code null} if cannot create a candidates view.
      */
     public View initView(OpenWnn parent, int width, int height);
 
     /**
-     * Get the view being used currently.
+     * Get the candidates view being used currently.
      *
-     * @return The view; {@code null} if no view is used currently.
+     * @return The candidates view; {@code null} if no candidates view is used currently.
      */
     public View getCurrentView();
 
     /**
-     * Set the view type
+     * Set the candidates view type.
      *
-     * @param type  View type
+     * @param type  The candidate view type
      */
     public void setViewType(int type);
 
     /**
-     * Get the view type
+     * Get the candidates view type.
      *
-     * @return      View type
+     * @return      The view type
      */
     public int getViewType();
 
     /**
-     * Display candidates
+     * Display candidates.
      *
      * @param converter  The {@link WnnEngine} from which {@link CandidatesViewManager} gets the candidates
      *
@@ -95,12 +95,12 @@ public interface CandidatesViewManager {
     public void displayCandidates(WnnEngine converter);
 
     /**
-     * Non-display candidates
+     * Clear and hide the candidates view.
      */
     public void clearCandidates();
 
     /**
-     * Set preferences
+     * Reflect the preferences in the candidates view.
      *
      * @param pref    The preferences
      */

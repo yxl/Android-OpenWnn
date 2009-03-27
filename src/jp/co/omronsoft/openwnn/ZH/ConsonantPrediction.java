@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jp.co.omronsoft.openwnn.ZH;
 
 import java.util.ArrayList;
@@ -23,9 +24,9 @@ import jp.co.omronsoft.openwnn.*;
 import android.util.Log;
 
 /**
- * Consonant predict converter for Chinese IME
+ * The consonant predict converter class for Chinese IME.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD. All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD. All Rights Reserved.
  */
 public class ConsonantPrediction {
     /** Score(frequency value) of a word in the learning dictionary */
@@ -70,6 +71,8 @@ public class ConsonantPrediction {
 
     /**
      * Set dictionaries to convert.
+     * 
+     * @param dict		Dictionaries to convert
      */
     public void setDictionary(WnnDictionary dict) {
         mDictionary = dict;
@@ -85,6 +88,9 @@ public class ConsonantPrediction {
     	mInputPinyinList.clear();
     }
     
+    /**
+     * Clear the cache to convert.
+     */
     private void clearCache() {
     	mSearchKey = "";
     	ArrayList<WnnWord>[] cache = mSearchCache;
@@ -98,24 +104,28 @@ public class ConsonantPrediction {
     /**
      * Convert from incomplete PinYin.
      * <br>
-     * This method converts incomplete PinYin string to Kanji (For example, "nh" to "你好"(NiHao)).
+     * This method converts incomplete PinYin string to Kanji (For example, "nh" to "&#x4f60;&#x597d;"(NiHao)).
      * 
-     * @param input  The input string
-     * @return The first candidate; {@code null} if fail.
+     * @param input		The input string
+     * @return 		The first candidate; {@code null} if fail.
      */
     public WnnWord convert(String input, boolean exact) {
+    	/* clear previous result */
         clearBuffers();
         mExactMatchMode = exact;
 
+        /* no result for null or empty string */
         if (input == null || input.length() == 0) {
             return null;
         }
         
+        /* split for each pinyin */
         List<String> pinyinList = mInputPinyinList = PinyinParser.getPinyinList(input);
         if (pinyinList.size() < 2) {
         	return null;
         }
         
+        /* set the dictionary for consonant prediction */
         WnnDictionary dict = mDictionary;
         dict.clearDictionary();
         dict.clearApproxPattern();
@@ -124,29 +134,34 @@ public class ConsonantPrediction {
         dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
         dict.setApproxPattern(WnnDictionary.APPROX_PATTERN_EN_TOUPPER);
 
+        /* get the iterator from the cache */
         String searchKey = pinyinList.get(0);
         if (searchKey.equals(mSearchKey)) {
+        	/* can use the cache */
             int pinyinLen = pinyinList.size();
             ArrayList<WnnWord> cache = (mSearchCache.length > pinyinLen) ? mSearchCache[pinyinLen] : null;
             if (cache == null) {
-            	mCacheIt = null;
+            	mCacheIt = null; /* not matched */
             } else {
             	mCacheIt = cache.iterator();
             }
         } else {
+        	/* cannot use the cache. (search again) */
         	clearCache();
         	mSearchKey = searchKey;
         }
+        
+        /* get the first candidate */
         if (mCacheNum < 0) {
-        	/* If all the matched words from the dictionary is fetched already,
-        	 * use the cache.
-        	 */
+        	/* If all the matched words from the dictionary is fetched already, use the cache. */
         	return nextCandidate();
         } else if (dict.searchWord(WnnDictionary.SEARCH_PREFIX, WnnDictionary.ORDER_BY_FREQUENCY,
                             searchKey) > 0) {
             mFetchNumFromDict = 0;
         	return nextCandidate();
         }
+        
+        /* no more candidate found */
         mCacheNum = -1;
         return null;
     }
@@ -154,8 +169,8 @@ public class ConsonantPrediction {
     /**
      * Try to add a word to the candidate list.
      * 
-     * @param word   A word
-     * @return  {@code true} if success; {@code false} if the same word is already in the list.
+     * @param word		A word
+     * @return  		{@code true} if success; {@code false} if the same word is already in the list.
      */
     private boolean addCandidate(WnnWord word) {
     	if (mCheckDuplication.containsKey(word.candidate)) {
@@ -168,27 +183,29 @@ public class ConsonantPrediction {
     
     /** 	     
      * Get the next candidate.
-     * @return The next candidate; {@code null} if there is no more candidate.
+     * 
+     * @return		The next candidate; {@code null} if there is no more candidate.
      */
     public WnnWord nextCandidate() {      
         List<String> pinyinList = mInputPinyinList;
         
-        /* use cache if there is */
+        /* use cache if there are some more candidates */
         if (mCacheIt != null) {
-        	while (mCacheIt.hasNext()) {
+        	 while (mCacheIt.hasNext()) {
         		 WnnWord word = mCacheIt.next();
         		 List<String> pinyinList2 = PinyinParser.getPinyinList(word.stroke);
         		 if (matchPinyin(pinyinList, pinyinList2, mExactMatchMode)) {
         			 return word;
         		 }
-        	}
-        	return null;
+        	 }
+        	 return null;
         }
         if (mCacheNum < 0) {
         	/* End of matched word */
         	return null;
         }
-        
+    
+        /* move the search cursor to the position of the next word. */
         WnnDictionary dict = mDictionary;  
         while (mFetchNumFromDict < mCacheNum) {
         	if (dict.getNextWord() == null) {
@@ -198,7 +215,7 @@ public class ConsonantPrediction {
         	mFetchNumFromDict++;
         }
 
-        
+        /* fetch words from the dictionary and store into the cache */
         WnnWord word;
     	while ((word = dict.getNextWord()) != null) {
     		mFetchNumFromDict++;
@@ -218,21 +235,38 @@ public class ConsonantPrediction {
     			cache.add(word);
     		}
     		mCacheNum++;
-    			
+    		
+    		/* check if the word is matched */
     		if (matchPinyin(pinyinList, pinyinList2, mExactMatchMode)) {
     			if (addCandidate(word)) {
                     return word;  				
     			}
     		}
     	}
+    	
+    	/* no more words in the dictionary */
     	mCacheNum = -1;
     	return null;
     }
     
+    /** 	     
+     * Compare the pinyin lists.
+     * <br>
+     * When the comparison mode is exact matching, this method returns {@code true}
+     * if the lists match exactly.
+     * When the mode is prefix matching, it returns {@code true}
+     * if the prefix part of {@code pinyin2} list matches to {@code pinyin1} list.
+     * 
+     * @param pinyin1	The pinyin list to be compared.
+     * @param pinyin2	The pinyin list to be compared.
+     * @param exact		Comparison mode. {@code true}:exact matching, {@code false}:prefix matching.
+     * @return			{@code true} if the lists match.
+     */
     private boolean matchPinyin(List<String> pinyin1, List<String> pinyin2, boolean exact) {
     	int len1 = pinyin1.size();
     	int len2 = pinyin2.size();
     	
+    	/* check the length of the lists */
 		if (exact) {
 			if (len1 != len2) {
 				return false;
@@ -242,6 +276,8 @@ public class ConsonantPrediction {
 				return false;
 			}
 		}
+		
+		/* check each pinyin in the lists */
 		int i;
 		for (i = 0; i < len1; i++) {
 			String p1 = pinyin1.get(i);
@@ -251,7 +287,6 @@ public class ConsonantPrediction {
 				break;
 			}
 		}
-		
 		if (i == len1) {
 			return true;
 		}
