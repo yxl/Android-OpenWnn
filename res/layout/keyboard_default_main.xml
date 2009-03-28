@@ -15,9 +15,10 @@
  limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/subview"
-          android:orientation="vertical"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          >
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+	      android:fadingEdge="vertical"
+	      android:fadingEdgeLength="5px"
+              >
 </LinearLayout>

@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Software Keyboard for OpenWnn Japanese
+ * The default Software Keyboard class for Japanese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /** Enable English word prediction on half-width alphabet mode */
@@ -304,6 +304,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         mKeyboard = new Keyboard[3][2][4][2][8][2];
 
         if (mHardKeyboardHidden) {
+        	/* Create the suitable keyboard object */
             if (mDisplayMode == DefaultSoftKeyboard.PORTRAIT) {
                 createKeyboardsPortrait(parent);
             } else {
@@ -515,7 +516,9 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         case KEYCODE_JP12_9:
         case KEYCODE_JP12_0:
         case KEYCODE_JP12_SHARP:
-            if (mInputType == INPUT_TYPE_INSTANT) {
+        	/* Processing to input by ten key */
+        	if (mInputType == INPUT_TYPE_INSTANT) {
+        		/* Send a input character directly if instant input type is selected */
                 commitText();
                 mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_CHAR,
                                               mCurrentInstantTable[getTableIndex(primaryCode)]));
@@ -523,10 +526,12 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                 if ((mPrevInputKeyCode != primaryCode)) {
                     if ((mCurrentKeyMode == KEYMODE_JA_HALF_ALPHABET)
                             && (primaryCode == KEYCODE_JP12_SHARP)) {
-                        commitText();
+                    	/* Commit text by symbol character (',' '.') when alphabet input mode is selected */
+                    	commitText();
                     }
                 }
 
+                /* Convert the key code to the table index and send the toggle event with the table index */
                 String[][] cycleTable = getCycleTable();
                 if (cycleTable == null) {
                     Log.e("OpenWnn", "not founds cycle table");
@@ -546,7 +551,8 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                                               mCurrentInstantTable[getTableIndex(primaryCode)]));
             } else {
             	if (!mNoInput) {
-                    HashMap replaceTable = getReplaceTable();
+            		/* Processing to toggle Dakuten, Handakuten, and capital */
+            		HashMap replaceTable = getReplaceTable();
                     if (replaceTable == null) {
                         Log.e("OpenWnn", "not founds replace table");
                     } else {
@@ -558,31 +564,38 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             break;
 
         case KEYCODE_SWITCH_FULL_HIRAGANA:
-            changeKeyMode(KEYMODE_JA_FULL_HIRAGANA);
+        	/* Change mode to Full width hiragana */
+        	changeKeyMode(KEYMODE_JA_FULL_HIRAGANA);
             break;
 
         case KEYCODE_SWITCH_FULL_KATAKANA:
-            changeKeyMode(KEYMODE_JA_FULL_KATAKANA);
+        	/* Change mode to Full width katakana */
+        	changeKeyMode(KEYMODE_JA_FULL_KATAKANA);
             break;
 
         case KEYCODE_SWITCH_FULL_ALPHABET:
-            changeKeyMode(KEYMODE_JA_FULL_ALPHABET);
+        	/* Change mode to Full width alphabet */
+        	changeKeyMode(KEYMODE_JA_FULL_ALPHABET);
             break;
 
         case KEYCODE_SWITCH_FULL_NUMBER:
-            changeKeyMode(KEYMODE_JA_FULL_NUMBER);
+        	/* Change mode to Full width numeric */
+        	changeKeyMode(KEYMODE_JA_FULL_NUMBER);
             break;
 
         case KEYCODE_SWITCH_HALF_KATAKANA:
-            changeKeyMode(KEYMODE_JA_HALF_KATAKANA);
+        	/* Change mode to Half width katakana */
+        	changeKeyMode(KEYMODE_JA_HALF_KATAKANA);
             break;
 
-        case KEYCODE_SWITCH_HALF_ALPHABET:
-            changeKeyMode(KEYMODE_JA_HALF_ALPHABET);
+        case KEYCODE_SWITCH_HALF_ALPHABET: 
+        	/* Change mode to Half width alphabet */
+        	changeKeyMode(KEYMODE_JA_HALF_ALPHABET);
             break;
 
         case KEYCODE_SWITCH_HALF_NUMBER:
-            changeKeyMode(KEYMODE_JA_HALF_NUMBER);
+        	/* Change mode to Half width numeric */
+        	changeKeyMode(KEYMODE_JA_HALF_NUMBER);
             break;
 
 
@@ -723,7 +736,8 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
      * Change to the next input mode
      */
     private void nextKeyMode() {
-        boolean found = false;
+    	/* Search the current mode in the toggle table */
+    	boolean found = false;
         int index;
         for (index = 0; index < JP_MODE_CYCLE_TABLE.length; index++) {
             if (JP_MODE_CYCLE_TABLE[index] == mCurrentKeyMode) {
@@ -733,13 +747,14 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         }
 
         if (!found) {
-            setDefaultKeyboard();
+        	/* If the current mode not exists, set the default mode */
+        	setDefaultKeyboard();
         } else {
-            index++;
+        	/* If the current mode exists, set the next input mode */
+        	index++;
             if (JP_MODE_CYCLE_TABLE.length <= index) {
                 index = 0;
             }
-
             changeKeyMode(JP_MODE_CYCLE_TABLE[index]);
         }
     }
@@ -914,6 +929,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
     /**
      * Get the toggle table for input that is appropriate in current mode.
+     * 
      * @return      The toggle table for input
      */
     private String[][] getCycleTable() {
@@ -933,6 +949,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
         case KEYMODE_JA_FULL_NUMBER:
         case KEYMODE_JA_HALF_NUMBER:
+        	/* Because these modes belong to direct input group, No toggle table exists */ 
             break;
 
         case KEYMODE_JA_HALF_ALPHABET:
@@ -951,6 +968,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
     /**
      * Get the replace table that is appropriate in current mode.
+     * 
      * @return      The replace table
      */
     private HashMap getReplaceTable() {
@@ -969,6 +987,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
         case KEYMODE_JA_FULL_NUMBER:
         case KEYMODE_JA_HALF_NUMBER:
+        	/* Because these modes belong to direct input group, No replacing table exists */ 
             break;
 
         case KEYMODE_JA_HALF_ALPHABET:
@@ -1024,8 +1043,8 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /**
      * Get the shift key state from the editor.
      * <br>
-     * @param editor  The editor information
-     * @return The state id of the shift key (0:off, 1:on)
+     * @param editor	The editor information
+     * @return			state ID of the shift key (0:off, 1:on)
      */
     protected int getShiftKeyState(EditorInfo editor) {
         int caps = mWnn.getCurrentInputConnection().getCursorCapsMode(editor.inputType);
@@ -1046,11 +1065,11 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#setHardKeyboardHidden */
     @Override public void setHardKeyboardHidden(boolean hidden) {
-    	super.setHardKeyboardHidden(hidden);	
         if ((mWnn != null) && !mHardKeyboardHidden) {
             mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
             		OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
         }
+        super.setHardKeyboardHidden(hidden);
     }
 }
 

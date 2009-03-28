@@ -40,7 +40,8 @@
     </Row>
     
     <Row>
-        <Key android:codes="-222" android:keyLabel="@string/key_12key_emoji_kigo" android:keyEdgeFlags="left"/>
+        <Key android:codes="-222" android:keyIcon="@drawable/key_12key_pict_sym" android:iconPreview="@drawable/key_12key_pict_sym_b"
+	     android:keyEdgeFlags="left"/>
         <Key android:codes="-207" android:keyLabel="7"/>
         <Key android:codes="-208" android:keyLabel="8"/>
         <Key android:codes="-209" android:keyLabel="9"/>

@@ -65,7 +65,7 @@
     <Key android:codes="-230" android:keyLabel="@string/key_change_mode"
          android:popupKeyboard="@xml/keyboard_switch_key_qwerty"
          android:keyWidth="15%p" android:keyEdgeFlags="left" />
-    <Key android:codes="-106" android:keyLabel="@string/key_qwerty_emoji_kigo"
+    <Key android:codes="-106" android:keyIcon="@drawable/key_qwerty_pict_sym" android:iconPreview="@drawable/key_qwerty_pict_sym_b"
          android:keyWidth="15%p" />
     <Key android:codes="12288"  android:keyIcon="@drawable/key_qwerty_space" android:iconPreview="@drawable/key_qwerty_space_b" 
          android:keyWidth="30%p" android:isRepeatable="true"/>

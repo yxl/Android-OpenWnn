@@ -26,9 +26,9 @@ import jp.co.omronsoft.openwnn.WnnPOS;
 import jp.co.omronsoft.openwnn.WnnWord;
 
 /**
- * EISU-KANA converter for Japanese IME
+ * The EISU-KANA converter class for Japanese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class KanaConverter {
 
@@ -84,7 +84,7 @@ public class KanaConverter {
         put( "\u308a", "99");
         put( "\u308b", "999");
         put( "\u308c", "9999");
-        put( "\u308d", "9999");
+        put( "\u308d", "99999");
         put( "\u308f", "0");
         put( "\u3092", "00");
         put( "\u3093", "000");
@@ -110,7 +110,7 @@ public class KanaConverter {
         put( "\u3053", "\uff12\uff12\uff12\uff12\uff12");
         put( "\u3055", "\uff13");
         put( "\u3057", "\uff13\uff13");
-        put( "\u3059", "\uff13\uff13\uff13\uff13");
+        put( "\u3059", "\uff13\uff13\uff13");
         put( "\u305b", "\uff13\uff13\uff13\uff13");
         put( "\u305d", "\uff13\uff13\uff13\uff13\uff13");
         put( "\u305f", "\uff14");
@@ -193,7 +193,7 @@ public class KanaConverter {
         put( "\u3064", "\uff82");
         put( "\u3066", "\uff83");
         put( "\u3068", "\uff84");
-        put( "\u3063", "\u30c3");
+        put( "\u3063", "\uff6f");
         put( "\u3060", "\uff80\uff9e");
         put( "\u3062", "\uff81\uff9e");
         put( "\u3065", "\uff82\uff9e");
@@ -335,12 +335,11 @@ public class KanaConverter {
     private static final HashMap<String,String> mHanEijiMap = new HashMap<String,String>() {{
         put( "\u3042", ".");
         put( "\u3044", "@");
-        put( "\u3046", "_");
-        put( "\u3048", " ");
+        put( "\u3046", "-");
+        put( "\u3048", "_");
         put( "\u304a", "/");
         put( "\u3041", ":");
         put( "\u3043", "~");
-        put( "\u3045", "1");
         put( "\u304b", "A");
         put( "\u304d", "B");
         put( "\u304f", "C");
@@ -373,12 +372,11 @@ public class KanaConverter {
     private static final HashMap<String,String> mZenEijiMap = new HashMap<String,String>() {{
         put( "\u3042", "\uff0e");
         put( "\u3044", "\uff20");
-        put( "\u3046", "\uff3f");
-        put( "\u3048", "\u3000");
+        put( "\u3046", "\u30fc");
+        put( "\u3048", "\uff3f");
         put( "\u304a", "\uff0f");
         put( "\u3041", "\uff1a");
         put( "\u3043", "\u301c");
-        put( "\u3045", "\uff11" );
         put( "\u304b", "\uff21");
         put( "\u304d", "\uff22" );
         put( "\u304f", "\uff23");
@@ -499,14 +497,14 @@ public class KanaConverter {
     }
 
     /**
-     * Create the converter
+     * Create the pseudo candidate list
      * <br>
      * @param inputHiragana     The input string (Hiragana)
      * @param inputRomaji       The input string (Romaji)
      * @param keyBoardMode      The mode of keyboard
-     * @return                  The word list
+     * @return                  The candidate list
      */
-    public List<WnnWord> createConverter(String inputHiragana, String inputRomaji, int keyBoardMode) {
+    public List<WnnWord> createPseudoCandidateList(String inputHiragana, String inputRomaji, int keyBoardMode) {
         List<WnnWord> list = mAddCandidateList;
 
         list.clear();
@@ -514,6 +512,8 @@ public class KanaConverter {
         	return list;
         }
 
+        /* Create pseudo candidates for all keyboard type */
+        /* Hiragana(reading) / Full width katakana / Half width katakana */
         list.add(new WnnWord(inputHiragana, inputHiragana));
         if (createCandidateString(inputHiragana, mZenKataMap, mStringBuff)) {
             list.add(new WnnWord(mStringBuff.toString(), inputHiragana, mPosDefault));
@@ -521,10 +521,14 @@ public class KanaConverter {
         if (createCandidateString(inputHiragana, mHanKataMap, mStringBuff)) {
             list.add(new WnnWord(mStringBuff.toString(), inputHiragana, mPosDefault));
         }
-        if (keyBoardMode == OpenWnnEngineJAJP.KEYBOARD_QWERTY) {
-            createConverterQwerty(inputHiragana, inputRomaji);
-        } else {
 
+        if (keyBoardMode == OpenWnnEngineJAJP.KEYBOARD_QWERTY) {
+            /* Create pseudo candidates for Qwerty keyboard */
+            createPseudoCandidateListForQwerty(inputHiragana, inputRomaji);
+        } else {
+            /* Create pseudo candidates for 12key */
+
+        	/* Create pseudo candidates for half width numeric */
             if (createCandidateString(inputHiragana, mHanSuujiMap, mStringBuff)) {
                 String convHanSuuji = mStringBuff.toString();
                 String convNumComma = convertNumber(convHanSuuji);
@@ -534,10 +538,12 @@ public class KanaConverter {
                 }
             }
 
+            /* Create pseudo candidates for full width numeric */
             if (createCandidateString(inputHiragana, mZenSuujiMap, mStringBuff)) {
                 list.add(new WnnWord(mStringBuff.toString(), inputHiragana, mPosNumber));
             }
 
+            /* Create pseudo candidates for half width alphabet */
             if (createCandidateString(inputHiragana, mHanEijiMap, mStringBuff)) {
                 String convHanEiji = mStringBuff.toString();
                 String convHanEijiLower = convHanEiji.toLowerCase();
@@ -546,6 +552,7 @@ public class KanaConverter {
                 list.add(new WnnWord(convHanEiji, inputHiragana, mPosSymbol));
             }
 
+            /* Create pseudo candidates for full width alphabet */
             if (createCandidateString(inputHiragana, mZenEijiMap, mStringBuff)) {
                 String convZenEiji = mStringBuff.toString();
                 String convZenEijiLower = convZenEiji.toLowerCase(Locale.JAPAN);
@@ -558,20 +565,22 @@ public class KanaConverter {
     }
 
     /**
-     * Create the converter for Qwerty keyboard
+     * Create the pseudo candidate list for Qwerty keyboard
      * <br>
      * @param inputHiragana     The input string (Hiragana)
      * @param inputRomaji       The input string (Romaji)
      */
-    private void createConverterQwerty(String inputHiragana, String inputRomaji) {
+    private void createPseudoCandidateListForQwerty(String inputHiragana, String inputRomaji) {
         List<WnnWord> list = mAddCandidateList;
 
+        /* Create pseudo candidates for half width alphabet */
         String convHanEijiLower = inputRomaji.toLowerCase();
         list.add(new WnnWord(inputRomaji, inputHiragana, mPosDefault));
         list.add(new WnnWord(convHanEijiLower, inputHiragana, mPosSymbol));
         list.add(new WnnWord(convertCaps(convHanEijiLower), inputHiragana, mPosSymbol));
         list.add(new WnnWord(inputRomaji.toUpperCase(), inputHiragana, mPosSymbol));
 
+        /* Create pseudo candidates for the full width alphabet */
         if (createCandidateString(inputRomaji, mZenEijiMapQwety, mStringBuff)) {
             String convZenEiji = mStringBuff.toString();
             String convZenEijiLower = convZenEiji.toLowerCase(Locale.JAPAN);
@@ -607,8 +616,8 @@ public class KanaConverter {
     /**
      * Convert into both small and capital letter
      * <br>
-     * @param moji  the input string
-     * @return      the converted string
+     * @param moji  The input string
+     * @return      The converted string
      */
     private String convertCaps(String moji) {
         String tmp = "";

@@ -21,7 +21,7 @@ import android.content.Context;
 import android.widget.TextView;
 
 /**
- * The view class of the stroke and the candidate
+ * The view class of the stroke and the candidate.
  *
  * @author Copyright (C) 2008, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */

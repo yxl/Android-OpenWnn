@@ -16,18 +16,14 @@
 
 package jp.co.omronsoft.openwnn.ZH.CN;
 
-import jp.co.omronsoft.openwnn.OpenWnnEvent;
-import jp.co.omronsoft.openwnn.OpenWnnZHCN;
-import jp.co.omronsoft.openwnn.R;
-import jp.co.omronsoft.openwnn.UserDictionaryToolsEdit;
-import jp.co.omronsoft.openwnn.UserDictionaryToolsList;
+import jp.co.omronsoft.openwnn.*;
 import android.view.View;
 import android.view.Window;
 
 /**
- * User dictionary tool for Chinese IME
+ * The user dictionary tool class for Chinese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class UserDictionaryToolsListZHCN extends UserDictionaryToolsList {
     /**

@@ -20,9 +20,9 @@ import jp.co.omronsoft.openwnn.*;
 import android.view.View;
 import android.view.Window;
 /**
- * User dictionary tool for Japanese IME
+ * The user dictionary tool class for Japanese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class UserDictionaryToolsListJAJP extends UserDictionaryToolsList {
     /**

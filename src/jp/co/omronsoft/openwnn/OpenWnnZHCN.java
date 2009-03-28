@@ -45,9 +45,9 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
- * OpenWnn Chinese IME
+ * The OpenWnn Chinese IME class
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnZHCN extends OpenWnn {
     /**
@@ -74,51 +74,30 @@ public class OpenWnnZHCN extends OpenWnn {
     /** Whether using Emoji or not */
     private static final boolean ENABLE_EMOJI_LIMITATION = true;
 
-    /**
-     * Highlight color style for the converted clause
-     */
-    private static final CharacterStyle SPAN_CONVERT_BGCOLOR_HL  = new BackgroundColorSpan(0xFF8888FF);
-
-    /**
-     * Highlight color style for the selected string 
-     */
-    private static final CharacterStyle SPAN_EXACT_BGCOLOR_HL  = new BackgroundColorSpan(0xFF66CDAA);
-
+    /** Highlight color style for the converted clause */
+    private static final CharacterStyle SPAN_CONVERT_BGCOLOR_HL   = new BackgroundColorSpan(0xFF8888FF);
+    /** Highlight color style for the selected string  */
+    private static final CharacterStyle SPAN_EXACT_BGCOLOR_HL     = new BackgroundColorSpan(0xFF66CDAA);
     /** Highlight color style for the composing text */
-    private static final CharacterStyle SPAN_REMAIN_BGCOLOR_HL  = new BackgroundColorSpan(0xFFF0FFFF);
+    private static final CharacterStyle SPAN_REMAIN_BGCOLOR_HL    = new BackgroundColorSpan(0xFFF0FFFF);
+    /** Underline style for the composing text */
+    private static final CharacterStyle SPAN_UNDERLINE            = new UnderlineSpan();
 
-    /**
-     * Underline style for the composing text
-     */
-    private static final CharacterStyle SPAN_UNDERLINE   = new UnderlineSpan();
-
-    /** 
-     * IME's status for {@code mStatus} input/no candidates).
-     */
-    private static final int STATUS_INIT = 0x0000;
-
-    /** 
-     * IME's status for {@code mStatus}(input characters).
-     */
-    private static final int STATUS_INPUT = 0x0001;
-
-    /** 
-     * IME's status for {@code mStatus}(input functional keys).
-     */
+    /** IME's status for {@code mStatus} input/no candidates). */
+    private static final int STATUS_INIT            = 0x0000;
+    /** IME's status for {@code mStatus}(input characters). */
+    private static final int STATUS_INPUT           = 0x0001;
+    /** IME's status for {@code mStatus}(input functional keys). */
     private static final int STATUS_INPUT_EDIT      = 0x0003;
-
-    /** 
-     * IME's status for {@code mStatus}(all candidates are displayed)
-     */
+    /** IME's status for {@code mStatus}(all candidates are displayed). */
     private static final int STATUS_CANDIDATE_FULL  = 0x0010;
 
-    /**
-     * Alphabet pattern
-     */
+    /** Alphabet pattern */
     private static final Pattern ENGLISH_CHARACTER = Pattern.compile(".*[a-zA-Z]$");
 
     /**
-     * Private area character code got by {@link KeyEvent#getUnicodeChar()}.
+     *  Private area character code got by {@link KeyEvent#getUnicodeChar()}.
+     *   (SHIFT+ALT+X G1 specific)
      */
     private static final int PRIVATE_AREA_CODE = 61184;
 
@@ -126,11 +105,12 @@ public class OpenWnnZHCN extends OpenWnn {
     private static final int LIMIT_INPUT_NUMBER = 30;
 
     /** Bit flag for English auto commit mode (ON) */
-    private static final int AUTO_COMMIT_ENGLISH_ON = 0x0000;
+    private static final int AUTO_COMMIT_ENGLISH_ON      = 0x0000;
     /** Bit flag for English auto commit mode (OFF) */
-    private static final int AUTO_COMMIT_ENGLISH_OFF = 0x0001;
+    private static final int AUTO_COMMIT_ENGLISH_OFF     = 0x0001;
     /** Bit flag for English auto commit mode (symbol list) */
     private static final int AUTO_COMMIT_ENGLISH_SYMBOL  = 0x0010;
+
 
     /** Convert engine's state */
     private class EngineState {
@@ -173,7 +153,7 @@ public class OpenWnnZHCN extends OpenWnn {
         /** Definition for {@code EngineState.keyboard} (undefined) */
         public static final int KEYBOARD_UNDEF = 0;
 
-        /** Definition for {@code EngineState.keyboard} (Qwerty) */
+        /** Definition for {@code EngineState.keyboard} (QWERTY) */
         public static final int KEYBOARD_QWERTY = 1;
 
         /** Definition for {@code EngineState.keyboard} (12-keys) */
@@ -196,6 +176,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is consecutive clause(RENBUNSETSU) conversion.
+         * 
          * @return {@code true} if current type of conversion is consecutive clause conversion.
          */
         public boolean isRenbun() {
@@ -204,6 +185,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is no conversion.
+         * 
          * @return {@code true} if no conversion is executed currently.
          */
         public boolean isConvertState() {
@@ -212,6 +194,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
         /**
          * Check whether or not the mode is "symbol list".
+         * 
          * @return {@code true} if the mode is "symbol list".
          */
         public boolean isSymbolList() {
@@ -220,6 +203,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
         /**
          * Check whether or not the current language is English.
+         * 
          * @return {@code true} if the current language is English.
          */
         public boolean isEnglish() {
@@ -233,7 +217,7 @@ public class OpenWnnZHCN extends OpenWnn {
     /** Whether exact match searching or not */
     protected boolean mExactMatchMode = false;
 
-    /** Spannnable string builder for displaying the composing text */
+    /** Spannable string builder for displaying the composing text */
     protected SpannableStringBuilder mDisplayText;
 
     /** Instance of this service */
@@ -245,9 +229,6 @@ public class OpenWnnZHCN extends OpenWnn {
     /** Backup for switching the converter */
     private WnnEngine mConverterBack;
 
-    /** Romaji-to-Kana converter (HIRAGANA) */
-    private LetterConverterZH mPreConverterSymbols;
-    
     /** Backup for switching the pre-converter */
     private LetterConverterZH mPreConverterBack;
 
@@ -262,12 +243,15 @@ public class OpenWnnZHCN extends OpenWnn {
 
     /** Symbol lists to display when the symbol key is pressed */
     private static final String[] SYMBOL_LISTS = {
-        SymbolList.SYMBOL_CHINESE_ETC, SymbolList.SYMBOL_CHINESE_ALPHA, SymbolList.SYMBOL_CHINESE_KANA
+        SymbolList.SYMBOL_ENGLISH, SymbolList.SYMBOL_CHINESE
     };
 
     /** Current symbol list */
     private int mCurrentSymbol = 0;
 
+    /** pre-converter (for symbols) */
+    private LetterConverterZH mPreConverterSymbols;
+    
    /** Conversion Engine's state */
     private EngineState mEngineState = new EngineState();
 
@@ -319,9 +303,15 @@ public class OpenWnnZHCN extends OpenWnn {
     /** Shift lock status of the Hardware keyboard */
     private int mHardShift;
 
+    /** SHIFT key state (pressing) */
+	private boolean mShiftPressing;
+
     /** Alt lock status of the Hardware keyboard */
     private int mHardAlt;
 
+    /** ALT key state (pressing) */
+	private boolean mAltPressing;
+    
     /** Shift lock toggle definition */
     private static final int[] mShiftKeyToggle = {0, MetaKeyKeyListener.META_SHIFT_ON, MetaKeyKeyListener.META_CAP_LOCKED};
 
@@ -341,11 +331,11 @@ public class OpenWnnZHCN extends OpenWnn {
         super();
         mSelf = this;
         mComposingText = new ComposingText();
-        mCandidatesViewManager = new TextCandidatesViewManager(350);
+        mCandidatesViewManager = new TextCandidatesViewManager(-1);
         mInputViewManager  = new DefaultSoftKeyboardZH();
 
         mConverter = mConverterZHCN = new OpenWnnEngineZHCN(
-                "/system/lib/libWnnZHCNDic.so",
+        		"libWnnZHCNDic.so",
                 "/data/data/jp.co.omronsoft.openwnn/writableZHCN.dic");
 
         mConverterEN = new OpenWnnEngineEN("/data/data/jp.co.omronsoft.openwnn/writableEN.dic");
@@ -496,6 +486,10 @@ public class OpenWnnZHCN extends OpenWnn {
         /* handling events which are valid when InputConnection is not active. */
         switch (ev.code) {
 
+        case OpenWnnEvent.KEYUP:
+            onKeyUpEvent(ev.keyEvent);
+            return true;
+            
         case OpenWnnEvent.INITIALIZE_LEARNING_DICTIONARY:
             mConverterEN.initializeDictionary(WnnEngine.DICTIONARY_TYPE_LEARN);
             mConverterZHCN.initializeDictionary(WnnEngine.DICTIONARY_TYPE_LEARN);
@@ -532,7 +526,14 @@ public class OpenWnnZHCN extends OpenWnn {
 
         case OpenWnnEvent.CHANGE_MODE:
             changeEngineMode(ev.mode);
-            break;
+            if (ev.mode != ENGINE_MODE_SYMBOL) {
+            	initializeScreen();
+                state = new EngineState();
+                state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_NONE;
+                updateEngineState(state);
+            }
+            return true;
+
         case OpenWnnEvent.UPDATE_CANDIDATE:
             if (mEngineState.isRenbun()) {
                 mComposingText.setCursor(ComposingText.LAYER1,
@@ -540,7 +541,7 @@ public class OpenWnnZHCN extends OpenWnn {
                 mExactMatchMode = false;
                 updateViewStatusForPrediction(true, true);
             } else {
-                updateCandidateView();
+                updateViewStatus(mTargetLayer, true, true);
             }
             return true;
 
@@ -557,15 +558,21 @@ public class OpenWnnZHCN extends OpenWnn {
             break;
         }
 
-        if (mDirectInputMode) {
-            /* return if InputConnection is not active */
-            return false;
-        }
-
         KeyEvent keyEvent = ev.keyEvent;
         int keyCode = 0;
         if (keyEvent != null) {
             keyCode = keyEvent.getKeyCode();
+        }
+
+        if (mDirectInputMode) {
+            if (ev.code == OpenWnnEvent.INPUT_SOFT_KEY && mInputConnection != null) {
+                mInputConnection.sendKeyEvent(keyEvent);
+                mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,
+                                                           keyEvent.getKeyCode()));
+            }
+
+            /* return if InputConnection is not active */
+            return false;
         }
         
         /* notice a break the sequence of input to the converter */
@@ -580,7 +587,6 @@ public class OpenWnnZHCN extends OpenWnn {
 
         /* change back the dictionary if necessary */
         if (!((ev.code == OpenWnnEvent.SELECT_CANDIDATE)
-              || (ev.code == OpenWnnEvent.CHANGE_MODE)
               || (ev.code == OpenWnnEvent.LIST_CANDIDATES_NORMAL)
         		|| (ev.code == OpenWnnEvent.LIST_CANDIDATES_FULL)
         		|| ((keyEvent != null)
@@ -624,7 +630,7 @@ public class OpenWnnZHCN extends OpenWnn {
             break;
 
         case OpenWnnEvent.TOGGLE_REVERSE_CHAR:
-            if ((mStatus == STATUS_INPUT)
+            if (((mStatus & ~STATUS_CANDIDATE_FULL) == STATUS_INPUT)
                 && !(mEngineState.isConvertState())) {
 
                 int cursor = mComposingText.getCursor(ComposingText.LAYER1);
@@ -668,6 +674,7 @@ public class OpenWnnZHCN extends OpenWnn {
                 if (keyEvent.getRepeatCount() == 0) {
                     if (++mHardAlt > 2) { mHardAlt = 0; }
                 }
+                mAltPressing   = true;
                 updateMetaKeyStateDisplay();
                 return true;
 
@@ -676,6 +683,7 @@ public class OpenWnnZHCN extends OpenWnn {
                 if (keyEvent.getRepeatCount() == 0) {
                     if (++mHardShift > 2) { mHardShift = 0; }
                 }
+                mShiftPressing = true;
                 updateMetaKeyStateDisplay();
                 return true;
             }
@@ -737,8 +745,8 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Create a {@link StrSegment} from a character code.
      * <br>
-     * @param charCode A character code
-     * @return {@link StrSegment} created; null if an error occurs.
+     * @param charCode		 A character code
+     * @return 			{@link StrSegment} created; {@code null} if an error occurs.
      */
     private StrSegment createStrSegment(int charCode) {
         if (charCode == 0) {
@@ -750,8 +758,8 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Key event handler.
      *
-     * @param ev  A key event
-     * @return {@code true} if the event is handled in this method.
+     * @param ev  	A key event
+     * @return 	{@code true} if the event is handled in this method.
      */
     private boolean processKeyEvent(KeyEvent ev) {
         int key = ev.getKeyCode();
@@ -763,13 +771,25 @@ public class OpenWnnZHCN extends OpenWnn {
                 (ev.isAltPressed() == true && ev.isShiftPressed() == true)) {
                 int charCode = ev.getUnicodeChar(MetaKeyKeyListener.META_SHIFT_ON | MetaKeyKeyListener.META_ALT_ON);
                 if (charCode == 0 || (charCode & KeyCharacterMap.COMBINING_ACCENT) != 0 || charCode == PRIVATE_AREA_CODE) {
-                    if (mHardAlt == 1) {
-                        mHardAlt = 0;
+                    if(mHardShift == 1){
+                        mShiftPressing = false;
                     }
-                    if (mHardShift == 1) {
-                        mHardShift = 0;
+                    if(mHardAlt == 1){
+                        mAltPressing   = false;
                     }
-                    updateMetaKeyStateDisplay();
+                    if(!ev.isAltPressed()){
+                        if (mHardAlt == 1) {
+                            mHardAlt = 0;
+                        }
+                    }
+                    if(!ev.isShiftPressed()){
+                        if (mHardShift == 1) {
+                            mHardShift = 0;
+                        }
+                    }
+                    if(!ev.isShiftPressed() && !ev.isAltPressed()){
+                        updateMetaKeyStateDisplay();
+                    }
                     return true;
                 }
             }
@@ -783,7 +803,7 @@ public class OpenWnnZHCN extends OpenWnn {
             int caps = mHardShift;
             if (mHardShift== 0 && mHardAlt == 0) {
                 /* no meta key is locked */
-            	int shift = (mAutoCaps)? getShiftKeyState(edit) : 0;
+                int shift = (mAutoCaps)? getShiftKeyState(edit) : 0;
                 if (shift != mHardShift && (key >= KeyEvent.KEYCODE_A && key <= KeyEvent.KEYCODE_Z)) {
                     /* handling auto caps for a alphabet character */
                     str = createStrSegment(ev.getUnicodeChar(MetaKeyKeyListener.META_SHIFT_ON));
@@ -791,21 +811,31 @@ public class OpenWnnZHCN extends OpenWnn {
                     str = createStrSegment(ev.getUnicodeChar());
                 }
             } else {
-            	if (key == 55 || key == 56) {
-                    str = createStrSegment(ev.getUnicodeChar(mShiftKeyToggle[0]
-                                                                             | mAltKeyToggle[0]));            		
-            	} else {
-                    str = createStrSegment(ev.getUnicodeChar(mShiftKeyToggle[mHardShift]
-                                                                             | mAltKeyToggle[mHardAlt]));
-            	}
+                if ((key == KeyEvent.KEYCODE_COMMA || key == KeyEvent.KEYCODE_PERIOD) && mHardAlt == 0) {
+                    str = createStrSegment(ev.getUnicodeChar(mShiftKeyToggle[0] | mAltKeyToggle[0]));
+                } else {
+                    str = createStrSegment(ev.getUnicodeChar(mShiftKeyToggle[mHardShift] | mAltKeyToggle[mHardAlt]));
+                }
+                if(mHardShift == 1){
+                    mShiftPressing = false;
+                }
+                if(mHardAlt == 1){
+                    mAltPressing   = false;
+                }
                 /* back to 0 (off) if 1 (on/not locked) */
-                if (mHardAlt == 1) {
-                    mHardAlt = 0;
+                if (!ev.isAltPressed()) {
+                    if (mHardAlt == 1) {
+                        mHardAlt = 0;
+                    }
                 }
-                if (mHardShift == 1) {
-                    mHardShift = 0;
+                if (!ev.isShiftPressed()) {
+                    if (mHardShift == 1) {
+                        mHardShift = 0;
+                    }
                 }
-                updateMetaKeyStateDisplay();
+                if (!ev.isShiftPressed() && !ev.isShiftPressed()) {
+                    updateMetaKeyStateDisplay();
+                }
             }
             
             if (str == null) {
@@ -817,8 +847,11 @@ public class OpenWnnZHCN extends OpenWnn {
                 processHardwareKeyboardInputChar(str, caps);
                 return true;
             } else {
+                mEnableAutoInsertSpace = false;
                 commitText(true);
+                mEnableAutoInsertSpace = true;
                 commitText(str.string);
+                initializeScreen();
                 return true;
             }
 
@@ -934,7 +967,7 @@ public class OpenWnnZHCN extends OpenWnn {
             } else if (key == KeyEvent.KEYCODE_BACK && isInputViewShown()) {
                 /*
                  * If 'BACK' key is pressed when the SW-keyboard is shown
-                 * and the candidates view is not shown, dissmiss the SW-keyboard.
+                 * and the candidates view is not shown, dismiss the SW-keyboard.
                  */
                 mInputViewManager.closing();
                 requestHideSelf(0);
@@ -947,6 +980,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
     /**
      * Handle the space key event from the Hardware keyboard.
+     * 
      * @param ev  The space key event
      */
     private void processHardwareKeyboardSpaceKey(KeyEvent ev) {
@@ -999,8 +1033,8 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Handle the character code from the hardware keyboard except the space key.
      *
-     * @param str  The input character
-     * @param caps The state of Caps.
+     * @param str  		The input character
+     * @param caps 		The state of Caps.
      */
     private void processHardwareKeyboardInputChar(StrSegment str, int caps) {
         if (isEnableL2Converter()) {
@@ -1121,8 +1155,8 @@ public class OpenWnnZHCN extends OpenWnn {
      * Handle a key event which is not right or left key when the
      * composing text is empty and some candidates are shown.
      *
-     * @param ev  A key event
-     * @return {@code true} if this consumes the event; {@code false} if not.
+     * @param ev  	A key event
+     * @return		{@code true} if this consumes the event; {@code false} if not.
      */
     boolean processKeyEventNoInputCandidateShown(KeyEvent ev) {
         boolean ret = true;
@@ -1134,14 +1168,13 @@ public class OpenWnnZHCN extends OpenWnn {
         case KeyEvent.KEYCODE_ENTER:
         case KeyEvent.KEYCODE_DPAD_UP:
         case KeyEvent.KEYCODE_DPAD_DOWN:
+        case KeyEvent.KEYCODE_MENU:
             ret = false;
             break;
+            
         case KeyEvent.KEYCODE_CALL:
             return false;
             
-        case KeyEvent.KEYCODE_MENU:
-            return true;
-
         case KeyEvent.KEYCODE_DPAD_CENTER:
         case KeyEvent.KEYCODE_BACK:
         	ret = true;
@@ -1162,8 +1195,7 @@ public class OpenWnnZHCN extends OpenWnn {
      * Update views and the display of the composing text for predict mode.
      *
      * @param updateCandidates  {@code true} to update the candidates view
-     * @param updateEmptyText
-     *   {@code false} to update the composing text if it is not empty; {@code true} to update always.
+     * @param updateEmptyText   {@code false} to update the composing text if it is not empty; {@code true} to update always.
      */
     private void updateViewStatusForPrediction(boolean updateCandidates, boolean updateEmptyText) {
         EngineState state = new EngineState();
@@ -1176,10 +1208,9 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Update views and the display of the composing text.
      *
-     * @param layer  display layer of the composing text
+     * @param layer  			 Display layer of the composing text
      * @param updateCandidates  {@code true} to update the candidates view
-     * @param updateEmptyText
-     *   {@code false} to update the composing text if it is not empty; {@code true} to update always.
+     * @param updateEmptyText   {@code false} to update the composing text if it is not empty; {@code true} to update always.
      */
     private void updateViewStatus(int layer, boolean updateCandidates, boolean updateEmptyText) {
         mTargetLayer = layer;
@@ -1283,6 +1314,7 @@ public class OpenWnnZHCN extends OpenWnn {
      * Commit the displaying composing text.
      *
      * @param learn  {@code true} to register the committed string to the learning dictionary.
+     * @return 		IME's status after commit
      */
     private int commitText(boolean learn) {
         if (isEnglishPrediction()) {
@@ -1317,6 +1349,7 @@ public class OpenWnnZHCN extends OpenWnn {
     }
 
     /**
+     * Commit all uncommitted words.
      */
     private void commitAllText() {
         if (mEngineState.isConvertState()) {
@@ -1331,7 +1364,8 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Commit a word.
      *
-     * @param word  A word to commit
+     * @param word		A word to commit
+     * @return			IME's status after commit
      */
     private int commitText(WnnWord word) {
         if (mConverter != null) {
@@ -1354,7 +1388,8 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Commit a string through {@link InputConnection}.
      *
-     * @param string  A string to commit
+     * @param string	A string to commit
+     * @return			IME's status after commit
      */
     private int commitTextThroughInputConnection(String string) {
         int layer = mTargetLayer;
@@ -1394,7 +1429,8 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Commit a string through {@link InputConnection}.
      *
-     * @param word  a word to commit
+     * @param word		A word to commit
+     * @return			IME's status after commit
      */
     private int commitTextThroughInputConnection(WnnWord word) {
         String string = word.candidate;
@@ -1441,7 +1477,7 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Returns whether it is English prediction mode or not.
      *
-     * @return {@code true} if it is English prediction mode; otherwise, {@code false}.
+     * @return 	{@code true} if it is English prediction mode; otherwise, {@code false}.
      */
     private boolean isEnglishPrediction() {
         return (mEngineState.isEnglish() && isEnableL2Converter());
@@ -1469,7 +1505,8 @@ public class OpenWnnZHCN extends OpenWnn {
             return;
 
         case ENGINE_MODE_SYMBOL:
-            if (mEnableSymbolList) {
+            if (mEnableSymbolList && !mDirectInputMode) {
+                initializeScreen();
                 state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_SYMBOL;
                 updateEngineState(state);
                 updateViewStatusForPrediction(true, true);
@@ -1636,6 +1673,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
     /**
      * Set dictionaries to be used.
+     * 
      * @param mode  Definition of dictionaries
      */
     private void setDictionary(int mode) {
@@ -1698,7 +1736,7 @@ public class OpenWnnZHCN extends OpenWnn {
         commitConvertingText();
 
         boolean toggled = false;
-        if (mStatus == STATUS_INPUT) {
+        if ((mStatus & ~STATUS_CANDIDATE_FULL) == STATUS_INPUT) {
             int cursor = mComposingText.getCursor(ComposingText.LAYER1);
             if (cursor > 0) {
                 String prevChar = mComposingText.getStrSegment(ComposingText.LAYER1,
@@ -1812,7 +1850,7 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Start consecutive clause conversion or EISU-KANA conversion mode.
      *
-     * @param convertType The conversion type({@code EngineState.CONVERT_TYPE_*})
+     * @param convertType 		The conversion type({@code EngineState.CONVERT_TYPE_*})
      */
     private void startConvert(int convertType) {
         if (!isEnableL2Converter()) {
@@ -1893,9 +1931,8 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Get the shift key state from the editor.
      *
-     * @param editor  The editor
-     *
-     * @return State Id of the shift key (0:off, 1:on)
+     * @param editor	The editor
+     * @return 		State ID of the shift key (0:off, 1:on)
      */
     protected int getShiftKeyState(EditorInfo editor) {
         return (getCurrentInputConnection().getCursorCapsMode(editor.inputType) == 0) ? 0 : 1;
@@ -1932,6 +1969,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
     /**
      * Memory a selected word. 
+     * 
      * @param word  A selected word
      */
     private void learnWord(WnnWord word) {
@@ -1942,6 +1980,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
     /**
      * Memory a clause which is generated by consecutive clause conversion.
+     * 
      * @param index  Index of a clause
      */
     private void learnWord(int index) {
@@ -1960,11 +1999,13 @@ public class OpenWnnZHCN extends OpenWnn {
 
     /**
      * Fits an editor info.
+     * 
      * @param preferences  The preference data.
-     * @param info  The editor info.
+     * @param info  		The editor info.
      */
     private void fitInputType(SharedPreferences preference, EditorInfo info) {
         if (info.inputType == EditorInfo.TYPE_NULL) {
+            mDirectInputMode = true;
             return;
         }
         mEnableLearning   = preference.getBoolean("opt_zhcn_enable_learning", true);
@@ -2100,17 +2141,17 @@ public class OpenWnnZHCN extends OpenWnn {
     /**
      * Whether the tail of the string is alphabet or not.
      *
-     * @param  str  The string
-     * @return {@code true} if the tail is alphabet; {@code false} if otherwise.
+     * @param  str  	The string
+     * @return 		{@code true} if the tail is alphabet; {@code false} if otherwise.
      */
     private boolean isAlphabetLast(String str) {
         Matcher m = ENGLISH_CHARACTER.matcher(str);
         return m.matches();
     }
 
-
     /**
      * Disable auto-delete-space.
+     * 
      * @param ev  An event
      */
     private void disableAutoDeleteSpace(OpenWnnEvent ev) {
@@ -2156,6 +2197,7 @@ public class OpenWnnZHCN extends OpenWnn {
 
     /**
      * Check whether or not the converter is active.
+     * 
      * @return {@code true} if the converter is active.
      */
     private boolean isEnableL2Converter() {
@@ -2170,4 +2212,31 @@ public class OpenWnnZHCN extends OpenWnn {
         return true;
     }
 
+	/**
+	 * Handling KeyEvent(KEYUP)
+	 * <br>
+	 * This method is called from {@link #onEvent()}.
+	 *
+	 * @param ev   An up key event
+	 */
+    private void onKeyUpEvent(KeyEvent ev) {
+        int key = ev.getKeyCode();
+        if(!mShiftPressing){
+            if(key == KeyEvent.KEYCODE_SHIFT_LEFT || key == KeyEvent.KEYCODE_SHIFT_RIGHT){
+                mHardShift = 0;
+                mShiftPressing = true;
+                updateMetaKeyStateDisplay();
+            }
+        }
+        if(!mAltPressing ){
+            if(key == KeyEvent.KEYCODE_ALT_LEFT || key == KeyEvent.KEYCODE_ALT_RIGHT){
+                mHardAlt = 0;
+                mAltPressing   = true;
+                updateMetaKeyStateDisplay();
+            }
+        }
+    }
+
 }
+
+

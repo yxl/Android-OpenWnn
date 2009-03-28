@@ -20,9 +20,9 @@ import jp.co.omronsoft.openwnn.*;
 import android.view.View;
 
 /**
- * User dictionary's word editor for English IME
+ * The user dictionary's word editor class for English IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class UserDictionaryToolsEditEN extends UserDictionaryToolsEdit {
     /**

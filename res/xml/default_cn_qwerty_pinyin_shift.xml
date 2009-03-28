@@ -71,7 +71,7 @@
     <Key android:codes="-106" android:keyLabel="SYM" android:keyWidth="10%p"/>
     <Key android:codes="65292" android:keyLabel="@string/key_qwerty_full_comma" android:keyWidth="10%p"/>
     <Key android:codes="32"
-	 android:keyIcon="@drawable/key_qwerty_space" android:iconPreview="@drawable/key_qwerty_space_b" 
+	 android:keyIcon="@drawable/key_qwerty_space_pinyin" android:iconPreview="@drawable/key_qwerty_space_pinyin_b" 
          android:keyWidth="30%p" android:isRepeatable="true"/>
     <Key android:codes="65294" android:keyLabel="@string/key_qwerty_full_period"  android:keyWidth="10%p"/>
     <Key android:codes="65281" android:keyLabel="@string/key_qwerty_full_exclamation_mark" android:keyWidth="10%p"/>

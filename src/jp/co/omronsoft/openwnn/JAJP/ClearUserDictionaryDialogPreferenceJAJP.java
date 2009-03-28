@@ -23,9 +23,9 @@ import android.widget.Toast;
 import jp.co.omronsoft.openwnn.*;
 
 /**
- * Clear user dictionary preference for Japanese IME
+ * The preference class to clear user dictionary for Japanese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class ClearUserDictionaryDialogPreferenceJAJP extends DialogPreference {
     /** The context */

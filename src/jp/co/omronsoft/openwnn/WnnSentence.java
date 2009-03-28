@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * The container of a sentence.
+ * The container class of a sentence.
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */

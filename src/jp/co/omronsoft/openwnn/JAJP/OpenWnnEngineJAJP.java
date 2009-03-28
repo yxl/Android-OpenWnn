@@ -36,9 +36,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
- * OpenWnn engine for Japanese IME
+ * The OpenWnn engine class for Japanese IME.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnEngineJAJP implements WnnEngine {
 	/** Current dictionary type */
@@ -124,13 +124,19 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 
     /**
      * Constructor
-     * @param writableDictionaryName  writable dictionary file name(null if not use)
+     * 
+     * @param writableDictionaryName	Writable dictionary file name(null if not use)
      */
     public OpenWnnEngineJAJP(String writableDictionaryName) {
         /* load Japanese dictionary library */
         mDictionaryJP = new OpenWnnDictionaryImpl(
-            "/system/lib/libWnnJpnDic.so",
-            writableDictionaryName );
+        		"/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so",
+        		writableDictionaryName );
+        if (!mDictionaryJP.isActive()) {
+        	mDictionaryJP = new OpenWnnDictionaryImpl(
+        			"/system/lib/libWnnJpnDic.so",
+        			writableDictionaryName );
+        }
 
         /* clear dictionary settings */
         mDictionaryJP.clearDictionary();
@@ -148,7 +154,8 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 
     /**
      * Set dictionary for prediction.
-     * @param strlen  length of input string
+     * 
+     * @param strlen		Length of input string
      */
     private void setDictionaryForPrediction(int strlen) {
         WnnDictionary dict = mDictionaryJP;
@@ -182,8 +189,8 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Get a candidate.
      *
-     * @param index   index of a candidate.
-     * @return  the candidate; null if there is no candidate.
+     * @param index		Index of a candidate.
+     * @return			The candidate; {@code null} if there is no candidate.
      */
     private WnnWord getCandidate(int index) {
 		WnnWord word;
@@ -224,7 +231,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
         /* get candidates from Kana converter */
         if (mGetCandidateFrom == 2) {
 			List<WnnWord> addCandidateList
-                = mKanaConverter.createConverter(mInputHiragana, mInputRomaji, mKeyboardType);
+			= mKanaConverter.createPseudoCandidateList(mInputHiragana, mInputRomaji, mKeyboardType);
 			
 			Iterator<WnnWord> it = addCandidateList.iterator();
 			while(it.hasNext()) {
@@ -247,8 +254,8 @@ public class OpenWnnEngineJAJP implements WnnEngine {
      * the same one in the buffer and the length of the candidate
      * string is not longer than {@code MAX_OUTPUT_LENGTH}.
      *
-     * @param word   a word to be add
-     * @return  true if the word added; false if not.
+     * @param word		A word to be add
+     * @return			{@code true} if the word added; {@code false} if not.
      */
     private boolean addCandidate(WnnWord word) {
         if (word.candidate == null || mCandTable.containsKey(word.candidate)
@@ -279,8 +286,8 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Set dictionary type.
      *
-     * @param type  type of dictionary
-     * @return {@code true} if the dictionary is changed; {@code false} if not.
+     * @param type		Type of dictionary
+     * @return			{@code true} if the dictionary is changed; {@code false} if not.
      */
     public boolean setDictionary(int type) {
     	mDictType = type;
@@ -290,10 +297,9 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Set the search key and the search mode from {@link ComposingText}.
      *
-     * @param text    input text
-     * @param maxLen  maximum length to convert
-     *
-     * @return length of the search key.
+     * @param text		Input text
+     * @param maxLen	Maximum length to convert
+     * @return			Length of the search key
      */
     private int setSearchKey(ComposingText text, int maxLen) {
         String input = text.toString(ComposingText.LAYER1);
@@ -326,7 +332,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Set keyboard type.
      * 
-     * @param keyboardType type of keyboard
+     * @param keyboardType		Type of keyboard
      */
     public void setKeyboardType(int keyboardType) {
         mKeyboardType = keyboardType;
@@ -334,7 +340,8 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 
     /**
      * Set the candidate filter
-     * @param filter
+     * 
+     * @param filter	The candidate filter
      */
     public void setFilter(CandidateFilter filter) {
     	mFilter = filter;
@@ -561,9 +568,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
         return false;
     }
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary */
     public boolean initializeDictionary(int dictionary, int type) {
     	return initializeDictionary(dictionary);
     }

@@ -16,24 +16,25 @@
 
 package jp.co.omronsoft.openwnn.EN;
 
-import jp.co.omronsoft.openwnn.OpenWnnEN;
-import jp.co.omronsoft.openwnn.OpenWnnEvent;
-import jp.co.omronsoft.openwnn.R;
+import jp.co.omronsoft.openwnn.*;
 import jp.co.omronsoft.openwnn.UserDictionaryToolsEdit;
 import jp.co.omronsoft.openwnn.UserDictionaryToolsList;
 import android.view.View;
 import android.view.Window;
+
 /**
- * User dictionary tool for English IME
+ * The user dictionary tool class for English IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class UserDictionaryToolsListEN extends UserDictionaryToolsList {
     /**
      * Constructor
      */
     public UserDictionaryToolsListEN() {
-        new OpenWnnEN(this);
+		if (OpenWnnEN.getInstance() == null) {
+			new OpenWnnEN(this);
+		}
         mListViewName = "jp.co.omronsoft.openwnn.EN.UserDictionaryToolsListEN";
         mEditViewName = "jp.co.omronsoft.openwnn.EN.UserDictionaryToolsEditEN";
         mPackageName  = "jp.co.omronsoft.openwnn";

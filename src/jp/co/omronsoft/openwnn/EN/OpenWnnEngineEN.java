@@ -24,9 +24,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
- * OpenWnn engine for English IME
+ * The OpenWnn engine class for English IME.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnEngineEN implements WnnEngine {
     /** Normal dictionary */
@@ -67,7 +67,8 @@ public class OpenWnnEngineEN implements WnnEngine {
 
     /**
      * Constructor
-     * @param writableDictionaryName  writable dictionary file name(null if not use)
+     * 
+     * @param writableDictionaryName		Writable dictionary file name(null if not use)
      */
     public OpenWnnEngineEN(String writableDictionaryName) {
         mConvResult = new ArrayList<WnnWord>();
@@ -76,9 +77,13 @@ public class OpenWnnEngineEN implements WnnEngine {
         mOutputNum = 0;
 
         mDictionary = new OpenWnnDictionaryImpl( 
-            "/system/lib/libWnnEngDic.so",
-            writableDictionaryName);
-
+        		"/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so",
+        		writableDictionaryName);
+        if (!mDictionary.isActive()) {
+        	mDictionary = new OpenWnnDictionaryImpl(
+        			"/system/lib/libWnnEngDic.so",
+        			writableDictionaryName);
+        }
         mDictionary.clearDictionary( );
         
         mDictionary.setDictionary(0, 400, 550);
@@ -95,8 +100,8 @@ public class OpenWnnEngineEN implements WnnEngine {
     /**
      * Get a candidate.
      *
-     * @param index  index of candidate
-     * @return a candidate; {@code null} if no candidate for the index.
+     * @param index		Index of candidate
+     * @return			A candidate; {@code null} if no candidate for the index.
      */
     private WnnWord getCandidate(int index) {
         WnnWord word;
@@ -149,8 +154,9 @@ public class OpenWnnEngineEN implements WnnEngine {
 
     /**
      * Add a word to the candidates list if there is no duplication.
-     * @param word  a word
-     * @return {@code true} if the word is added to the list; {@code false} if not.
+     * 
+     * @param word		A word
+     * @return			{@code true} if the word is added to the list; {@code false} if not.
      */
     private boolean addCandidate(WnnWord word) {
         if (word.candidate == null || mCandTable.containsKey(word.candidate)) {
@@ -174,8 +180,8 @@ public class OpenWnnEngineEN implements WnnEngine {
     /**
      * Set dictionary.
      *
-     * @param type  type of dictionary (DIC_DEFAULT or DIC_FOR_CORRECT_MISTYPE)
-     * @return {@code true} if the dictionary is changed; {@code false} if not.
+     * @param type		Type of dictionary (DIC_DEFAULT or DIC_FOR_CORRECT_MISTYPE)
+     * @return			{@code true} if the dictionary is changed; {@code false} if not.
      */
     public boolean setDictionary(int type) {
         if (type == DICT_FOR_CORRECT_MISTYPE) {
@@ -195,8 +201,8 @@ public class OpenWnnEngineEN implements WnnEngine {
      * capitalization information to adjust the candidates
      * capitalization later.
      *
-     * @param  input  input string
-     * @return {@code true} if the search key is set; {@code false} if not.
+     * @param input		Input string
+     * @return			{@code true} if the search key is set; {@code false} if not.
      */
     private boolean setSearchKey(String input) {
         if (input.length() == 0) {
@@ -225,7 +231,8 @@ public class OpenWnnEngineEN implements WnnEngine {
     
     /**
      * Set the candidate filter
-     * @param filter
+     * 
+     * @param filter	The candidate filter
      */
     public void setFilter(CandidateFilter filter) {
     	mFilter = filter;

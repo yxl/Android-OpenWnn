@@ -19,9 +19,9 @@ package jp.co.omronsoft.openwnn.ZH.CN;
 import jp.co.omronsoft.openwnn.ZH.OpenWnnEngineZH;
 
 /**
- * OpenWnn engine for Chinese IME
+ * The OpenWnn engine class for Chinese IME.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnEngineZHCN extends OpenWnnEngineZH {
     /** Dictionary type (Chinese standard) */
@@ -35,11 +35,12 @@ public class OpenWnnEngineZHCN extends OpenWnnEngineZH {
 
     /**
      * Constructor
-     * @param dicLibPath  The dictionary library file path
+     * 
+     * @param dicLib  The dictionary library file name
      * @param dicFilePath The path name of writable dictionary(null if not use)
      */
-    public OpenWnnEngineZHCN(String dicLibPath, String dicFilePath) {
-        super(dicLibPath, dicFilePath);
+    public OpenWnnEngineZHCN(String dicLib, String dicFilePath) {
+        super(dicLib, dicFilePath);
     }
 }
 

@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import android.util.Log;
 
 /**
- * The container of composing string.
+ * The container class of composing string.
  *
  * This interface is for the class includes information about the
  * input string, the converted string and its decoration.
- * LetterConverter and WnnEngine get the input string from it, and
+ * {@link LetterConverter} and {@link WnnEngine} get the input string from it, and
  * store the converted string into it.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class ComposingText {
     /**
@@ -91,12 +91,12 @@ public class ComposingText {
     }
 
     /**
-     * Get a StrSegment at the position specified.
+     * Get a {@link StrSegment} at the position specified.
      *
-     * @param layer layer
-     * @param pos   position (< 0 : the tail segment)
+     * @param layer		Layer
+     * @param pos 		Position (<0 : the tail segment)
      *
-     * @return the segment; {@code null} if error occurs.
+     * @return			The segment; {@code null} if error occurs.
      */
     public StrSegment getStrSegment(int layer, int pos) {
         try {
@@ -116,10 +116,10 @@ public class ComposingText {
     /**
      * Convert the range of segments to a string.
      *
-     * @param layer layer
-     * @param from  convert range from
-     * @param to    convert range to
-     * @return the string converted; null if error occurs.
+     * @param layer		Layer
+     * @param from		Convert range from
+     * @param to		Convert range to
+     * @return			The string converted; {@code null} if error occurs.
      */
     public String toString(int layer, int from, int to) {
         try {
@@ -139,8 +139,8 @@ public class ComposingText {
     /**
      * Convert segments of the layer to a string.
      *
-     * @param layer layer
-     * @return the string converted; null if error occurs.
+     * @param layer		Layer
+     * @return			The string converted; {@code null} if error occurs.
      */
     public String toString(int layer) {
         return this.toString(layer, 0, mStringLayer[layer].size() - 1);
@@ -149,10 +149,10 @@ public class ComposingText {
     /**
      * Update the upper layer's data.
      *
-     * @param layer  the base layer
-     * @param mod_from modified from
-     * @param mod_len  length after modified (# of StrSegments from {@code mod_from})
-     * @param org_len  length before modified (# of StrSegments from {@code mod_from})
+     * @param layer			The base layer
+     * @param mod_from		Modified from
+     * @param mod_len		Length after modified (# of StrSegments from {@code mod_from})
+     * @param org_len		Length before modified (# of StrSegments from {@code mod_from})
      */
     private void modifyUpper(int layer, int mod_from, int mod_len, int org_len) {
         if (layer >= MAX_LAYER - 1) {
@@ -257,10 +257,10 @@ public class ComposingText {
     }
 
     /**
-     * Insert a StrSegment at the cursor position.
+     * Insert a {@link StrSegment} at the cursor position.
      * 
-     * @param layer insert to the layer
-     * @param str   string
+     * @param layer Layer to insert
+     * @param str   String
      **/
     public void insertStrSegment(int layer, StrSegment str) {
         int cursor = mCursor[layer];
@@ -270,11 +270,11 @@ public class ComposingText {
     }
     
     /**
-     * Insert a StrSegment at the cursor position(without merging to the previous segment).
+     * Insert a {@link StrSegment} at the cursor position(without merging to the previous segment).
      * <p>
-     * @param layer1 insert to the layer
-     * @param layer2 never merge to the previous segment from {@code layer1} to {@code layer2}.
-     * @param str    string
+     * @param layer1		Layer to insert
+     * @param layer2		Never merge to the previous segment from {@code layer1} to {@code layer2}.
+     * @param str   		String
      **/
     public void insertStrSegment(int layer1, int layer2, StrSegment str) {
         mStringLayer[layer1].add(mCursor[layer1], str);
@@ -300,10 +300,10 @@ public class ComposingText {
     /**
      * Replace segments at the range specified.
      *
-     * @param layer layer
-     * @param str   strings to replace
-     * @param from  replace from
-     * @param to    replace to
+     * @param layer		Layer
+     * @param str		String segment array to replace
+     * @param from		Replace from
+     * @param to		Replace to
      **/
     protected void replaceStrSegment0(int layer, StrSegment[] str, int from, int to) {
         ArrayList<StrSegment> strLayer = mStringLayer[layer];
@@ -327,9 +327,9 @@ public class ComposingText {
     /**
      * Replace segments at the range specified.
      *
-     * @param layer layer
-     * @param str   strings to replace
-     * @param num   num
+     * @param layer		Layer
+     * @param str		String segment array to replace
+     * @param num		Size of string segment array
      **/
     public void replaceStrSegment(int layer, StrSegment[] str, int num) {
         int cursor = mCursor[layer];
@@ -340,8 +340,8 @@ public class ComposingText {
     /**
      * Replace the segment at the cursor.
      *
-     * @param layer layer
-     * @param str   string to replace to
+     * @param layer 	Layer
+     * @param str   	String segment to replace
      **/
     public void replaceStrSegment(int layer, StrSegment[] str) {
         int cursor = mCursor[layer];
@@ -350,11 +350,11 @@ public class ComposingText {
     }
 
     /**
-     * Delete segments
+     * Delete segments.
      * 
-     * @param layer layer
-     * @param from  delete from
-     * @param to    delete to
+     * @param layer Layer
+     * @param from  Delete from
+     * @param to    Delete to
      **/
     public void deleteStrSegment(int layer, int from, int to) {
         int[] fromL = new int[] {-1, -1, -1};
@@ -424,6 +424,14 @@ public class ComposingText {
         }
     }
 
+    /**
+     * Delete segments (internal method).
+     * 
+     * @param layer		Layer
+     * @param from		Delete from
+     * @param to		Delete to
+	 * @param diff		Differential
+     **/
     private void deleteStrSegment0(int layer, int from, int to, int diff) {
         ArrayList<StrSegment> strLayer = mStringLayer[layer];
         if (diff != 0) {
@@ -441,8 +449,9 @@ public class ComposingText {
     /**
      * Delete a segment at the cursor.
      * 
-     * @param layer     layer
-     * @param rightside direction(true:rightside at the cursor, false:leftside at the cursor)
+     * @param layer     	Layer
+     * @param rightside		{@code true} if direction is rightward at the cursor, {@code false} if direction is leftward at the cursor
+     * @return				The number of string segments in the specified layer
      **/
     public int delete(int layer, boolean rightside) {
         int cursor = mCursor[layer];
@@ -461,9 +470,8 @@ public class ComposingText {
     /**
      * Get the string layer.
      *
-     * @param layer layer
-     *
-     * @return {@link ArrayList} of {@link StrSegment}; null if error.
+     * @param layer		Layer
+     * @return			{@link ArrayList} of {@link StrSegment}; {@code null} if error.
      **/
     public ArrayList<StrSegment> getStringLayer(int layer) {
         try {
@@ -475,6 +483,10 @@ public class ComposingText {
 
     /**
      * Get upper the segment which includes the position.
+     * 
+     * @param layer		Layer	
+     * @param pos		Position		
+     * @return 		Index of upper segment
      */
     private int included(int layer, int pos) {
         if (pos == 0) {
@@ -495,10 +507,9 @@ public class ComposingText {
     /**
      * Set the cursor.
      * 
-     * @param layer layer
-     * @param pos   cursor position
-     *
-     * @return position of cursor
+     * @param layer		Layer
+     * @param pos   	Position of cursor
+     * @return 		New position of cursor
      */
     public int setCursor(int layer, int pos) {
         if (pos > mStringLayer[layer].size()) {
@@ -526,10 +537,9 @@ public class ComposingText {
     /**
      * Move the cursor.
      *
-     * @param layer layer
-     * @param diff  relative position from current cursor position
-     *
-     * @return position of cursor
+     * @param layer		Layer
+     * @param diff		Relative position from current cursor position
+     * @return 		New position of cursor
      **/
     public int moveCursor(int layer, int diff) {
         int c = mCursor[layer] + diff;
@@ -540,25 +550,25 @@ public class ComposingText {
     /**
      * Get the cursor position.
      *
-     * @param layer layer
-     * @return cursor position
+     * @param layer		Layer
+     * @return cursor	Current position of cursor
      **/
     public int getCursor(int layer) {
         return mCursor[layer];
     }
 
     /**
-     * Get the number of segments
+     * Get the number of segments.
      *
-     * @param layer layer
-     * @return number of segments
+     * @param layer		Layer
+     * @return			Number of segments
      **/
     public int size(int layer) {
         return mStringLayer[layer].size();
     }
 
     /**
-     * Clear all the information
+     * Clear all information.
      */
     public void clear() {
         for (int i = 0; i < MAX_LAYER; i++) {

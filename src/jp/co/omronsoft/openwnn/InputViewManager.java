@@ -21,47 +21,46 @@ import android.content.SharedPreferences;
 import android.view.inputmethod.EditorInfo;
 
 /**
- * The interface of input view manager used by OpenWnn
+ * The interface of input view manager used by OpenWnn.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public interface InputViewManager {
     /**
-     * Initialize the view
+     * Initialize the input view.
      *
-     * @param parent    The OpenWnn object
-     * @param width   The width of the display
-     * @param height  The height of the display
+     * @param parent   	The OpenWnn object
+     * @param width   	The width of the display
+     * @param height  	The height of the display
      *
-     * @return The view created in the initialize process; null if cannot create a view.
+     * @return 		The input view created in the initialize process; {@code null} if cannot create a input view.
      */
     public View initView(OpenWnn parent, int width, int height);
 
     /**
-     * Get the view being used currently.
+     * Get the input view being used currently.
      *
-     * @return The view; null if no view is used currently.
+     * @return 	The input view; {@code null} if no input view is used currently.
      */
     public View getCurrentView();
 
     /**
-     * Notification of updating parent's state
+     * Notification of updating parent's state.
      *
      * @param parent    The OpenWnn object using this manager
      */
     public void onUpdateState(OpenWnn parent);
 
     /**
-     * Set preferences
+     * Reflect the preferences in the input view.
      *
      * @param pref    The preferences
      * @param editor  The information about the editor
      */
     public void setPreferences(SharedPreferences pref, EditorInfo editor);
 
-
     /**
-     * Non-display internal views.
+     * Close the input view.
      */
     public void closing();
 }

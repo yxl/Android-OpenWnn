@@ -17,7 +17,7 @@
 package jp.co.omronsoft.openwnn;
 
 /**
- * The container of a clause
+ * The container class of a clause.
  *
  * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */

@@ -16,8 +16,9 @@
 -->
 <resources>
     <color name="candidate_highlight">#BDFF8800</color>
-    <color name="candidate_text">#ffffffff</color>
-    <color name="candidate_background">#BD000000</color>
+    <color name="candidate_text">#ff404040</color>
+    <color name="candidate_background">#E0ffffc8</color>
+    <color name="candidate_shadow">#FF000000</color>
     <color name="indicator_textcolor_default">#0032CD32</color>
     <color name="indicator_textcolor_caps_off">#0032CD32</color>
     <color name="indicator_textcolor_caps_on">#Cd32CD32</color>
@@ -25,6 +26,7 @@
     <color name="indicator_textcolor_alt_off">#00ff8800</color>
     <color name="indicator_textcolor_alt_on">#CDff8800</color>
     <color name="indicator_textcolor_alt_lock">#ffff8800</color>
-    <color name="indicator_textbackground_default">#ffffffff</color>
-    <color name="indicator_background_lock">#CDC5C5C5</color>
+    <color name="indicator_textbackground_default">#fff0f0f0</color>
+    <color name="indicator_background_lock_caps">#5532CD32</color>
+    <color name="indicator_background_lock_alt">#55ff8800</color>
 </resources>

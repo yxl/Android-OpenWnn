@@ -37,9 +37,9 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 /**
- * OpenWnn English IME
+ * The OpenWnn English IME class.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnEN extends OpenWnn {
 	/** A space character */
@@ -88,8 +88,12 @@ public class OpenWnnEN extends OpenWnn {
 	
 	/** SHIFT key state */
 	private int mHardShift;
+    /** SHIFT key state (pressing) */
+	private boolean mShiftPressing;
 	/** ALT key state */
 	private int mHardAlt;
+    /** ALT key state (pressing) */
+	private boolean mAltPressing;
 
 	/** Instance of this service */
 	private static OpenWnnEN mSelf = null;
@@ -112,7 +116,7 @@ public class OpenWnnEN extends OpenWnn {
 
 		/* used by OpenWnn */
 		mComposingText = new ComposingText();
-		mCandidatesViewManager = new TextCandidatesViewManager(300);
+		mCandidatesViewManager = new TextCandidatesViewManager(-1);
 		mInputViewManager = new DefaultSoftKeyboardEN();
 		mConverterEN = new OpenWnnEngineEN("/data/data/jp.co.omronsoft.openwnn/writableEN.dic");
 		mConverter = mConverterEN;
@@ -142,6 +146,8 @@ public class OpenWnnEN extends OpenWnn {
 	 * Get the instance of this service.
 	 * <br>
 	 * Before using this method, the constructor of this service must be invoked.
+	 * 
+	 * @return		The instance of this object
 	 */
 	public static OpenWnnEN getInstance() {
 		return mSelf;
@@ -150,7 +156,7 @@ public class OpenWnnEN extends OpenWnn {
 	/**
 	 * Insert a character into the composing text.
 	 *
-	 * @param chars a character
+	 * @param chars		A array of character
 	 */
 	private void insertCharToComposingText(char[] chars) {
 		StrSegment seg = new StrSegment(chars);
@@ -177,8 +183,8 @@ public class OpenWnnEN extends OpenWnn {
 	/**
 	 * Insert a character into the composing text.
 	 *
-	 * @param charCode a character code
-     * @return true if success; false if an error occurs.
+	 * @param charCode		A character code
+     * @return				{@code true} if success; {@code false} if an error occurs.
 	 */
 	private boolean insertCharToComposingText(int charCode) {
         if (charCode == 0) {
@@ -191,9 +197,9 @@ public class OpenWnnEN extends OpenWnn {
 	/**
 	 * Get the shift key state from the editor.
 	 *
-	 * @param editor  editor
+	 * @param editor	Editor
 	 *
-	 * @return state id of the shift key (0:off, 1:on)
+	 * @return			State ID of the shift key (0:off, 1:on)
 	 */
 	protected int getShiftKeyState(EditorInfo editor) {
 		return (getCurrentInputConnection().getCursorCapsMode(editor.inputType) == 0) ? 0 : 1;
@@ -201,7 +207,8 @@ public class OpenWnnEN extends OpenWnn {
 
     /**
      * Set the mode of the symbol list.
-     * @param mode {@code SymbolList.SYMBOL_ENGLISH} or {@code null}.
+     * 
+     * @param mode 		{@code SymbolList.SYMBOL_ENGLISH} or {@code null}.
      */
 	private void setSymbolMode(String mode) {
 		if (mode != null) {
@@ -236,6 +243,7 @@ public class OpenWnnEN extends OpenWnn {
     @Override public View onCreateInputView() {
     	int hiddenState = getResources().getConfiguration().hardKeyboardHidden;
     	boolean hidden = (hiddenState == Configuration.HARDKEYBOARDHIDDEN_YES);
+    	((DefaultSoftKeyboardEN) mInputViewManager).setHardKeyboardHidden(hidden);
     	((TextCandidatesViewManager)
     			mCandidatesViewManager).setHardKeyboardHidden(hidden);
 
@@ -319,7 +327,8 @@ public class OpenWnnEN extends OpenWnn {
         if (mComposingText != null) {
         	mComposingText.clear();
         }
-
+        /* initialize the engine's state */
+        fitInputType(pref, attribute);
 	}
 
     /** @see jp.co.omronsoft.openwnn.OpenWnn#onComputeInsets */
@@ -379,7 +388,11 @@ public class OpenWnnEN extends OpenWnn {
 	@Override synchronized public boolean onEvent(OpenWnnEvent ev) {
         /* handling events which are valid when InputConnection is not active. */
         switch (ev.code) {
-
+        
+        case OpenWnnEvent.KEYUP:
+            onKeyUpEvent(ev.keyEvent);
+            return true;
+            
         case OpenWnnEvent.INITIALIZE_LEARNING_DICTIONARY:
             return mConverterEN.initializeDictionary( WnnEngine.DICTIONARY_TYPE_LEARN );
 
@@ -429,8 +442,17 @@ public class OpenWnnEN extends OpenWnn {
 		}
 
 		dismissPopupKeyboard();
-
+        KeyEvent keyEvent = ev.keyEvent;
+        int keyCode = 0;
+        if (keyEvent != null) {
+            keyCode = keyEvent.getKeyCode();
+        }
 		if (mDirectInputMode) {
+            if (ev.code == OpenWnnEvent.INPUT_SOFT_KEY && mInputConnection != null) {
+                mInputConnection.sendKeyEvent(keyEvent);
+				mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP,
+                                                           keyEvent.getKeyCode()));
+            }
 			return false;
 		}
 
@@ -454,7 +476,7 @@ public class OpenWnnEN extends OpenWnn {
 			break;
 
 		case OpenWnnEvent.INPUT_KEY:
-			int keyCode = ev.keyEvent.getKeyCode();
+			keyCode = ev.keyEvent.getKeyCode();
 			/* update shift/alt state */
 			switch (keyCode) {
 			case KeyEvent.KEYCODE_ALT_LEFT:
@@ -462,6 +484,7 @@ public class OpenWnnEN extends OpenWnn {
 				if (ev.keyEvent.getRepeatCount() == 0) {
 					if (++mHardAlt > 2) { mHardAlt = 0; }
 				}
+                mAltPressing   = true;
 				updateMetaKeyStateDisplay();
 				return true;
 
@@ -470,6 +493,7 @@ public class OpenWnnEN extends OpenWnn {
 				if (ev.keyEvent.getRepeatCount() == 0) {
 					if (++mHardShift > 2) { mHardShift = 0; }
 				}
+                mShiftPressing = true;
 				updateMetaKeyStateDisplay();
 				return true;
 			}
@@ -534,6 +558,7 @@ public class OpenWnnEN extends OpenWnn {
 	 * This method is called from {@link #onEvent()}.
 	 *
 	 * @param ev   A key event
+	 * @return		{@code true} if the event is processed in this method; {@code false} if the event is not processed in this method
 	 */
 	private boolean processKeyEvent(KeyEvent ev) {
 
@@ -545,13 +570,25 @@ public class OpenWnnEN extends OpenWnn {
 			if ((mHardShift > 0 && mHardAlt > 0) || (ev.isAltPressed() && ev.isShiftPressed())) {
 				int charCode = ev.getUnicodeChar(MetaKeyKeyListener.META_SHIFT_ON | MetaKeyKeyListener.META_ALT_ON);
 				if (charCode == 0 || (charCode & KeyCharacterMap.COMBINING_ACCENT) != 0 || charCode == PRIVATE_AREA_CODE) {
-					if (mHardAlt == 1) {
-						mHardAlt = 0;
-					}
-					if (mHardShift == 1) {
-						mHardShift = 0;
-					}
-					updateMetaKeyStateDisplay();
+                    if(mHardShift == 1){
+                        mShiftPressing = false;
+                    }
+                    if(mHardAlt == 1){
+                        mAltPressing   = false;
+                    }
+	            	if(!ev.isAltPressed()){
+	            		if (mHardAlt == 1) {
+	            			mHardAlt = 0;
+	            		}
+	            	}
+	            	if(!ev.isShiftPressed()){
+	            		if (mHardShift == 1) {
+	            			mHardShift = 0;
+	            		}
+	            	}
+	            	if(!ev.isShiftPressed() && !ev.isAltPressed()){
+	                    updateMetaKeyStateDisplay();
+	            	}
 					return true;
 				}
 			}
@@ -569,14 +606,26 @@ public class OpenWnnEN extends OpenWnn {
 			} else {
                 insertCharToComposingText(ev.getUnicodeChar(mShiftKeyToggle[mHardShift]
                                                             | mAltKeyToggle[mHardAlt]));
+                if(mHardShift == 1){
+                    mShiftPressing = false;
+                }
+                if(mHardAlt == 1){
+                    mAltPressing   = false;
+                }
                 /* back to 0 (off) if 1 (on/not locked) */
-				if (mHardAlt == 1) {
-					mHardAlt = 0;
-				}
-				if (mHardShift == 1) {
-					mHardShift = 0;
-				}
-                updateMetaKeyStateDisplay();
+            	if(!ev.isAltPressed()){
+            		if (mHardAlt == 1) {
+            			mHardAlt = 0;
+            		}
+            	}
+            	if(!ev.isShiftPressed()){
+            		if (mHardShift == 1) {
+            			mHardShift = 0;
+            		}
+            	}
+            	if(!ev.isShiftPressed() && !ev.isAltPressed()){
+                    updateMetaKeyStateDisplay();
+            	}
 			}
 
             if (edit.inputType == EditorInfo.TYPE_CLASS_PHONE) {
@@ -750,8 +799,8 @@ public class OpenWnnEN extends OpenWnn {
 	/**
 	 * Commit a word
 	 *
-	 * @param word  A word to commit
-	 * @param withSpace  Append a space after the word if {@code true}.
+	 * @param word 		 	A word to commit
+	 * @param withSpace		Append a space after the word if {@code true}.
 	 */
 	private void commitText(WnnWord word, boolean withSpace) {
 
@@ -814,9 +863,49 @@ public class OpenWnnEN extends OpenWnn {
         }else{
             mode = DefaultSoftKeyboard.HARD_KEYMODE_SHIFT_OFF_ALT_OFF;
         }
+
         ((DefaultSoftKeyboard) mInputViewManager).updateIndicator(mode);
 	}
+
+	/**
+	 * Handling KeyEvent(KEYUP)
+	 * <br>
+	 * This method is called from {@link #onEvent()}.
+	 *
+	 * @param ev   An up key event
+	 */
+    private void onKeyUpEvent(KeyEvent ev) {
+        int key = ev.getKeyCode();
+        if(!mShiftPressing){
+            if(key == KeyEvent.KEYCODE_SHIFT_LEFT || key == KeyEvent.KEYCODE_SHIFT_RIGHT){
+                mHardShift = 0;
+                mShiftPressing = true;
+                updateMetaKeyStateDisplay();
+            }
+        }
+        if(!mAltPressing ){
+            if(key == KeyEvent.KEYCODE_ALT_LEFT || key == KeyEvent.KEYCODE_ALT_RIGHT){
+                mHardAlt = 0;
+                mAltPressing   = true;
+                updateMetaKeyStateDisplay();
+            }
+        }
+    }
+    /**
+     * Fits an editor info.
+     * 
+     * @param preferences  The preference data.
+     * @param info  		The editor info.
+     */
+    private void fitInputType(SharedPreferences preference, EditorInfo info) {
+        if (info.inputType == EditorInfo.TYPE_NULL) {
+            mDirectInputMode = true;
+            return;
+        }
+    }
 }
+
+
 
 
 

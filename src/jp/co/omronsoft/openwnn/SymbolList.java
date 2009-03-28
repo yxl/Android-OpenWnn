@@ -26,92 +26,56 @@ import android.content.res.XmlResourceParser;
 import android.util.Log;
 
 /**
- * Symbol list generator.
+ * The generator class of symbol list.
  * <br>
  * This class is used for generating lists of symbols.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class SymbolList implements WnnEngine {
     /*
      * DEFINITION OF CONSTANTS
      */
-    /**
-     * Language definition (English)
-     */
+    /** Language definition (English) */
     public static final int LANG_EN = 0;
 
-    /**
-     * Language definition (Japanese)
-     */
+    /** Language definition (Japanese) */
     public static final int LANG_JA = 1;
 
-    /**
-     * Language definition (Chinese)
-     */
+    /** Language definition (Chinese) */
     public static final int LANG_ZHCN = 2;
 
     
-    /**
-     * Key string to get normal symbol list for Japanese
-     */
+    /** Key string to get normal symbol list for Japanese */
     public static final String SYMBOL_JAPANESE = "j";
 
-    /**
-     * Key string to get normal symbol list for English
-     */
+    /** Key string to get normal symbol list for English */
     public static final String SYMBOL_ENGLISH = "e";
 
-    /**
-     * Key string to get normal symbol list for Chinese
-     */
-    public static final String SYMBOL_CHINESE_ALPHA = "c1";
+    /** Key string to get normal symbol list for Chinese */
+    public static final String SYMBOL_CHINESE = "c1";
 
-    /**
-     * Key string to get normal symbol list for Chinese
-     */
-    public static final String SYMBOL_CHINESE_KANA = "c2";
-
-    /**
-     * Key string to get normal symbol list for Chinese
-     */
-    public static final String SYMBOL_CHINESE_ETC = "c3";
-
-    /**
-     * Key string to get EMOJI symbol list for Japanese
-     */
+    /** Key string to get EMOJI symbol list for Japanese */
 	public static final String SYMBOL_JAPANESE_EMOJI = "j_emoji";
-    /**
-     * Key string to get face mark list for Japanese
-     */
+    /** Key string to get face mark list for Japanese */
 	public static final String SYMBOL_JAPANESE_FACE  = "j_face";
 
-    /**
-     * The name of XML tag key
-     */
+    /** The name of XML tag key */
 	private static final String XMLTAG_KEY = "string";
 
     /*
      * DEFINITION OF VARIABLES
      */
-    /**
-     * Symbols data
-     */
+    /** Symbols data */
     protected HashMap<String,ArrayList<String>> mSymbols;
 
-    /**
-     * OpenWnn which has this instance
-     */
+    /** OpenWnn which has this instance */
     private OpenWnn mWnn;
 
-    /**
-     * current list of symbols
-     */
+    /** current list of symbols */
     private ArrayList<String> mCurrentList;
 
-    /**
-     * Iterator for getting symbols from the list
-     */
+    /** Iterator for getting symbols from the list */
 	private Iterator<String> mCurrentListIterator;
 
     /*
@@ -142,12 +106,11 @@ public class SymbolList implements WnnEngine {
             mSymbols.put(SYMBOL_JAPANESE_EMOJI, getXmlfile(R.xml.symbols_japan_emoji_list));
             mCurrentList = mSymbols.get(SYMBOL_ENGLISH);
             break;
-        case LANG_ZHCN:
+        case LANG_ZHCN: 
             /* symbols for Chinese IME */
-            mSymbols.put(SYMBOL_CHINESE_ALPHA, getXmlfile(R.xml.symbols_china_list_alpha));
-            mSymbols.put(SYMBOL_CHINESE_KANA, getXmlfile(R.xml.symbols_china_list_kana));
-            mSymbols.put(SYMBOL_CHINESE_ETC, getXmlfile(R.xml.symbols_china_list_etc));
-            mCurrentList = mSymbols.get(SYMBOL_CHINESE_ALPHA);
+            mSymbols.put(SYMBOL_CHINESE, getXmlfile(R.xml.symbols_china_list));
+            mSymbols.put(SYMBOL_ENGLISH, getXmlfile(R.xml.symbols_latin1_list));
+            mCurrentList = mSymbols.get(SYMBOL_CHINESE);
             break;
         }        
 
@@ -157,10 +120,10 @@ public class SymbolList implements WnnEngine {
     /**
      * Get a attribute value from a XML resource.
      *
-     * @param xrp   XML resource
-     * @param name  The attribute name
+     * @param xrp	XML resource
+     * @param name	The attribute name
      *
-     * @return The value of the attribute
+     * @return 	The value of the attribute
      */
     private String getXmlAttribute(XmlResourceParser xrp, String name) {
         int resId = xrp.getAttributeResourceValue(null, name, 0);
@@ -174,9 +137,8 @@ public class SymbolList implements WnnEngine {
     /**
      * Load a symbols list from XML resource.
      *
-     * @param id  XML resource id
-     *
-     * @return The symbols list
+     * @param id  	XML resource ID
+     * @return		The symbols list
      */
 	private ArrayList<String> getXmlfile(int id) {
         ArrayList<String> list = new ArrayList<String>();
@@ -219,19 +181,13 @@ public class SymbolList implements WnnEngine {
     /***********************************************************************
      * WnnEngine's interface
      **********************************************************************/
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#init
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#init */
     public void init() {}
 	
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#close
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#close */
     public void close() {}
 	
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#predict
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#predict */
     public int predict(ComposingText text, int minLen, int maxLen) {
         /* ignore if there is no list for the type */
         if (mCurrentList == null) {
@@ -244,26 +200,18 @@ public class SymbolList implements WnnEngine {
         return 1;
     }
 	
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#convert
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#convert */
     public int convert(ComposingText text) {
         return 0;
     }
     
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#searchWords
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#searchWords */
     public int searchWords(String key) {return 0;}
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#searchWords
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#searchWords */
     public int searchWords(WnnWord word) {return 0;}
 	
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#getNextCandidate
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#getNextCandidate */
     public WnnWord getNextCandidate() {
         if (mCurrentListIterator == null || !mCurrentListIterator.hasNext()) {
             return null;
@@ -273,48 +221,30 @@ public class SymbolList implements WnnEngine {
         return word;
     }
 	
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#learn
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#learn */
     public boolean learn(WnnWord word) {return false;}
 	
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#addWord
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#addWord */
     public int addWord(WnnWord word) {return 0;}
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#deleteWord
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#deleteWord */
     public boolean deleteWord(WnnWord word) {return false;}
 	
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#setPreferences
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#setPreferences */
     public void setPreferences(SharedPreferences pref) {}
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#breakSequence
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#breakSequence */
     public void breakSequence() {}
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#makeCandidateListOf
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#makeCandidateListOf */
     public int makeCandidateListOf(int clausePosition) {return 0;}
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary */
     public boolean initializeDictionary(int dictionary) {return true;}
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary */
     public boolean initializeDictionary(int dictionary, int type) {return true;}
     
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#getUserDictionaryWords
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#getUserDictionaryWords */
     public WnnWord[] getUserDictionaryWords() {return null;}
 }

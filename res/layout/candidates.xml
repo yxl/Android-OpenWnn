@@ -15,7 +15,7 @@
  limitations under the License.
 -->
 <!-- candidate list -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	      android:orientation="vertical"
 	      android:layout_width="fill_parent"
 	      android:layout_height="wrap_content"
@@ -31,12 +31,27 @@
 	      android:layout_width="fill_parent" 
 	      android:layout_height="wrap_content"
 	      android:background="@color/candidate_background"
-	      android:textColor="#FFFFFFFF"
+	      android:textColor="@color/candidate_text"
 	      android:cursorVisible="true"
-	      android:textColorHighlight="#BDFF8800"
+	      android:textColorHighlight="@color/candidate_highlight"
 	      android:paddingLeft="10px"
 	      android:paddingRight="10px"
 	      android:paddingTop="10px"
+	      android:shadowColor="@color/candidate_shadow"
+	      android:shadowRadius="0.1"
 	      />
   </ScrollView>
-</LinearLayout>
+  <LinearLayout android:id="@+id/read_more"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" 
+                android:fadingEdgeLength="0px"
+                android:gravity="bottom|right"
+                >
+      <TextView android:id="@+id/read_more_text"
+                android:layout_width="fill_parent" 
+                android:layout_height="fill_parent"
+                android:gravity="bottom|right"
+                android:textColor="@color/candidate_text"
+                />
+  </LinearLayout>
+</FrameLayout>

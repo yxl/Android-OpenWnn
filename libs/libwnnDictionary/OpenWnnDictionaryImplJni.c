@@ -416,9 +416,8 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_sea
 			work->cursor.cond.yomi		= work->keyString;
    			work->cursor.cond.charset	= &( work->approxSet );
 
-            /* If the previous word information exist, set the predict search information to structure */
-            if( operation == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_SEARCH_LINK &&
-                ( work->previousStroke[ 0 ] != NJ_CHAR_NUL && work->previousCandidate[ 0 ] != NJ_CHAR_NUL ) ) {
+            /* If the link search feature is specified, set the predict search information to structure */
+            if( operation == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_SEARCH_LINK ) {
                 work->cursor.cond.yomi  = work->previousStroke;
                 work->cursor.cond.kanji = work->previousCandidate;
             }
@@ -426,10 +425,6 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_sea
 			/* Search a specified word */
             memcpy( &( work->wnnClass.dic_set ), &( work->dicSet ), sizeof( NJ_DIC_SET ) );
 			result = ( jint )njx_search_word( &( work->wnnClass ), &( work->cursor ) );
-
-            /* Reset previous word information */
-            work->previousStroke[ 0 ]    = NJ_CHAR_NUL;
-            work->previousCandidate[ 0 ] = NJ_CHAR_NUL;
 
             /* If a result is found, enable getNextWord method */
             if( result == 1 ) {
