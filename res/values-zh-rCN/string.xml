@@ -97,5 +97,8 @@
     <string name="user_dictionary_creating_wordlist">生成中</string>
     <string name="user_dictionary_init">用户词典初始化</string>
  
+      <string name="button_candidate_select">选择</string>
+      <string name="button_candidate_delete">删除</string>
+      <string name="button_candidate_cancel">关闭</string>
 </resources>
 

@@ -40,7 +40,7 @@
 			android:summary="@string/preference_keyboard_skin_summary"
 			android:entries="@array/keyboard_skin"
 			android:entryValues="@array/keyboard_skin_id"
-			android:defaultValue="keyboard_default" />
+			android:defaultValue="keyboard_android_default" />
   </PreferenceCategory>
     
   <PreferenceCategory android:title="@string/preference_conversion_menu">

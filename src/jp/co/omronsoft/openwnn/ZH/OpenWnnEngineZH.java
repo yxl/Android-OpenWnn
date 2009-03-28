@@ -26,9 +26,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
- * OpenWnn engine for Chinese IME
+ * The OpenWnn engine class for Chinese IME.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnEngineZH implements WnnEngine {
     /** Current dictionary type */
@@ -118,12 +118,15 @@ public class OpenWnnEngineZH implements WnnEngine {
     /**
      * Constructor
      *
-     * @param dicLibPath   The dictionary library  
+     * @param dicLib   The dictionary library  
      * @param dicFilePath  The DB file for the user/learning dictionary
      */
-    public OpenWnnEngineZH(String dicLibPath, String dicFilePath) {
+    public OpenWnnEngineZH(String dicLib, String dicFilePath) {
         /* load Chinese dictionary library */
-        mDictionaryZH = new OpenWnnDictionaryImpl(dicLibPath, dicFilePath);
+        mDictionaryZH = new OpenWnnDictionaryImpl("/data/data/jp.co.omronsoft.openwnn/lib/" + dicLib, dicFilePath);
+        if (!mDictionaryZH.isActive()) {
+        	mDictionaryZH = new OpenWnnDictionaryImpl("/system/lib/" + dicLib, dicFilePath);
+        }
 
         /* clear dictionary settings */
         mDictionaryZH.clearDictionary();
@@ -144,26 +147,34 @@ public class OpenWnnEngineZH implements WnnEngine {
 
     /**
      * Set dictionary for prediction.
-     * @param strlen  length of input string
+     * 
+     * @param strlen  Length of input string
      */
     private void setDictionaryForPrediction(int strlen) {
         WnnDictionary dict = mDictionaryZH;
 
         dict.clearDictionary();
         dict.clearApproxPattern();
-        dict.setDictionary(0, 300, 400);
-        dict.setDictionary(1, 300, 400);
-        if (strlen <= PinyinParser.PINYIN_MAX_LENGTH) {
-        	dict.setDictionary(2, 400, 500); /* single Kanji dictionary */
+        if (strlen == 0) {
+        	dict.setDictionary(3, 300, 400);
+        	dict.setDictionary(4, 100, 200);
+            dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
+        } else {
+        	dict.setDictionary(0, 300, 400);
+        	dict.setDictionary(1, 300, 400);
+        	if (strlen <= PinyinParser.PINYIN_MAX_LENGTH) {
+        		dict.setDictionary(2, 400, 500); /* single Kanji dictionary */
+        	}
+            dict.setDictionary(WnnDictionary.INDEX_USER_DICTIONARY, FREQ_USER, FREQ_USER);
+            dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
+            dict.setApproxPattern(WnnDictionary.APPROX_PATTERN_EN_TOUPPER);
         }
-        dict.setDictionary(WnnDictionary.INDEX_USER_DICTIONARY, FREQ_USER, FREQ_USER);
-        dict.setDictionary(WnnDictionary.INDEX_LEARN_DICTIONARY, FREQ_LEARN, FREQ_LEARN);
-        dict.setApproxPattern(WnnDictionary.APPROX_PATTERN_EN_TOUPPER);
     }
 
     /**
      * Set the candidate filter
-     * @param filter
+     * 
+     * @param filter	The candidate filter
      */
     public void setFilter(CandidateFilter filter) {
     	mFilter = filter;
@@ -173,8 +184,8 @@ public class OpenWnnEngineZH implements WnnEngine {
     /**
      * Get a candidate.
      *
-     * @param index   index of a candidate.
-     * @return  the candidate; null if there is no candidate.
+     * @param index		Index of a candidate.
+     * @return			The candidate; {@code null} if there is no candidate.
      */
     private WnnWord getCandidate(int index) {
         WnnWord word;
@@ -294,8 +305,8 @@ public class OpenWnnEngineZH implements WnnEngine {
      * the same one in the buffer and the length of the candidate
      * string is not longer than {@code MAX_OUTPUT_LENGTH}.
      *
-     * @param word   The word to be added
-     * @return  {@code true} if the word added; {@code false} if not.
+     * @param word		The word to be added
+     * @return			{@code true} if the word added; {@code false} if not.
      */
     protected boolean addCandidate(WnnWord word) {
         if (word.candidate == null || mCandTable.containsKey(word.candidate)
@@ -325,8 +336,8 @@ public class OpenWnnEngineZH implements WnnEngine {
     /**
      * Set dictionary type.
      *
-     * @param type  type of dictionary
-     * @return {@code true} if the dictionary is changed; {@code false} if not.
+     * @param type		Type of dictionary
+     * @return			{@code true} if the dictionary is changed; {@code false} if not.
      */
     public boolean setDictionary(int type) {
         mDictType = type;
@@ -337,10 +348,9 @@ public class OpenWnnEngineZH implements WnnEngine {
     /**
      * Set the search key and the search mode from {@link ComposingText}.
      *
-     * @param text    input text
-     * @param maxLen  maximum length to convert
-     *
-     * @return length of the search key.
+     * @param text		Input text
+     * @param maxLen	Maximum length to convert
+     * @return			Length of the search key.
      */
     protected int setSearchKey(ComposingText text, int maxLen) {
         String input = text.toString(ComposingText.LAYER1);
@@ -371,7 +381,7 @@ public class OpenWnnEngineZH implements WnnEngine {
     /**
      * Set keyboard type.
      * 
-     * @param keyboardType type of keyboard
+     * @param keyboardType		Type of keyboard
      */
     public void setKeyboardType(int keyboardType) {
         mKeyboardType = keyboardType;
@@ -596,9 +606,7 @@ public class OpenWnnEngineZH implements WnnEngine {
         return false;
     }
 
-    /**
-     * @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary
-     */
+    /** @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary */
     public boolean initializeDictionary(int dictionary, int type) {
     	return initializeDictionary(dictionary);
     }

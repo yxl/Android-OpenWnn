@@ -25,9 +25,9 @@ import android.view.View;
 import android.content.SharedPreferences;
 
 /**
- * Default Software Keyboard for Chinese IME
+ * The default Software Keyboard class for Chinese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
     /** Enable English word prediction on half-width alphabet mode */
@@ -40,7 +40,6 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
 
     /** Definition for {@code mInputType} (toggle) */
     private static final int INPUT_TYPE_TOGGLE = 1;
-
     /** Definition for {@code mInputType} (commit instantly) */
     private static final int INPUT_TYPE_INSTANT = 2;
 
@@ -53,8 +52,8 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
     /** Input mode that is given the first priority. If ENABLE_CHANGE_KEYMODE is set, input mode can change. */
     private int mPreferenceKeyMode = INVALID_KEYMODE;
     
+    /** Definition of propagation keycodes */
     private static final int EM_DASH = 8212;
-
     private static final int THREE_DOT_LEADER = 8230;
 
     /** The last input type */
@@ -79,7 +78,7 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         mKeyboard = new Keyboard[3][2][4][2][7][2];
 
         if (mHardKeyboardHidden) {
-        
+        	/* Create the suitable keyboard object */
         	if (mDisplayMode == DefaultSoftKeyboard.PORTRAIT) {
         		createKeyboardsPortrait(parent);
         	} else {
@@ -90,7 +89,8 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         		OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
     }
     /**
-     * Commit the pre-edit string for committing operation that is not explicit (ex. when a candidate is selected)
+     * Commit the pre-edit string for committing operation that is not explicit
+     * (ex. when a candidate is selected)
      */
     private void commitText() {
         if (!mNoInput) {
@@ -410,8 +410,8 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
     /**
      * Get the shift key state from the editor.
      * <br>
-     * @param editor  The editor information
-     * @return The state id of the shift key (0:off, 1:on)
+     * @param editor	The editor information
+     * @return			The state id of the shift key (0:off, 1:on)
      */
     protected int getShiftKeyState(EditorInfo editor) {
         int caps = mWnn.getCurrentInputConnection().getCursorCapsMode(editor.inputType);

@@ -17,9 +17,9 @@
 package jp.co.omronsoft.openwnn;
 
 /**
- * The implementation of JNI wrapper class
+ * The implementation class of JNI wrapper for dictionary.
  *
- * @author Copyright (C) 2008-2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2008, 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnDictionaryImplJni {
 	/*
@@ -207,7 +207,7 @@ public class OpenWnnDictionaryImplJni {
 	 * @param index     The index of dictionary
 	 * @param base      The base frequency or -1
 	 * @param high      The maximum frequency or -1
-	 * @return			0 if processing is successful; <0 otherwise
+	 * @return			 0 if processing is successful; <0 otherwise
 	 */
 	public static final native int setDictionaryParameter( long work, int index, int base, int high );
 
@@ -434,7 +434,7 @@ public class OpenWnnDictionaryImplJni {
      * @param keyString				The key string
      * @param maxBindsOfQuery		The maximum number of binds of query
      * @param maxPatternOfApprox	The maximum number of approximate patterns per character
-     * @return                      The string array for binding
+     * @return                     The string array for binding
      */
     public static final native String[] createBindArray( long work, String keyString, int maxBindsOfQuery, int maxPatternOfApprox );
 
@@ -444,8 +444,8 @@ public class OpenWnnDictionaryImplJni {
      * @param work					The internal work area
      * @param maxBindsOfQuery		The maximum number of binds of query
      * @param maxPatternOfApprox	The maximum number of approximate patterns per character
-     * @param keyColumnName         The name of the key column
-     * @return                      The string for querying
+     * @param keyColumnName        The name of the key column
+     * @return                     The string for querying
      */
     public static final native String createQueryStringBase( long work, int maxBindsOfQuery, int maxPatternOfApprox, String keyColumnName );
 }

@@ -44,12 +44,12 @@
 
     <string name="preference_keyboard_android_default">Default</string>
     <string name="preference_keyboard_simple">Simple</string>
-    <string name="preference_keyboard_glass">Glass</string>
-    <string name="preference_keyboard_wood">Wood</string>
+    <string name="preference_keyboard_metal">Metal</string>
     <string name="preference_keyboard_light">Light</string>
+    <string name="preference_keyboard_ice">Ice</string>
+    <string name="preference_keyboard_classic">Classic</string>
+    <string name="preference_keyboard_wood">Wood</string>
     <string name="preference_keyboard_kyoto">Kyoto</string>
-    <string name="preference_keyboard_typewriter">Typewriter</string>
-    <string name="preference_keyboard_default">Dark</string>
 
     <string name="preference_conversion_menu">Conversion</string>
 
@@ -115,20 +115,20 @@
 
   <!-- IME dependency -->
     <!-- OpenWnn English -->
-    <string name="openwnn_english_copyright">Ver.1.10-20090318\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_english_copyright">Ver.1.20-rc1\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_english">OpenWnn English</string>
     <string name="openwnn_english_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so</string>
     <string name="openwnn_english_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableEN.dic</string>
     <string name="en_word_separators">.,;:!?</string>
 
     <!-- OpenWnn Japanese -->
-    <string name="openwnn_japanese_copyright">Ver.1.10-20090318\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_japanese_copyright">Ver.1.20-rc1\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_japanese">OpenWnn Japanese</string>
     <string name="openwnn_japanese_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so</string>
     <string name="openwnn_japanese_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableJAJP.dic</string>
 
     <!-- OpenWnn Chinese -->
-    <string name="openwnn_china_copyright">Ver.1.10-20090318\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_china_copyright">Ver.1.20-rc1\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_china">OpenWnn Chinese</string>
     <string name="openwnn_china_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnZHCNDic.so</string>
 <!-- After Config Change -->
@@ -136,8 +136,11 @@
     <string name="cn_word_separators">.,;:!?</string>
 
   <!-- Candidate Delete -->
-    <string name="button_candidate_delete">Delete learning?</string>
+      <string name="button_candidate_select">Select</string>
+      <string name="button_candidate_delete">Delete learning?</string>
       <string name="button_candidate_cancel">Close</string>
+
+      <string name="read_more">･･･▲</string>
 
   <!-- Key top -->
     <string name="key_left_arrow">↤</string>

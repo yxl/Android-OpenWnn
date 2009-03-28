@@ -25,9 +25,9 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
- * Romaji to Full Katakana converter for Japanese IME
+ * The Romaji to Full Katakana converter class for Japanese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class RomkanFullKatakana implements LetterConverter {
     /** HashMap for Romaji-to-Kana conversion (Japanese mode) */
@@ -148,10 +148,9 @@ public class RomkanFullKatakana implements LetterConverter {
     /**
      * convert Romaji to Full Katakana
      *
-     * @param text The input/output text
-     * @param table HashMap for Romaji-to-Kana conversion
-     *
-     * @return {@code true} if conversion is compleated; {@code false} if not
+     * @param text		The input/output text
+     * @param table		HashMap for Romaji-to-Kana conversion
+     * @return			{@code true} if conversion is compleated; {@code false} if not
      */
     public static boolean convert(ComposingText text, HashMap<String, String> table) {
         int cursor = text.getCursor(1);

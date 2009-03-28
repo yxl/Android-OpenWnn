@@ -25,43 +25,31 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 /**
- * The implementation of WnnDictionary class (JNI wrapper class)
+ * The implementation class of WnnDictionary interface (JNI wrapper class).
  *
- * @author Copyright (C) 2008-2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2008, 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnDictionaryImpl implements WnnDictionary {
 	/*
 	 * DEFINITION FOR JNI
 	 */
 	static {
-		/*
-		 * Load the dictionary search library
-		 */ 
+		/* Load the dictionary search library */ 
 		System.loadLibrary( "wnndict" );
 	}
 
 	/*
 	 * DEFINITION OF CONSTANTS
 	 */
-	/**
-	 * The maximum length of stroke
-	 */
+	/** The maximum length of stroke */
     public static final int MAX_STROKE_LENGTH       = 50;
-	/**
-	 * The maximum length of candidate
-	 */
+	/** The maximum length of candidate */
     public static final int MAX_CANDIDATE_LENGTH    = 50;
-	/**
-	 * The table name of writable dictionary on the database
-	 */
+	/** The table name of writable dictionary on the database */
 	protected static final String TABLE_NAME_DIC    = "dic";
-	/**
-	 * The type name of user word
-	 */
+	/** The type name of user word */
     protected static final int TYPE_NAME_USER   = 0;
-	/**
-	 * The type name of learn word
-	 */
+	/** The type name of learn word */
     protected static final int TYPE_NAME_LEARN  = 1;
 
     /** The column name of database */
@@ -140,30 +128,18 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 	/*
 	 * DEFINITION OF PRIVATE FIELD
 	 */
-	/**
-	 * Internal work area for the dictionary search library.
-	 */
+	/** Internal work area for the dictionary search library */
 	protected long mWnnWork = 0;
 
-	/**
-     * The file path of the writable dictionary
-     */
+	/** The file path of the writable dictionary */
     protected String mDicFilePath = "";
-	/**
-     * The writable dictionary object
-     */
+	/** The writable dictionary object */
     protected SQLiteDatabase mDbDic = null;
-    /**
-     * The search cursor of the writable dictionary
-     */
+    /** The search cursor of the writable dictionary */
     protected SQLiteCursor mDbCursor = null;
-    /**
-     * The number of queried items
-     */
+    /** The number of queried items */
     protected int mCountCursor = 0;
-    /**
-     * The type of the search cursor object
-     */
+    /** The type of the search cursor object */
     protected int mTypeOfQuery = -1;
 
     /** The query base strings for query operation */
@@ -196,13 +172,9 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     /** The string array used by query operation (for "selection") */
     protected String mFastQueryArgs[] = new String[ FAST_QUERY_LENGTH * (MAX_PATTERN_OF_APPROX+1) ];
 
-    /**
-     * The Frequency offset of user dictionary
-     */
+    /** The Frequency offset of user dictionary */
     protected int mFrequencyOffsetOfUserDictionary = -1;
-    /**
-     * The Frequency offset of learn dictionary
-     */
+    /** The Frequency offset of learn dictionary */
     protected int mFrequencyOffsetOfLearnDictionary = -1;
 
 	/*
@@ -213,7 +185,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
      *
 	 * Create a internal work area for the search engine. It is allocated for each object.
 	 *
-	 * @param dicLibPath	the dictionary library file path
+	 * @param dicLibPath	The dictionary library file path
 	 */
 	public OpenWnnDictionaryImpl( String dicLibPath ) {
         this( dicLibPath, null );
@@ -224,8 +196,8 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
      *
 	 * Create a internal work area and the writable dictionary for the search engine. It is allocated for each object.
 	 *
-	 * @param dicLibPath	the dictionary library file path
-     * @param dicFilePath   the path name of writable dictionary
+	 * @param dicLibPath	The dictionary library file path
+     * @param dicFilePath	The path name of writable dictionary
 	 */
 	public OpenWnnDictionaryImpl( String dicLibPath, String dicFilePath ) {
         /* Create the internal work area */
@@ -318,7 +290,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 	}
 
 	/**
-	 * Create the table of writable dictionary
+	 * Create the table of writable dictionary.
      *
      * @param tableName     The name of table
      */
@@ -341,7 +313,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     }
 
 	/**
-     * Free the {@link SQLiteDatabase} of writable dictionary 
+     * Free the {@link SQLiteDatabase} of writable dictionary.
      */
     protected void freeDatabase( ) {
 		freeCursor();
@@ -353,7 +325,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         }
     }
 	/**
-     * Free the {@link SQLiteCursor} of writable dictionary 
+     * Free the {@link SQLiteCursor} of writable dictionary.
      */
     protected void freeCursor( ) {
     	if( mDbCursor != null) {
@@ -365,6 +337,14 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     	}
     }
 
+	
+	/**
+	 * @see jp.co.omronsoft.openwnn.WnnDictionary#setInUseState
+	 */
+	public boolean isActive() {
+		return (this.mWnnWork != 0);
+	}
+	
 	/**
 	 * @see jp.co.omronsoft.openwnn.WnnDictionary#setInUseState
 	 */
@@ -426,8 +406,8 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
      * Query to the database
      *
      * @param keyString		The key string
-     * @param wnnWord       The previous word for link search
-     * @param operation     The search operation
+     * @param wnnWord      The previous word for link search
+     * @param operation    The search operation
      * @param order			The type of sort order
      */
     protected void createQuery( String keyString, WnnWord wnnWord, int operation, int order) {
@@ -797,18 +777,22 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         byte[][]    result;
         int         lcount, i;
 
-        /* 1-origin */
-        lcount = OpenWnnDictionaryImplJni.getNumberOfLeftPOS( this.mWnnWork );
-        result = new byte[ lcount + 1 ][ ];
+        if (this.mWnnWork != 0) {
+        	/* 1-origin */
+        	lcount = OpenWnnDictionaryImplJni.getNumberOfLeftPOS( this.mWnnWork );
+        	result = new byte[ lcount + 1 ][ ];
 
-        if( result != null ) {
-            for( i = 0 ; i < lcount + 1 ; i++ ) {
-                result[ i ] = OpenWnnDictionaryImplJni.getConnectArray( this.mWnnWork, i );
+        	if( result != null ) {
+        		for( i = 0 ; i < lcount + 1 ; i++ ) {
+        			result[ i ] = OpenWnnDictionaryImplJni.getConnectArray( this.mWnnWork, i );
 
-                if( result[ i ] == null ) {
-                    return null;
-                }
-            }
+        			if( result[ i ] == null ) {
+        				return null;
+        			}
+        		}
+        	}
+        } else {
+        	result = new byte[1][1];
         }
         return result;
     }
@@ -819,7 +803,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     public WnnPOS getPOS( int type ) {
         WnnPOS result = new WnnPOS( );
 
-        if( result != null ) {
+        if( this.mWnnWork != 0 && result != null ) {
             result.left  = OpenWnnDictionaryImplJni.getLeftPartOfSpeechSpecifiedType( this.mWnnWork, type );
             result.right = OpenWnnDictionaryImplJni.getRightPartOfSpeechSpecifiedType( this.mWnnWork, type );
 
@@ -1005,9 +989,10 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
     /**
      * Learn the word with connection.
-     * @param word           The word to learn
-     * @param previousWord   The word which is selected previously.
-     * @return 0 if success; minus value if fail.
+     * 
+     * @param word           	The word to learn
+     * @param previousWord   	The word which is selected previously.
+     * @return					0 if success; minus value if fail.
      */
     public int learnWord( WnnWord word, WnnWord previousWord ) {
         if( mDbDic != null ) {

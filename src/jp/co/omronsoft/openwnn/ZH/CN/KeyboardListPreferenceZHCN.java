@@ -22,13 +22,12 @@ import android.preference.ListPreference;
 import android.util.AttributeSet;
 
 /**
- * Keyboard image list dialog.
+ * The preference class of keyboard image list for Chinese IME.
  * This class notices to {@code OpenWnnZHCN} that the keyboard image is changed.
  * 
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.
  */
 public class KeyboardListPreferenceZHCN extends ListPreference {
-
 	public KeyboardListPreferenceZHCN(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}

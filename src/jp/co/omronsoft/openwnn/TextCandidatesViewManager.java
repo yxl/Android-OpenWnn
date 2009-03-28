@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Vibrator;
 import android.text.Layout;
+import android.text.Styled;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -35,6 +36,7 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.GestureDetector;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -42,9 +44,9 @@ import android.widget.EditText;
 import android.text.TextPaint;
 
 /**
- * The default candidates view manager using {@link EditText}.
+ * The default candidates view manager class using {@link EditText}.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class TextCandidatesViewManager implements CandidatesViewManager, OnTouchListener,
                                                          GestureDetector.OnGestureListener {
@@ -63,7 +65,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     public static final String CANDIDATE_SEPARATOR = "\u3000 ";
     
     /** Maximum lines */
-    private static final int DISPLAY_LINE_MAX_COUNT = 500;
+    private static final int DISPLAY_LINE_MAX_COUNT = 1000;
 
     /** Adjusted value for detecting the selected candidate */
     private static final int TOUCH_ADJUSTED_VALUE = 1;
@@ -74,6 +76,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     private ScrollView mViewBodyScroll;
     /** Body of the list view */
     private EditText mViewBodyText;
+    /** Text displayed bottom of the view when there are more candidates. */
+    private TextView mReadMoreText;
     
     /** {@link OpenWnn} instance using this manager */
     private OpenWnn mWnn;
@@ -84,6 +88,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
     /** Width of the view */
     private int mViewWidth;
+    /** Height of the view */
+    private int mViewHeight;
     /** Whether hide the view if there is no candidates */
     private boolean mAutoHideMode;
     /** The converter to be get candidates from and notice the selected candidate to. */
@@ -116,31 +122,44 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     private GestureDetector mGestureDetector;
     /** The word pressed */
     private WnnWord mWord;
+    /** Text on the select button */
+    private String mSelectBottonText = null;
     /** Text on the cancel button */
     private String mCancelBottonText = null;
 
+    /** Character width of the candidate area */
     private int mLineLength = 0;
+    /** Word count on a single line in the candidate area */
     private int mLineWordCount = -1;
 
+    /** {@code true} if the hardware keyboard is shown */
     private boolean mHardKeyboardHidden = true;
 
+    /** {@code true} if the candidate delete state is selected */
     private boolean mCandidateDeleteState = false;
 
+    /** {@code true} if the full screen mode is selected */
     private boolean mIsFullView = false;
 
+    /** {@code true} if the selection state is started */
     private boolean mHasStartedSelect = false;
 
+    /** {@code true} if the candidate list is created */
     private boolean mHasCreatedCandidateList = false;
 
+    /** The event object for "touch" */
     private MotionEvent mMotionEvent = null;
 
+    /** The offset when the candidates is flowed out the candidate window */
     private int mDisplayEndOffset = 0;
+    /** {@code true} if there are more candidates to display. */
+    private boolean mCanReadMore = false;
     
-     /**
+    /**
      * Constructor
      */
     public TextCandidatesViewManager() {
-        this(300);
+        this(-1);
     }
 
     /**
@@ -159,8 +178,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
     /**
      * Set auto-hide mode.
-     * @param hide      {@code true} if the view will hidden when no candidate exists;
-     *                  {@code false} if the view is always shown.
+     * @param hide		{@code true} if the view will hidden when no candidate exists;
+     *					{@code false} if the view is always shown.
      */
     public void setAutoHide(boolean hide) {
         mAutoHideMode = hide;
@@ -171,6 +190,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mWnn = parent;
         mViewWidth = width;
 
+        mSelectBottonText =  mWnn.getResources().getString(R.string.button_candidate_select);
         mCancelBottonText = mWnn.getResources().getString(R.string.button_candidate_cancel);
 
         mViewBody = (ViewGroup)parent.getLayoutInflater().inflate(R.layout.candidates, null);
@@ -187,6 +207,10 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mViewBodyText.setCursorVisible(false);
         mViewBodyText.setGravity(Gravity.TOP);
         
+        mReadMoreText = (TextView)mViewBody.findViewById(R.id.read_more_text);
+    	mReadMoreText.setText(mWnn.getResources().getString(R.string.read_more));
+        mReadMoreText.setTextSize(24.0f);
+
         mPortrait = (height > 450)? true : false;
         setViewType(CandidatesViewManager.VIEW_TYPE_CLOSE);
 
@@ -207,10 +231,14 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         if (readMore) {
             displayCandidates(this.mConverter, false, -1);
         } else { 
-        	if (type == CandidatesViewManager.VIEW_TYPE_NORMAL && mDisplayEndOffset > 0) {
+        	if (type == CandidatesViewManager.VIEW_TYPE_NORMAL) {
                 mIsFullView = false;
-                int maxLine = getMaxLine();
-                displayCandidates(this.mConverter, false, maxLine);
+        	    if (mDisplayEndOffset > 0) {
+                    int maxLine = getMaxLine();
+                    displayCandidates(this.mConverter, false, maxLine);
+       	        } else {
+       	        	setReadMore();
+       	        }
        	    }
         }
     }
@@ -218,8 +246,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     /**
      * Set the view layout
      *
-     * @param type  view type
-     * @return true:display update   false:no update
+     * @param type		View type
+     * @return			{@code true} if display is updated; {@code false} if otherwise
      */
     private boolean setViewLayout(int type) {
         mViewType = type;
@@ -270,8 +298,9 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         }
 
         mViewBody.updateViewLayout(mViewBodyScroll,
-                                   new LinearLayout.LayoutParams(mViewWidth, height));
+                                   new FrameLayout.LayoutParams(mViewWidth, height));
 
+        mViewHeight = height;
         return readMore;
     }
 
@@ -282,6 +311,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
     /** @see CandidatesViewManager#displayCandidates */
     public void displayCandidates(WnnEngine converter) {
+    	mCanReadMore = false;
         mDisplayEndOffset = 0;
         mIsFullView = false;
         int maxLine = getMaxLine();
@@ -319,8 +349,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     /**
      * Count lines using {@link Paint#measureText}.
      *
-     * @param text  The text to display
-     * @return  Number of lines
+     * @param text		The text to display
+     * @return  		Number of lines
      */
     private int countLineUsingMeasureText(CharSequence text) {
         StringBuffer tmpText = new StringBuffer(text);
@@ -349,6 +379,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
     /**
      * Display the candidates.
+     * 
      * @param converter  {@link WnnEngine} which holds candidates.
      * @param dispFirst  Whether it is the first time displaying the candidates
      * @param maxLine    The maximum number of displaying lines
@@ -442,6 +473,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                     continue;
                 }            	
             	
+                mCanReadMore = true;
+
                     mLastWord = result;
                 if (mWordCount > 1) {
                     tmp.delete(mStartPositionArray.get(mWordCount - 1), tmp.length());
@@ -492,6 +525,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         endPosition += CANDIDATE_SEPARATOR.length();
 
         if (mDisplayEndOffset > 0 && maxLine != -1) {
+        	mCanReadMore = true;
         	String str = mCandidates.substring(0, mDisplayEndOffset);
         	StringBuffer sub = new StringBuffer(str);
         	sub.append(CANDIDATE_SEPARATOR);
@@ -506,12 +540,34 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mViewBodyText.setCursorVisible(false);
         mViewBodyText.requestFocus();
 
+        setReadMore();
+
         if (!(mViewBody.isShown())) {
             mWnn.setCandidatesViewShown(true);
         }
         return;
     }
 
+    /**
+     * Display {@code mReadMoreText} if there are more candidates.
+     *
+     */
+    private void setReadMore() {
+        if (mCanReadMore && !mIsFullView && !mCandidateDeleteState) {
+        	mReadMoreText.setHeight(mViewHeight);
+        	mReadMoreText.setVisibility(View.VISIBLE);
+        } else {
+        	mReadMoreText.setVisibility(View.GONE);
+        }
+    }
+    	
+    /**
+     * Create the string to show in the candidate window.
+     *
+     * @param word 		A candidate word
+     * @param maxLine	The maximum number of line in the candidate window
+     * @return 		The string to show
+     */
     private StringBuffer createDisplayText(WnnWord word, int maxLine) {
         StringBuffer tmp = new StringBuffer();
         int padding = ViewConfiguration.getScrollBarSize() + 
@@ -549,6 +605,16 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     }
 
     
+    /**
+	 * Adjust the width of specified string
+     *
+     * @param word				A candidate word
+     * @param tmp				A work area
+     * @param newLineLength		The line length to show
+     * @param maxwidth			The maximum number of width that can be displayed in the candidate window
+     * @param maxLine			The maximum number of line in the candidate window
+     * @return 				The string to show
+     */
     private StringBuffer adjustDisplaySize(WnnWord word, StringBuffer tmp, int newLineLength, int maxWidth, int maxLine) {
         StringBuffer string = new StringBuffer(tmp);
   	   
@@ -653,6 +719,11 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         return ret;
     }
 
+    /**
+     * Process CANDIDATE_VIEW_TOUCH event.
+     * 
+     * @return		{@code true} if event is processed; {@code false} if otherwise
+     */
     public boolean onTouchSync() {
         if (!mHasCreatedCandidateList) {
             return false;
@@ -680,6 +751,13 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.SELECT_CANDIDATE, word));
     }
 
+    /**
+     * Convert a coordinate into the offset of character
+     *
+     * @param x 	The horizontal position
+     * @param y		The vertical position
+     * @return 	The offset of character
+     */
 	public int getOffset(int x,int y){
 	    Layout layout = mViewBodyText.getLayout();
 	    int line = layout.getLineForVertical(y);
@@ -763,8 +841,9 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mCandidateDeleteState = true;
                 mViewBodyScroll.removeAllViews();
                 mViewBody.updateViewLayout(mViewBodyScroll,
-                                           new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT,
+                                           new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT,
                                                                          LayoutParams.WRAP_CONTENT));
+                setReadMore();
                 mWord = mWnnWordArray.get(wordIndex);
                 LinearLayout mLinerLayout;
                 mLinerLayout = new  LinearLayout(mViewBodyScroll.getContext());
@@ -774,6 +853,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mLinerLayout.setBackgroundColor(color);
                 TextView text = new TextView(mViewBodyScroll.getContext());
                 text.setText(mWord.candidate);
+                text.setTextColor(mWnn.getResources().getColor(R.color.candidate_text));
                 text.setTextSize(mWnn.getResources().getDimension(R.dimen.candidate_delete_word_size));
                 text.setGravity(Gravity.CENTER);
                 mLinerLayout.addView(text);
@@ -781,6 +861,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 LinearLayout linearLayout = new LinearLayout(mViewBodyScroll.getContext());
                 linearLayout.setOrientation(LinearLayout.HORIZONTAL);
                 
+                linearLayout.addView(createSelectButton());
+
                 linearLayout.addView(createCancelButton());
                 linearLayout.setGravity(Gravity.CENTER);
                 mLinerLayout.addView(linearLayout);
@@ -826,6 +908,44 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 		return false;
 	}
 	
+    /**
+     * Create the select button.
+     *
+     * @return Button The button object
+     */
+	private Button createSelectButton(){
+        final Button selectB;
+        selectB= new Button(mViewBodyScroll.getContext()) {
+            public boolean onTouchEvent(MotionEvent me) {
+                boolean ret = super.onTouchEvent(me);
+                Drawable d = getBackground();
+                switch (me.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    d.setState(View.PRESSED_ENABLED_SELECTED_WINDOW_FOCUSED_STATE_SET);
+                    break;
+                case MotionEvent.ACTION_UP:
+                default:
+                	d.clearColorFilter();
+                    break;
+                }
+            
+                return ret;
+            }
+        };
+        selectB.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                selectCandidate(mWord);
+            }
+        });
+        selectB.setText(mSelectBottonText);
+        return selectB;
+	}
+
+    /**
+     * Create the cancel button
+     *
+     * @return Button 		the button object
+     */
 	private Button createCancelButton(){
         final Button cancelB;
         cancelB= new Button(mViewBodyScroll.getContext()) {
@@ -860,11 +980,26 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 	}
 
 
+    /**
+     * Set the show state of hardware keyboard
+     * 
+     * @param hidden 	{@code true} if the hardware keyboard is not shown
+     */
     public void setHardKeyboardHidden(boolean hidden) {
         mHardKeyboardHidden = hidden;
     }
 
+    /**
+     * Retrieve the width of string to draw
+     * (Emoji is supported by this method)
+     * 
+     * @param paint 		The information to draw
+     * @param text			The string
+     * @param start			The start position (specified by the number of character)
+     * @param end 			The end position (specified by the number of character)
+     * @return 			The width of string to draw
+     */ 
     public int measureText(TextPaint paint, CharSequence text, int start, int end) {
-        return (int)paint.measureText(text, start, end);
+        return (int)Styled.measureText(paint, new TextPaint(), text, start, end, null);
     }
 }

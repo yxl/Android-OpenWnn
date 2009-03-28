@@ -20,7 +20,7 @@ import android.view.KeyEvent;
 import java.util.*;
 
 /**
- * Definition of event message used by OpenWnn framework.
+ * The definition class of event message used by OpenWnn framework.
  *
  * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
@@ -127,7 +127,7 @@ public class OpenWnnEvent {
     public static final int CHANGE_MODE  = 0xF000000F;
 
     /**
-     * Constant definition class of engine's mode
+     * The definition class of engine's mode.
      */
     public static final class Mode {
         /** Default (use both of the letterConverter and the {@link WnnEngine}) */
@@ -213,6 +213,11 @@ public class OpenWnnEvent {
      * Touch the candidate view.
      */
     public static final int CANDIDATE_VIEW_TOUCH = 0xF000001D;
+
+    /**
+     * Key up event.
+     */
+    public static final int KEYUP = 0xF000001F;
 
     /** Event code */
     public int code = UNDEFINED;
@@ -300,7 +305,11 @@ public class OpenWnnEvent {
      * @param ev    The key event
      */
     public OpenWnnEvent(KeyEvent ev) {
-        this.code = INPUT_KEY;
+        if(ev.getAction() != KeyEvent.ACTION_UP){
+            this.code = INPUT_KEY;
+        }else{
+            this.code = KEYUP;
+        }
         this.keyEvent = ev;
     }
     /**
@@ -337,3 +346,4 @@ public class OpenWnnEvent {
         this.word = word;
     }
 }
+

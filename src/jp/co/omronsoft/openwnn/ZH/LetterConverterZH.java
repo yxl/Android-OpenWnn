@@ -23,9 +23,9 @@ import jp.co.omronsoft.openwnn.StrSegment;
 import android.content.SharedPreferences;
 
 /**
- * Half-width symbol to Full-width symbol converter for Chinese IME
+ * The Half-width symbol to Full-width symbol converter class for Chinese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class LetterConverterZH implements LetterConverter {
     /** HashMap for symbol conversion (Chinese mode) */
@@ -63,9 +63,10 @@ public class LetterConverterZH implements LetterConverter {
      * <br>
      * This method is same as {@code convert()},
      *  but changes its behavior by the shift key state.
-     *  @param text  The input text
-     *  @param shift The shift key state. (0:not pressed, 1:otherwise)
-     *  @return {@code true} if success to convert; {@code false} if fail.
+     *  
+     *  @param text		The input text
+     *  @param shift	The shift key state. (0:not pressed, 1:otherwise)
+     *  @return		{@code true} if success to convert; {@code false} if fail.
      */
     public boolean convert(ComposingText text, int shift) {
         int cursor = text.getCursor(1);

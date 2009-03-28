@@ -23,9 +23,9 @@ import android.widget.Toast;
 import jp.co.omronsoft.openwnn.*;
 
 /**
- * Clear user dictionary preference for English IME
+ * The preference class to clear user dictionary for English IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class ClearUserDictionaryDialogPreferenceEN extends DialogPreference {
     /** The context */

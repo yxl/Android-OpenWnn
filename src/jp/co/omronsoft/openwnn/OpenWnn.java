@@ -33,9 +33,9 @@ import android.graphics.*;
 import android.graphics.drawable.*;
 
 /**
- * OpenWnn IME's base class
+ * The OpenWnn IME's base class.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnn extends InputMethodService {
 
@@ -130,6 +130,8 @@ public class OpenWnn extends InputMethodService {
         boolean ret = mConsumeDownEvent;
         if (!ret) {
             ret = super.onKeyUp(keyCode, event);
+        }else{
+            onEvent(new OpenWnnEvent(event));
         }
         return ret;
     }
@@ -197,8 +199,7 @@ public class OpenWnn extends InputMethodService {
      * Process an event.
      *
      * @param  ev  An event
-     *
-     * @return {@code true} if the event is processed in this method; {@code false} if not.
+     * @return 	{@code true} if the event is processed in this method; {@code false} if not.
      */
     public boolean onEvent(OpenWnnEvent ev) {
         return false;
@@ -209,9 +210,8 @@ public class OpenWnn extends InputMethodService {
      *
      * @param prevChar     The character input previous
      * @param toggleTable  Toggle table
-     * @param reverse      {@code false}:forward toggle, {@code true}: backward toggle
-     *
-     * @return A character ({@code null} if no character is found)
+     * @param reverse      {@code false} if toggle direction is forward, {@code true} if toggle direction is backward
+     * @return 			A character ({@code null} if no character is found)
      */
     protected String searchToggleCharacter(String prevChar, String[] toggleTable, boolean reverse) {
         for (int i = 0; i < toggleTable.length; i++) {
@@ -236,5 +236,6 @@ public class OpenWnn extends InputMethodService {
         return null;
     }
 }
+
 
 

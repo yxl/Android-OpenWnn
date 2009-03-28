@@ -21,9 +21,9 @@ import java.util.HashMap;
 import android.content.SharedPreferences;
 
 /**
- * Romaji to half-width Kataka converter for Japanese IME
+ * The Romaji to half-width Kataka converter class for Japanese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class RomkanHalfKatakana implements LetterConverter {
     /** HashMap for Romaji-to-Kana conversion (Japanese mode) */

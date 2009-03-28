@@ -20,9 +20,9 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 /**
- * Control panel preference class for Chinese IME.
+ * The control panel preference class for Chinese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnControlPanelZHCN extends PreferenceActivity {
 

@@ -16,19 +16,16 @@
 
 package jp.co.omronsoft.openwnn.ZH.CN;
 
-import jp.co.omronsoft.openwnn.OpenWnnEvent;
-import jp.co.omronsoft.openwnn.OpenWnnZHCN;
-import jp.co.omronsoft.openwnn.R;
-import jp.co.omronsoft.openwnn.WnnWord;
+import jp.co.omronsoft.openwnn.*;
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.widget.Toast;
 
 /**
- * Clear user dictionary preference for Chinese IME
+ * The preference class to clear user dictionary for Chinese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class ClearUserDictionaryDialogPreferenceZHCN extends DialogPreference {
     /** The context */

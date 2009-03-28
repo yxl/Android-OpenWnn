@@ -23,9 +23,9 @@ import jp.co.omronsoft.openwnn.UserDictionaryToolsList;
 import android.view.View;
 
 /**
- * User dictionary's word editor for Chinese IME
+ * The user dictionary's word editor class for Chinese IME.
  *
- * @author Copyright (C) 2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
+ * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class UserDictionaryToolsEditZHCN extends UserDictionaryToolsEdit {
     /**

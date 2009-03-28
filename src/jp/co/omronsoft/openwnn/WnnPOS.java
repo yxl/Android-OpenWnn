@@ -17,7 +17,7 @@
 package jp.co.omronsoft.openwnn;
 
 /**
- * The container of a part of speech
+ * The container class of a part of speech.
  *
  * @author Copyright (C) 2008-2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
