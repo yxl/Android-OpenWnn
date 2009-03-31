@@ -37,6 +37,8 @@ public class OpenWnnEngineEN implements WnnEngine {
     public static final int FREQ_LEARN = 600;
     /** Score(frequency value) of word in the user dictionary */
     public static final int FREQ_USER = 500;
+    /** Limitation of predicted candidates */
+    public static final int PREDICT_LIMIT = 300;
 
     /** OpenWnn dictionary */
 	private   WnnDictionary mDictionary;
@@ -106,7 +108,7 @@ public class OpenWnnEngineEN implements WnnEngine {
     private WnnWord getCandidate(int index) {
         WnnWord word;
         /* search the candidate from the dictionaries */
-        while (index >= mConvResult.size()) {
+        while (mConvResult.size() < PREDICT_LIMIT && index >= mConvResult.size()) {
             while ((word = mDictionary.getNextWord()) != null) {
                 /* adjust the case of letter */
                 char c = word.candidate.charAt(0);

@@ -20,10 +20,10 @@
 	  android:verticalGap="0px"
 	  android:keyHeight="50px" >
   <Row>
-    <Key android:codes="-115" android:keyLabel="中"
+    <Key android:codes="-115" android:keyLabel="@string/key_12key_switch_pinyin"
 	 android:keyEdgeFlags="left"/>
-    <Key android:codes="-113" android:keyLabel="aA"/>
-    <Key android:codes="-112" android:keyLabel="12"/>
+    <Key android:codes="-113" android:keyLabel="@string/key_12key_switch_half_alphabet"/>
+    <Key android:codes="-112" android:keyLabel="@string/key_12key_switch_half_number"/>
     <Key android:codes="-108" android:keyLabel="@string/key_12key_switch_full_number"
      android:keyEdgeFlags="right"/>
   </Row>

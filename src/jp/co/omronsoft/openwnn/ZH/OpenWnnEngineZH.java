@@ -60,6 +60,9 @@ public class OpenWnnEngineZH implements WnnEngine {
     public static final int KEYBOARD_QWERTY = 2;
     /** Maximum limit length of output */
     public static final int MAX_OUTPUT_LENGTH = 50;
+    /** Limitation of predicted candidates */
+    public static final int PREDICT_LIMIT = 300;
+
 
     /** Score(frequency value) of word in the learning dictionary */
     public static final int FREQ_LEARN = 600;
@@ -195,23 +198,22 @@ public class OpenWnnEngineZH implements WnnEngine {
                 /* single clause conversion */
                 Iterator<?> convResult = mClauseConverter.convert(mInputPinyin);
                 if (convResult != null) {
-                	while (convResult.hasNext()) {
-                		addCandidate((WnnWord)convResult.next());
-                	}
-                }	
+                    while (convResult.hasNext()) {
+                        addCandidate((WnnWord)convResult.next());
+                    }
+                }   
                 /* end of candidates by single clause conversion */
                 mGetCandidateFrom = -1;
             } else {
                 /* get prefix matching words from the dictionaries */
                 while (index >= mConvResult.size()) {
                     if ((word = mDictionaryZH.getNextWord()) == null) {
-                    	if (!mExactMatchMode && mSearchLength > 1) {
-                    		mGetCandidateFrom = 1;
-                    		break;
-                    	} else {
-                    		mGetCandidateFrom = 2;
-                    		break;
-                    	}
+                        if (!mExactMatchMode && mSearchLength > 1) {
+                            mGetCandidateFrom = 1;
+                        } else {
+                            mGetCandidateFrom = 2;
+                        }
+                        break;
                     }
                     if (mSearchLength == word.stroke.length()
                         || (!mExactMatchMode && (mSearchLength == mInputPinyin.length()))) {
@@ -225,44 +227,44 @@ public class OpenWnnEngineZH implements WnnEngine {
             /* get common prefix matching words from the dictionaries */
             while (index >= mConvResult.size()) {
                 if ((word = mDictionaryZH.getNextWord()) == null) {
-                	if (--mSearchLength > 0) {
-                		String input = mInputPinyin.substring(0, mSearchLength);
-                		if (mSearchLength == PinyinParser.PINYIN_MAX_LENGTH) {
-                			/* if length of the key is less than PinyinParser.PINYIN_MAX_LENGTH,
-                			 * use the single Kanji dictionary.
-                			 */
-                			mDictionaryZH.setDictionary(2, 400, 500); /* single Kanji dictionary */
-                		}
-                		
-                		ArrayList<WnnWord> cache = mSearchCache.get(input);
-                		if (cache != null) {
-                			if (cache != mNoWord) {
-                				Iterator<WnnWord> cachei = cache.iterator();
-                				while (cachei.hasNext()) {
-                					addCandidate(cachei.next());
-                				}
-                				mSearchCacheArray = cache;
-                				mDictionaryZH.searchWord(WnnDictionary.SEARCH_PREFIX, WnnDictionary.ORDER_BY_FREQUENCY, input);
-                			}
-                		} else {
-                			if (PinyinParser.isPinyin(input)
-                					&& mDictionaryZH.searchWord(WnnDictionary.SEARCH_PREFIX, WnnDictionary.ORDER_BY_FREQUENCY, input) > 0) {
-                    			mSearchCacheArray = new ArrayList<WnnWord>();
-                    		} else {
-                    			mSearchCacheArray = mNoWord;                    			
-                    		}
-                			mSearchCache.put(input, mSearchCacheArray);
-                		}
-                		continue;
-                	} else {
-                		mGetCandidateFrom = 2;
-                		break;
-                	}
+                    if (--mSearchLength > 0) {
+                        String input = mInputPinyin.substring(0, mSearchLength);
+                        if (mSearchLength == PinyinParser.PINYIN_MAX_LENGTH) {
+                            /* if length of the key is less than PinyinParser.PINYIN_MAX_LENGTH,
+                             * use the single Kanji dictionary.
+                             */
+                            mDictionaryZH.setDictionary(2, 400, 500); /* single Kanji dictionary */
+                        }
+
+                        ArrayList<WnnWord> cache = mSearchCache.get(input);
+                        if (cache != null) {
+                            if (cache != mNoWord) {
+                                Iterator<WnnWord> cachei = cache.iterator();
+                                while (cachei.hasNext()) {
+                                    addCandidate(cachei.next());
+                                }
+                                mSearchCacheArray = cache;
+                                mDictionaryZH.searchWord(WnnDictionary.SEARCH_PREFIX, WnnDictionary.ORDER_BY_FREQUENCY, input);
+                            }
+                        } else {
+                            if (PinyinParser.isPinyin(input)
+                                    && mDictionaryZH.searchWord(WnnDictionary.SEARCH_PREFIX, WnnDictionary.ORDER_BY_FREQUENCY, input) > 0) {
+                                mSearchCacheArray = new ArrayList<WnnWord>();
+                            } else {
+                                mSearchCacheArray = mNoWord;                                
+                            }
+                            mSearchCache.put(input, mSearchCacheArray);
+                        }
+                        continue;
+                    } else {
+                        mGetCandidateFrom = 2;
+                        break;
+                    }
                 }
                 if (mSearchLength == word.stroke.length()
-                    || (!mExactMatchMode && (mSearchLength == mInputPinyin.length()))) {
+                        || (!mExactMatchMode && (mSearchLength == mInputPinyin.length()))) {
                     if (addCandidate(word)) {
-                    	mSearchCacheArray.add(word);
+                        mSearchCacheArray.add(word);
                     }                    
                 }
             }
@@ -290,6 +292,10 @@ public class OpenWnnEngineZH implements WnnEngine {
         			addCandidate(word);
         		}
         	}
+        }
+        
+        if (!mSingleClauseMode && mConvResult.size() > PREDICT_LIMIT) {
+        	mGetCandidateFrom = -1;
         }
 
         if (index >= mConvResult.size()) {
