@@ -685,6 +685,10 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         if (mAutoHideMode && mViewBody.isShown()) {
             mWnn.setCandidatesViewShown(false);
         }
+        if(!mAutoHideMode){
+            mCanReadMore = false;
+            setReadMore();
+        }
     }
 
     /** @see CandidatesViewManager#setPreferences */

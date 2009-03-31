@@ -115,20 +115,20 @@
 
   <!-- IME dependency -->
     <!-- OpenWnn English -->
-    <string name="openwnn_english_copyright">Ver.1.20-rc1\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_english_copyright">Ver.1.20\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_english">OpenWnn English</string>
     <string name="openwnn_english_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so</string>
     <string name="openwnn_english_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableEN.dic</string>
     <string name="en_word_separators">.,;:!?</string>
 
     <!-- OpenWnn Japanese -->
-    <string name="openwnn_japanese_copyright">Ver.1.20-rc1\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_japanese_copyright">Ver.1.20\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_japanese">OpenWnn Japanese</string>
     <string name="openwnn_japanese_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so</string>
     <string name="openwnn_japanese_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableJAJP.dic</string>
 
     <!-- OpenWnn Chinese -->
-    <string name="openwnn_china_copyright">Ver.1.20-rc1\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_china_copyright">Ver.1.20\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_china">OpenWnn Chinese</string>
     <string name="openwnn_china_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnZHCNDic.so</string>
 <!-- After Config Change -->
@@ -236,6 +236,7 @@
     <string name="key_12key_switch_half_katakana">ｶﾅ</string>
     <string name="key_12key_switch_half_alphabet">AB</string>
     <string name="key_12key_switch_half_number">12</string>
+    <string name="key_12key_switch_pinyin">中</string>
 
     <string name="key_qwerty_half_comma">､</string>
     <string name="key_qwerty_half_period">｡</string>
