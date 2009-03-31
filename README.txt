@@ -23,7 +23,7 @@
         . Java docs of the IME              (HTML)
 
     o Building environment
-        . Building control file		    (XML, makefile, shell script)
+        . Building control file             (XML, makefile, shell script)
         . IME native library source code    (C language)
         . IME resource                      (XML, PNG)
         . IME source code                   (Java)
@@ -55,68 +55,66 @@
 
 4. File constitution 
 
-    NOTICE                                                          Apache license paper
-    README.txt                                                      This README
-    ChangeLog.txt                                                   Change history
+    NOTICE                                    Apache license paper
+    README.txt                                This README
+    ChangeLog.txt                             Change history
 
     doc/
-        *.html                                                      Java docs of the IME
+      *.html                                  Java docs of the IME
 
-    src/
-        IME/
-            Android.mk                                              Building control file
-            AndroidManifest.xml                                     |
+    Android.mk                                Building control file
+    AndroidManifest.xml                       |
 
-            libs/                                                   IME native library source code (C language)
-                Android.mk                                          |
-                libwnnDictionary/                                   |
-                    Android.mk                                      |
-                    *.c                                             |
-                    *.h                                             |
-                    engine/                                         |
-                        *.c                                         |
-                    include/                                        |
-                        *.h                                         |
-                libwnnEngDic/                                       |
-                    Android.mk                                      |
-                    *.c                                             |
-                libwnnJpnDic/                                       |
-                    Android.mk                                      |
-                    *.c                                             |
-                libwnnZHCNDic/                                      |
-                    Android.mk                                      |
-                    *.c                                             |
+    libs/                                     IME native library source code (C language)
+        Android.mk                            |
+        libwnnDictionary/                     |
+            Android.mk                        |
+            *.c                               |
+            *.h                               |
+            engine/                           |
+                *.c                           |
+            include/                          |
+                *.h                           |
+        libwnnEngDic/                         |
+            Android.mk                        |
+            *.c                               |
+        libwnnJpnDic/                         |
+            Android.mk                        |
+            *.c                               |
+        libwnnZHCNDic/                        |
+            Android.mk                        |
+            *.c                               |
 
-            res/                                                    IME resource (XML, PNG)
-		drawable/                                           |
-		    *.xml                                           |
-		    *.png                                           |
-		layout/                                             |
-		    *.xml                                           |
-		raw/                                                |
-                    type.ogg                                        |
-		values/                                             |
-		    *.xml                                           |
-		values-ja/                                          |
-		    *.xml                                           |
-		values-zh-rCN                                       |
-		    *.xml                                           |
-		xml/                                                |
-		    *.xml                                           |
+    res/                                      IME resource (XML, PNG)
+        drawable/                             |
+            *.xml                             |
+            *.png                             |
+        layout/                               |
+            *.xml                             |
+        raw/                                  |
+            type.ogg                          |
+        values/                               |
+            *.xml                             |
+        values-ja/                            |
+            *.xml                             |
+        values-zh-rCN                         |
+            *.xml                             |
+        xml/                                  |
+            *.xml                             |
 
-            src/                                                    IME source code (Java)
-                jp/                                                 |
-                    co/                                             |
-                        omronsoft/                                  |
-                            openwnn/                                |
-                                *.java                              |
-                                EN/                                 |
-				    *.java                          |
-                                JAJP/                               |
-				    *.java                          |
-                                ZH/                                 |
-				    *.java                          |
-                                    CN/                             |
-				        *.java                      |
+    src/                                      IME source code (Java)
+        jp/                                   |
+            co/                               |
+                omronsoft/                    |
+                    openwnn/                  |
+                        *.java                |
+                        EN/                   |
+                            *.java            |
+                        JAJP/                 |
+                            *.java            |
+                        ZH/                   |
+                            *.java            |
+                            CN/               |
+                                *.java        |
 
 -------------------------------------------------------------------------------

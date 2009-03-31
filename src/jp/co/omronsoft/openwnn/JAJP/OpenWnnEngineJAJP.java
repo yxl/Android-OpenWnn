@@ -76,7 +76,9 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 
     /** Maximum limit length of output */
     public static final int MAX_OUTPUT_LENGTH = 50;
-    
+    /** Limitation of predicted candidates */
+    public static final int PREDICT_LIMIT = 100;
+   
     /** OpenWnn dictionary */
 	private WnnDictionary mDictionaryJP;
 
@@ -203,16 +205,24 @@ public class OpenWnnEngineJAJP implements WnnEngine {
                 /* skip to single clause conversion if single clause conversion mode */
                 mGetCandidateFrom = 1;
             } else {
-                /* get prefix matching words from the dictionaries */
-                while (index >= mConvResult.size()) {
-                    if ((word = mDictionaryJP.getNextWord()) == null) {
-                        mGetCandidateFrom = 1;
-                        break;
-                    }
-                    if (!mExactMatchMode || mInputHiragana.equals(word.stroke)) {
-                        addCandidate(word);
-                    }
-                }
+            	if (mConvResult.size() < PREDICT_LIMIT) {
+            		/* get prefix matching words from the dictionaries */
+            		while (index >= mConvResult.size()) {
+            			if ((word = mDictionaryJP.getNextWord()) == null) {
+            				mGetCandidateFrom = 1;
+            				break;
+            			}
+            			if (!mExactMatchMode || mInputHiragana.equals(word.stroke)) {
+            				addCandidate(word);
+            				if (mConvResult.size() >= PREDICT_LIMIT) {
+            					mGetCandidateFrom = 1;
+            					break;
+            				}
+            			}
+            		}
+            	} else {
+            		mGetCandidateFrom = 1;
+            	}
             }
         }
 
