@@ -99,13 +99,13 @@
 
   <!-- IME dependency -->
     <!-- OpenWnn English -->
-    <string name="openwnn_english_copyright">Ver.1.20\nオムロン ソフトウェア(株)</string>
+    <string name="openwnn_english_copyright">Ver.1.21-RC-20090403\nオムロン ソフトウェア(株)</string>
 
     <!-- OpenWnn Japanese -->
-    <string name="openwnn_japanese_copyright">Ver.1.20\nオムロン ソフトウェア(株)</string>
+    <string name="openwnn_japanese_copyright">Ver.1.21-RC-20090403\nオムロン ソフトウェア(株)</string>
 
     <!-- OpenWnn Chinese -->
-    <string name="openwnn_china_copyright">Ver.1.20\nオムロン ソフトウェア(株)</string>
+    <string name="openwnn_china_copyright">Ver.1.21-RC-20090403\nオムロン ソフトウェア(株)</string>
 
   <!-- Candidate Delete -->
       <string name="button_candidate_select">選　択</string>

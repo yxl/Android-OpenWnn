@@ -176,6 +176,11 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#onKey */
     @Override public void onKey(int primaryCode, int[] keyCodes) {
+
+        if (mDisableKeyInput) {
+            return;
+        }
+
         switch (primaryCode) {
         case KEYCODE_QWERTY_TOGGLE_MODE:
             nextKeyMode();
@@ -268,6 +273,8 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         mEnableAutoCaps = pref.getBoolean("auto_caps", true);
         mFixedKeyMode = INVALID_KEYMODE;
         mPreferenceKeyMode = INVALID_KEYMODE;
+        mNoInput = true;
+        mDisableKeyInput = false;
 
         switch (inputType & EditorInfo.TYPE_MASK_CLASS) {
 
@@ -312,7 +319,9 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#onUpdateState */
     @Override public void onUpdateState(OpenWnn parent) {
         super.onUpdateState(parent);
-        setShiftByEditorInfo();
+        if (!mCapsLock) {
+            setShiftByEditorInfo();
+        }
     }
 
     /**

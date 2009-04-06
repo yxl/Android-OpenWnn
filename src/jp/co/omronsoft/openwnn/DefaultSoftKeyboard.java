@@ -38,207 +38,209 @@ import android.util.Log;
  * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKeyboardActionListener {
-	/*
-	 *----------------------------------------------------------------------
-	 * key codes for a software keyboard
-	 *----------------------------------------------------------------------
-	 */
+    /*
+     *----------------------------------------------------------------------
+     * key codes for a software keyboard
+     *----------------------------------------------------------------------
+     */
     /** Change the keyboard language */
-	public static final int KEYCODE_CHANGE_LANG = -500;
+    public static final int KEYCODE_CHANGE_LANG = -500;
 
-	/* for Japanese 12-key keyboard */
-	/** Japanese 12-key keyboard [1] */
-	public static final int KEYCODE_JP12_1 = -201;
-	/** Japanese 12-key keyboard [2] */
-	public static final int KEYCODE_JP12_2 = -202;
-	/** Japanese 12-key keyboard [3] */
-	public static final int KEYCODE_JP12_3 = -203;
-	/** Japanese 12-key keyboard [4] */
-	public static final int KEYCODE_JP12_4 = -204;
-	/** Japanese 12-key keyboard [5] */
-	public static final int KEYCODE_JP12_5 = -205;
-	/** Japanese 12-key keyboard [6] */
-	public static final int KEYCODE_JP12_6 = -206;
-	/** Japanese 12-key keyboard [7] */
-	public static final int KEYCODE_JP12_7 = -207;
-	/** Japanese 12-key keyboard [8] */
-	public static final int KEYCODE_JP12_8 = -208;
-	/** Japanese 12-key keyboard [9] */
-	public static final int KEYCODE_JP12_9 = -209;
-	/** Japanese 12-key keyboard [0] */
-	public static final int KEYCODE_JP12_0 = -210;
-	/** Japanese 12-key keyboard [#] */
-	public static final int KEYCODE_JP12_SHARP = -211;
-	/** Japanese 12-key keyboard [*] */
-	public static final int KEYCODE_JP12_ASTER = -213;
-	/** Japanese 12-key keyboard [DEL] */
-	public static final int KEYCODE_JP12_BACKSPACE = -214;
-	/** Japanese 12-key keyboard [SPACE] */
-	public static final int KEYCODE_JP12_SPACE = -215;
-	/** Japanese 12-key keyboard [ENTER] */
-	public static final int KEYCODE_JP12_ENTER = -216;
-	/** Japanese 12-key keyboard [RIGHT ARROW] */
-	public static final int KEYCODE_JP12_RIGHT = -217;
-	/** Japanese 12-key keyboard [LEFT ARROW] */
-	public static final int KEYCODE_JP12_LEFT = -218;
-	/** Japanese 12-key keyboard [REVERSE TOGGLE] */
-	public static final int KEYCODE_JP12_REVERSE = -219;
-	/** Japanese 12-key keyboard [CLOSE] */
-	public static final int KEYCODE_JP12_CLOSE   = -220;
-	/** Japanese 12-key keyboard [KEYBOARD TYPE CHANGE] */
-	public static final int KEYCODE_JP12_KBD   = -221;
-	/** Japanese 12-key keyboard [EMOJI] */
-	public static final int KEYCODE_JP12_EMOJI      = -222;
-	/** Japanese 12-key keyboard [FULL-WIDTH HIRAGANA MODE] */
-	public static final int KEYCODE_JP12_ZEN_HIRA   = -223;
-	/** Japanese 12-key keyboard [FULL-WIDTH NUMBER MODE] */
-	public static final int KEYCODE_JP12_ZEN_NUM    = -224;
-	/** Japanese 12-key keyboard [FULL-WIDTH ALPHABET MODE] */
-	public static final int KEYCODE_JP12_ZEN_ALPHA  = -225;
-	/** Japanese 12-key keyboard [FULL-WIDTH KATAKANA MODE] */
-	public static final int KEYCODE_JP12_ZEN_KATA   = -226;
-	/** Japanese 12-key keyboard [HALF-WIDTH KATAKANA MODE] */
-	public static final int KEYCODE_JP12_HAN_KATA   = -227;
-	/** Japanese 12-key keyboard [HALF-WIDTH NUMBER MODE] */
-	public static final int KEYCODE_JP12_HAN_NUM    = -228;
-	/** Japanese 12-key keyboard [HALF-WIDTH ALPHABET MODE] */
-	public static final int KEYCODE_JP12_HAN_ALPHA  = -229;
-	/** Japanese 12-key keyboard [MODE TOOGLE CHANGE] */
-	public static final int KEYCODE_JP12_TOGGLE_MODE = -230;
-	
-	/* for Qwerty keyboard */
-	/** Qwerty keyboard [DEL] */
-	public static final int KEYCODE_QWERTY_BACKSPACE = -100;
-	/** Qwerty keyboard [ENTER] */
-	public static final int KEYCODE_QWERTY_ENTER = -101;
-	/** Qwerty keyboard [SHIFT] */
-	public static final int KEYCODE_QWERTY_SHIFT = Keyboard.KEYCODE_SHIFT;
-	/** Qwerty keyboard [ALT] */
-	public static final int KEYCODE_QWERTY_ALT   = -103;
-	/** Qwerty keyboard [KEYBOARD TYPE CHANGE] */
-	public static final int KEYCODE_QWERTY_KBD   = -104;
-	/** Qwerty keyboard [CLOSE] */
-	public static final int KEYCODE_QWERTY_CLOSE = -105;
-	/** Japanese Qwerty keyboard [EMOJI] */
-	public static final int KEYCODE_QWERTY_EMOJI = -106;
-	/** Japanese Qwerty keyboard [FULL-WIDTH HIRAGANA MODE] */
-	public static final int KEYCODE_QWERTY_ZEN_HIRA   = -107;
-	/** Japanese Qwerty keyboard [FULL-WIDTH NUMBER MODE] */
-	public static final int KEYCODE_QWERTY_ZEN_NUM    = -108;
-	/** Japanese Qwerty keyboard [FULL-WIDTH ALPHABET MODE] */
-	public static final int KEYCODE_QWERTY_ZEN_ALPHA  = -109;
-	/** Japanese Qwerty keyboard [FULL-WIDTH KATAKANA MODE] */
-	public static final int KEYCODE_QWERTY_ZEN_KATA   = -110;
-	/** Japanese Qwerty keyboard [HALF-WIDTH KATAKANA MODE] */
-	public static final int KEYCODE_QWERTY_HAN_KATA   = -111;
-	/** Qwerty keyboard [NUMBER MODE] */
-	public static final int KEYCODE_QWERTY_HAN_NUM    = -112;
-	/** Qwerty keyboard [ALPHABET MODE] */
-	public static final int KEYCODE_QWERTY_HAN_ALPHA  = -113;
-	/** Qwerty keyboard [MODE TOOGLE CHANGE] */
-	public static final int KEYCODE_QWERTY_TOGGLE_MODE = -114;
-	/** Qwerty keyboard [PINYIN MODE] */
-	public static final int KEYCODE_QWERTY_PINYIN  = -115;
-	
-	/** OpenWnn instance which hold this software keyboard*/
-	protected OpenWnn      mWnn;
-	
-	/** Current keyboard view */
-	protected KeyboardView mKeyboardView;
-	
-	/** View objects (main side) */
-	protected ViewGroup mMainView;
-	/** View objects (sub side) */
-	protected ViewGroup mSubView;
-	
-	/** Current keyboard definition */
-	protected Keyboard mCurrentKeyboard;
-	
+    /* for Japanese 12-key keyboard */
+    /** Japanese 12-key keyboard [1] */
+    public static final int KEYCODE_JP12_1 = -201;
+    /** Japanese 12-key keyboard [2] */
+    public static final int KEYCODE_JP12_2 = -202;
+    /** Japanese 12-key keyboard [3] */
+    public static final int KEYCODE_JP12_3 = -203;
+    /** Japanese 12-key keyboard [4] */
+    public static final int KEYCODE_JP12_4 = -204;
+    /** Japanese 12-key keyboard [5] */
+    public static final int KEYCODE_JP12_5 = -205;
+    /** Japanese 12-key keyboard [6] */
+    public static final int KEYCODE_JP12_6 = -206;
+    /** Japanese 12-key keyboard [7] */
+    public static final int KEYCODE_JP12_7 = -207;
+    /** Japanese 12-key keyboard [8] */
+    public static final int KEYCODE_JP12_8 = -208;
+    /** Japanese 12-key keyboard [9] */
+    public static final int KEYCODE_JP12_9 = -209;
+    /** Japanese 12-key keyboard [0] */
+    public static final int KEYCODE_JP12_0 = -210;
+    /** Japanese 12-key keyboard [#] */
+    public static final int KEYCODE_JP12_SHARP = -211;
+    /** Japanese 12-key keyboard [*] */
+    public static final int KEYCODE_JP12_ASTER = -213;
+    /** Japanese 12-key keyboard [DEL] */
+    public static final int KEYCODE_JP12_BACKSPACE = -214;
+    /** Japanese 12-key keyboard [SPACE] */
+    public static final int KEYCODE_JP12_SPACE = -215;
+    /** Japanese 12-key keyboard [ENTER] */
+    public static final int KEYCODE_JP12_ENTER = -216;
+    /** Japanese 12-key keyboard [RIGHT ARROW] */
+    public static final int KEYCODE_JP12_RIGHT = -217;
+    /** Japanese 12-key keyboard [LEFT ARROW] */
+    public static final int KEYCODE_JP12_LEFT = -218;
+    /** Japanese 12-key keyboard [REVERSE TOGGLE] */
+    public static final int KEYCODE_JP12_REVERSE = -219;
+    /** Japanese 12-key keyboard [CLOSE] */
+    public static final int KEYCODE_JP12_CLOSE   = -220;
+    /** Japanese 12-key keyboard [KEYBOARD TYPE CHANGE] */
+    public static final int KEYCODE_JP12_KBD   = -221;
+    /** Japanese 12-key keyboard [EMOJI] */
+    public static final int KEYCODE_JP12_EMOJI      = -222;
+    /** Japanese 12-key keyboard [FULL-WIDTH HIRAGANA MODE] */
+    public static final int KEYCODE_JP12_ZEN_HIRA   = -223;
+    /** Japanese 12-key keyboard [FULL-WIDTH NUMBER MODE] */
+    public static final int KEYCODE_JP12_ZEN_NUM    = -224;
+    /** Japanese 12-key keyboard [FULL-WIDTH ALPHABET MODE] */
+    public static final int KEYCODE_JP12_ZEN_ALPHA  = -225;
+    /** Japanese 12-key keyboard [FULL-WIDTH KATAKANA MODE] */
+    public static final int KEYCODE_JP12_ZEN_KATA   = -226;
+    /** Japanese 12-key keyboard [HALF-WIDTH KATAKANA MODE] */
+    public static final int KEYCODE_JP12_HAN_KATA   = -227;
+    /** Japanese 12-key keyboard [HALF-WIDTH NUMBER MODE] */
+    public static final int KEYCODE_JP12_HAN_NUM    = -228;
+    /** Japanese 12-key keyboard [HALF-WIDTH ALPHABET MODE] */
+    public static final int KEYCODE_JP12_HAN_ALPHA  = -229;
+    /** Japanese 12-key keyboard [MODE TOOGLE CHANGE] */
+    public static final int KEYCODE_JP12_TOGGLE_MODE = -230;
+    
+    /* for Qwerty keyboard */
+    /** Qwerty keyboard [DEL] */
+    public static final int KEYCODE_QWERTY_BACKSPACE = -100;
+    /** Qwerty keyboard [ENTER] */
+    public static final int KEYCODE_QWERTY_ENTER = -101;
+    /** Qwerty keyboard [SHIFT] */
+    public static final int KEYCODE_QWERTY_SHIFT = Keyboard.KEYCODE_SHIFT;
+    /** Qwerty keyboard [ALT] */
+    public static final int KEYCODE_QWERTY_ALT   = -103;
+    /** Qwerty keyboard [KEYBOARD TYPE CHANGE] */
+    public static final int KEYCODE_QWERTY_KBD   = -104;
+    /** Qwerty keyboard [CLOSE] */
+    public static final int KEYCODE_QWERTY_CLOSE = -105;
+    /** Japanese Qwerty keyboard [EMOJI] */
+    public static final int KEYCODE_QWERTY_EMOJI = -106;
+    /** Japanese Qwerty keyboard [FULL-WIDTH HIRAGANA MODE] */
+    public static final int KEYCODE_QWERTY_ZEN_HIRA   = -107;
+    /** Japanese Qwerty keyboard [FULL-WIDTH NUMBER MODE] */
+    public static final int KEYCODE_QWERTY_ZEN_NUM    = -108;
+    /** Japanese Qwerty keyboard [FULL-WIDTH ALPHABET MODE] */
+    public static final int KEYCODE_QWERTY_ZEN_ALPHA  = -109;
+    /** Japanese Qwerty keyboard [FULL-WIDTH KATAKANA MODE] */
+    public static final int KEYCODE_QWERTY_ZEN_KATA   = -110;
+    /** Japanese Qwerty keyboard [HALF-WIDTH KATAKANA MODE] */
+    public static final int KEYCODE_QWERTY_HAN_KATA   = -111;
+    /** Qwerty keyboard [NUMBER MODE] */
+    public static final int KEYCODE_QWERTY_HAN_NUM    = -112;
+    /** Qwerty keyboard [ALPHABET MODE] */
+    public static final int KEYCODE_QWERTY_HAN_ALPHA  = -113;
+    /** Qwerty keyboard [MODE TOOGLE CHANGE] */
+    public static final int KEYCODE_QWERTY_TOGGLE_MODE = -114;
+    /** Qwerty keyboard [PINYIN MODE] */
+    public static final int KEYCODE_QWERTY_PINYIN  = -115;
+    
+    /** OpenWnn instance which hold this software keyboard*/
+    protected OpenWnn      mWnn;
+    
+    /** Current keyboard view */
+    protected KeyboardView mKeyboardView;
+    
+    /** View objects (main side) */
+    protected ViewGroup mMainView;
+    /** View objects (sub side) */
+    protected ViewGroup mSubView;
+    
+    /** Current keyboard definition */
+    protected Keyboard mCurrentKeyboard;
+    
     /** Caps lock state */
-	protected boolean mCapsLock;
-	
-	/**
-	 * Keyboard surfaces 
-	 * <br>
-	 * Keyboard[language][portrait/landscape][keyboard type][shift off/on][key-mode]
-	 */
-	protected Keyboard[][][][][][] mKeyboard;
+    protected boolean mCapsLock;
+    
+    /** Input restraint */
+    protected boolean mDisableKeyInput = true;
+    /**
+     * Keyboard surfaces 
+     * <br>
+     * Keyboard[language][portrait/landscape][keyboard type][shift off/on][key-mode]
+     */
+    protected Keyboard[][][][][][] mKeyboard;
 
-	/* languages */
-	/** Current language */
-	protected int mCurrentLanguage;
-	/** Language (English) */
-	public static final int LANG_EN  = 0;
-	/** Language (Japanese) */
-	public static final int LANG_JA  = 1;
-	/** Language (Chinese) */
-	public static final int LANG_CN  = 2;
+    /* languages */
+    /** Current language */
+    protected int mCurrentLanguage;
+    /** Language (English) */
+    public static final int LANG_EN  = 0;
+    /** Language (Japanese) */
+    public static final int LANG_JA  = 1;
+    /** Language (Chinese) */
+    public static final int LANG_CN  = 2;
 
-	/* portrait/landscape */
-	/** State of the display */
-	protected int mDisplayMode = 0;
-	/** Display mode (Portrait) */
-	public static final int PORTRAIT  = 0;
-	/** Display mode (Landscape) */
-	public static final int LANDSCAPE = 1;
+    /* portrait/landscape */
+    /** State of the display */
+    protected int mDisplayMode = 0;
+    /** Display mode (Portrait) */
+    public static final int PORTRAIT  = 0;
+    /** Display mode (Landscape) */
+    public static final int LANDSCAPE = 1;
 
-	/* keyboard type */
-	/** Current keyboard type */
-	protected int mCurrentKeyboardType;
-	/** Keyboard (QWERTY keyboard) */
-	public static final int KEYBOARD_QWERTY  = 0;
-	/** Keyboard (12-keys keyboard) */
-	public static final int KEYBOARD_12KEY   = 1;
-	/** State of the shift key */
-	protected int mShiftOn = 0;
-	/** Shift key off */
-	public static final int KEYBOARD_SHIFT_OFF = 0;
-	/** Shift key on */
-	public static final int KEYBOARD_SHIFT_ON  = 1;
+    /* keyboard type */
+    /** Current keyboard type */
+    protected int mCurrentKeyboardType;
+    /** Keyboard (QWERTY keyboard) */
+    public static final int KEYBOARD_QWERTY  = 0;
+    /** Keyboard (12-keys keyboard) */
+    public static final int KEYBOARD_12KEY   = 1;
+    /** State of the shift key */
+    protected int mShiftOn = 0;
+    /** Shift key off */
+    public static final int KEYBOARD_SHIFT_OFF = 0;
+    /** Shift key on */
+    public static final int KEYBOARD_SHIFT_ON  = 1;
 
-	/* key-modes */
-	/** Current key-mode */
-	protected int mCurrentKeyMode;
+    /* key-modes */
+    /** Current key-mode */
+    protected int mCurrentKeyMode;
 
-	/* key-modes for English */
+    /* key-modes for English */
     /** English key-mode (alphabet) */
-	public static final int KEYMODE_EN_ALPHABET = 0;
+    public static final int KEYMODE_EN_ALPHABET = 0;
     /** English key-mode (number) */
-	public static final int KEYMODE_EN_NUMBER   = 1;
+    public static final int KEYMODE_EN_NUMBER   = 1;
     /** English key-mode (phone number) */
-	public static final int KEYMODE_EN_PHONE    = 2;
+    public static final int KEYMODE_EN_PHONE    = 2;
 
-	/* key-modes for Japanese */
+    /* key-modes for Japanese */
     /** Japanese key-mode (Full-width Hiragana) */
-	public static final int KEYMODE_JA_FULL_HIRAGANA = 0;
+    public static final int KEYMODE_JA_FULL_HIRAGANA = 0;
     /** Japanese key-mode (Full-width alphabet) */
-	public static final int KEYMODE_JA_FULL_ALPHABET = 1;
+    public static final int KEYMODE_JA_FULL_ALPHABET = 1;
     /** Japanese key-mode (Full-width number) */
-	public static final int KEYMODE_JA_FULL_NUMBER   = 2;
+    public static final int KEYMODE_JA_FULL_NUMBER   = 2;
     /** Japanese key-mode (Full-width Katakana) */
-	public static final int KEYMODE_JA_FULL_KATAKANA = 3;
+    public static final int KEYMODE_JA_FULL_KATAKANA = 3;
     /** Japanese key-mode (Half-width alphabet) */
-	public static final int KEYMODE_JA_HALF_ALPHABET = 4;
+    public static final int KEYMODE_JA_HALF_ALPHABET = 4;
     /** Japanese key-mode (Half-width number) */
-	public static final int KEYMODE_JA_HALF_NUMBER   = 5;
+    public static final int KEYMODE_JA_HALF_NUMBER   = 5;
     /** Japanese key-mode (Half-width Katakana) */
-	public static final int KEYMODE_JA_HALF_KATAKANA = 6;
+    public static final int KEYMODE_JA_HALF_KATAKANA = 6;
     /** Japanese key-mode (Half-width phone number) */
-	public static final int KEYMODE_JA_HALF_PHONE    = 7;
+    public static final int KEYMODE_JA_HALF_PHONE    = 7;
 
-	/* key-modes for Chinese */
+    /* key-modes for Chinese */
     /** Chinese key-mode (pinyin) */
-	public static final int KEYMODE_CN_PINYIN   = 0;
+    public static final int KEYMODE_CN_PINYIN   = 0;
     /** Chinese key-mode (Full-width number) */
-	public static final int KEYMODE_CN_FULL_NUMBER   = 1;
+    public static final int KEYMODE_CN_FULL_NUMBER   = 1;
     /** Chinese key-mode (alphabet) */
-	public static final int KEYMODE_CN_ALPHABET = 2;
+    public static final int KEYMODE_CN_ALPHABET = 2;
     /** Chinese key-mode (phone) */
-	public static final int KEYMODE_CN_PHONE    = 3;
+    public static final int KEYMODE_CN_PHONE    = 3;
     /** Chinese key-mode (Half-width number) */
-	public static final int KEYMODE_CN_HALF_NUMBER   = 4;
-	
-	/* key-modes for HARD */
+    public static final int KEYMODE_CN_HALF_NUMBER   = 4;
+    
+    /* key-modes for HARD */
     /** HARD key-mode (SHIFT_OFF_ALT_OFF) */
     public static final int HARD_KEYMODE_SHIFT_OFF_ALT_OFF     = 2;
     /** HARD key-mode (SHIFT_ON_ALT_OFF) */
@@ -247,7 +249,7 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     public static final int HARD_KEYMODE_SHIFT_OFF_ALT_ON      = 4;
     /** HARD key-mode (SHIFT_ON_ALT_ON) */
     public static final int HARD_KEYMODE_SHIFT_ON_ALT_ON       = 5;
-	/** HARD key-mode (SHIFT_LOCK_ALT_OFF) */
+    /** HARD key-mode (SHIFT_LOCK_ALT_OFF) */
     public static final int HARD_KEYMODE_SHIFT_LOCK_ALT_OFF    = 6;
     /** HARD key-mode (SHIFT_LOCK_ALT_ON) */
     public static final int HARD_KEYMODE_SHIFT_LOCK_ALT_ON     = 7;
@@ -261,26 +263,26 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /** Whether the H/W keyboard is hidden. */
     protected boolean mHardKeyboardHidden = true;
 
-	/**
-	 * Status of the composing text
-	 * <br>
-	 * {@code true} if there is no composing text.
-	 */
-	protected boolean mNoInput = true;
-	
-	/** Vibratior for key click vibration */
-	protected Vibrator mVibrator = null;
-	
-	/** MediaPlayer for key click sound */
-	protected MediaPlayer mSound = null;
-	
-	/** Key toggle cycle table currently using */
-	protected String[] mCurrentCycleTable;
+    /**
+     * Status of the composing text
+     * <br>
+     * {@code true} if there is no composing text.
+     */
+    protected boolean mNoInput = true;
+    
+    /** Vibratior for key click vibration */
+    protected Vibrator mVibrator = null;
+    
+    /** MediaPlayer for key click sound */
+    protected MediaPlayer mSound = null;
+    
+    /** Key toggle cycle table currently using */
+    protected String[] mCurrentCycleTable;
 
-	/**
+    /**
      * Constructor
      */
-	public DefaultSoftKeyboard() { }
+    public DefaultSoftKeyboard() { }
 
     /**
      * Create keyboard views
@@ -298,8 +300,8 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /**
      * Get the keyboard changed the specified shift state.
      *
-     * @param shift		Shift state
-     * @return			Keyboard view
+     * @param shift     Shift state
+     * @return          Keyboard view
      */
     protected Keyboard getShiftChangeKeyboard(int shift) {
         try {
@@ -317,8 +319,8 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /**
      * Get the keyboard changed the specified input mode.
      *
-     * @param mode		Input mode
-     * @return			Keyboard view
+     * @param mode      Input mode
+     * @return          Keyboard view
      */
     protected Keyboard getModeChangeKeyboard(int mode) {
         try {
@@ -336,8 +338,8 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /**
      * Get the keyboard changed the specified keyboard type
      *
-     * @param type		Keyboard type
-     * @return			Keyboard view
+     * @param type      Keyboard type
+     * @return          Keyboard view
      */
     protected Keyboard getTypeChangeKeyboard(int type) {
         try {
@@ -355,8 +357,8 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /**
      * Get the keyboard when some characters are input or no character is input.
      *
-     * @param inputed	{@code true} if some characters are inputed; {@code false} if no character is inputed.
-     * @return			Keyboard view
+     * @param inputed   {@code true} if some characters are inputed; {@code false} if no character is inputed.
+     * @return          Keyboard view
      */
     protected Keyboard getKeyboardInputed(boolean inputed) {
         try {
@@ -527,11 +529,10 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(parent);
         String skin = pref.getString("keyboard_skin",
                                      mWnn.getResources().getString(R.string.keyboard_skin_id_default));
-        Log.d("OpenWnn", "keyboard_skin="+skin);
         int id = parent.getResources().getIdentifier(skin, "layout", "jp.co.omronsoft.openwnn");
 
         mKeyboardView = (KeyboardView) mWnn.getLayoutInflater().inflate(id, null);
-		mKeyboardView.setOnKeyboardActionListener(this);
+        mKeyboardView.setOnKeyboardActionListener(this);
         mCurrentKeyboard = null;
 
         mMainView = (ViewGroup) parent.getLayoutInflater().inflate(R.layout.keyboard_default_main, null);
@@ -690,6 +691,7 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
         if (mKeyboardView != null) {
             mKeyboardView.closing();
         }
+        mDisableKeyInput = true;
     }
 
     /***********************************************************************
@@ -755,6 +757,3 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     }
 
 }
-
-
-

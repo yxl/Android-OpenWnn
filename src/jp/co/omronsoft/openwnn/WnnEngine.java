@@ -53,10 +53,10 @@ public interface WnnEngine {
     /**
      * Predict words/phrases.
      * <br>
-     * @param text   	The input string
-     * @param minLen 	The minimum length of a word to predict (0  : no limit)
-     * @param maxLen 	The maximum length of a word to predict (-1 : no limit)
-     * @return			Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
+     * @param text      The input string
+     * @param minLen    The minimum length of a word to predict (0  : no limit)
+     * @param maxLen    The maximum length of a word to predict (-1 : no limit)
+     * @return          Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
      */
     public int predict(ComposingText text, int minLen, int maxLen);
 
@@ -70,24 +70,24 @@ public interface WnnEngine {
      * The result of conversion is set into the layer 2 in the {@link ComposingText}.
      * To get other candidates of each clause, call {@link #makeCandidateListOf(int)}.
      *
-     * @param text   	The input string
-     * @return 		Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
+     * @param text      The input string
+     * @return      Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
      */
     public int convert(ComposingText text);
 
     /**
      * Search words from the dictionaries.
      * <br>
-     * @param key  		The search key (stroke)
-     * @return 		Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
+     * @param key       The search key (stroke)
+     * @return      Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
      */
     public int searchWords(String key);
 
     /**
      * Search words from the dictionaries.
      * <br>
-     * @param word  	A word to search
-     * @return			Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
+     * @param word      A word to search
+     * @return          Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
      */
     public int searchWords(WnnWord word);
 
@@ -101,14 +101,14 @@ public interface WnnEngine {
      * {@link #makeCandidateListOf(int)}, in increasing character code order for
      * {@code searchWords()}.
      *
-     * @return			The candidate; {@code null} if there is no more candidate.
+     * @return          The candidate; {@code null} if there is no more candidate.
      */
     public WnnWord getNextCandidate();
 
     /**
      * Retrieve the list of registered words.
      * <br>
-     * @return			{@code null} if no word is registered; the array of {@link WnnWord} if some words is registered.
+     * @return          {@code null} if no word is registered; the array of {@link WnnWord} if some words is registered.
      */
     public WnnWord[] getUserDictionaryWords();
 
@@ -119,41 +119,41 @@ public interface WnnEngine {
      * candidates to the learning dictionary or update the frequency
      * of the word.
      *
-     * @param word		The selected word
-     * @return			{@code true} if success; {@code false} if fail or not supported.
+     * @param word      The selected word
+     * @return          {@code true} if success; {@code false} if fail or not supported.
      */
     public boolean learn(WnnWord word);
 
     /**
      * Register a word to the user's dictionary.
      * <br>
-     * @param word		A word to register
-     * @return			Number of registered words in the user's dictionary after the operation; minus value if a error occurs.
+     * @param word      A word to register
+     * @return          Number of registered words in the user's dictionary after the operation; minus value if a error occurs.
      */
     public int addWord(WnnWord word);
 
     /**
      * Delete a word from the user's dictionary.
      * <br>
-     * @param word		A word to delete
-     * @return			{@code true} if success; {@code false} if fail or not supported.
+     * @param word      A word to delete
+     * @return          {@code true} if success; {@code false} if fail or not supported.
      */
     public boolean deleteWord(WnnWord word);
 
     /**
      * Delete all words from the user's dictionary.
      * <br>
-     * @param dictionary	{@code DICTIONARY_TYPE_LEARN} or {@code DICTIONARY_TYPE_USER}
-     * @return				{@code true} if success; {@code false} if fail or not supported.
+     * @param dictionary    {@code DICTIONARY_TYPE_LEARN} or {@code DICTIONARY_TYPE_USER}
+     * @return              {@code true} if success; {@code false} if fail or not supported.
      */
     public boolean initializeDictionary(int dictionary);
 
     /**
      * Delete all words from the user's dictionary of the specified language.
      * <br>
-     * @param dictionary		{@code DICTIONARY_TYPE_LEARN} or {@code DICTIONARY_TYPE_USER}
-     * @param type				Dictionary type (language, etc...)
-     * @return					{@code true} if success; {@code false} if fail or not supported.
+     * @param dictionary        {@code DICTIONARY_TYPE_LEARN} or {@code DICTIONARY_TYPE_USER}
+     * @param type              Dictionary type (language, etc...)
+     * @return                  {@code true} if success; {@code false} if fail or not supported.
      */
     public boolean initializeDictionary(int dictionary, int type);
 
@@ -183,7 +183,7 @@ public interface WnnEngine {
      * To get the elements of the list, call {@link #getNextCandidate()}.
      *
      * @param clausePosition  The position of a clause
-     * @return					Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
+     * @return                  Plus value if there are candidates; 0 if there is no candidate; minus value if a error occurs.
      */
     public int makeCandidateListOf(int clausePosition);
 }
