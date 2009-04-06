@@ -56,12 +56,12 @@ public class SymbolList implements WnnEngine {
     public static final String SYMBOL_CHINESE = "c1";
 
     /** Key string to get EMOJI symbol list for Japanese */
-	public static final String SYMBOL_JAPANESE_EMOJI = "j_emoji";
+    public static final String SYMBOL_JAPANESE_EMOJI = "j_emoji";
     /** Key string to get face mark list for Japanese */
-	public static final String SYMBOL_JAPANESE_FACE  = "j_face";
+    public static final String SYMBOL_JAPANESE_FACE  = "j_face";
 
     /** The name of XML tag key */
-	private static final String XMLTAG_KEY = "string";
+    private static final String XMLTAG_KEY = "string";
 
     /*
      * DEFINITION OF VARIABLES
@@ -76,7 +76,7 @@ public class SymbolList implements WnnEngine {
     private ArrayList<String> mCurrentList;
 
     /** Iterator for getting symbols from the list */
-	private Iterator<String> mCurrentListIterator;
+    private Iterator<String> mCurrentListIterator;
 
     /*
      * DEFINITION OF METHODS
@@ -116,14 +116,14 @@ public class SymbolList implements WnnEngine {
 
         mCurrentList = null;
     }
-	
+    
     /**
      * Get a attribute value from a XML resource.
      *
-     * @param xrp	XML resource
-     * @param name	The attribute name
+     * @param xrp   XML resource
+     * @param name  The attribute name
      *
-     * @return 	The value of the attribute
+     * @return  The value of the attribute
      */
     private String getXmlAttribute(XmlResourceParser xrp, String name) {
         int resId = xrp.getAttributeResourceValue(null, name, 0);
@@ -137,10 +137,10 @@ public class SymbolList implements WnnEngine {
     /**
      * Load a symbols list from XML resource.
      *
-     * @param id  	XML resource ID
-     * @return		The symbols list
+     * @param id    XML resource ID
+     * @return      The symbols list
      */
-	private ArrayList<String> getXmlfile(int id) {
+    private ArrayList<String> getXmlfile(int id) {
         ArrayList<String> list = new ArrayList<String>();
 
         XmlResourceParser xrp = mWnn.getResources().getXml(id);
@@ -183,10 +183,10 @@ public class SymbolList implements WnnEngine {
      **********************************************************************/
     /** @see jp.co.omronsoft.openwnn.WnnEngine#init */
     public void init() {}
-	
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#close */
     public void close() {}
-	
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#predict */
     public int predict(ComposingText text, int minLen, int maxLen) {
         /* ignore if there is no list for the type */
@@ -199,7 +199,7 @@ public class SymbolList implements WnnEngine {
         mCurrentListIterator = mCurrentList.iterator();
         return 1;
     }
-	
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#convert */
     public int convert(ComposingText text) {
         return 0;
@@ -210,7 +210,7 @@ public class SymbolList implements WnnEngine {
 
     /** @see jp.co.omronsoft.openwnn.WnnEngine#searchWords */
     public int searchWords(WnnWord word) {return 0;}
-	
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#getNextCandidate */
     public WnnWord getNextCandidate() {
         if (mCurrentListIterator == null || !mCurrentListIterator.hasNext()) {
@@ -220,16 +220,16 @@ public class SymbolList implements WnnEngine {
         WnnWord word = new WnnWord(str, str);
         return word;
     }
-	
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#learn */
     public boolean learn(WnnWord word) {return false;}
-	
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#addWord */
     public int addWord(WnnWord word) {return 0;}
 
     /** @see jp.co.omronsoft.openwnn.WnnEngine#deleteWord */
     public boolean deleteWord(WnnWord word) {return false;}
-	
+    
     /** @see jp.co.omronsoft.openwnn.WnnEngine#setPreferences */
     public void setPreferences(SharedPreferences pref) {}
 

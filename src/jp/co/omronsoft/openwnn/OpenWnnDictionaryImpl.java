@@ -30,26 +30,26 @@ import android.util.Log;
  * @author Copyright (C) 2008, 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnDictionaryImpl implements WnnDictionary {
-	/*
-	 * DEFINITION FOR JNI
-	 */
-	static {
-		/* Load the dictionary search library */ 
-		System.loadLibrary( "wnndict" );
-	}
+    /*
+     * DEFINITION FOR JNI
+     */
+    static {
+        /* Load the dictionary search library */ 
+        System.loadLibrary( "wnndict" );
+    }
 
-	/*
-	 * DEFINITION OF CONSTANTS
-	 */
-	/** The maximum length of stroke */
+    /*
+     * DEFINITION OF CONSTANTS
+     */
+    /** The maximum length of stroke */
     public static final int MAX_STROKE_LENGTH       = 50;
-	/** The maximum length of candidate */
+    /** The maximum length of candidate */
     public static final int MAX_CANDIDATE_LENGTH    = 50;
-	/** The table name of writable dictionary on the database */
-	protected static final String TABLE_NAME_DIC    = "dic";
-	/** The type name of user word */
+    /** The table name of writable dictionary on the database */
+    protected static final String TABLE_NAME_DIC    = "dic";
+    /** The type name of user word */
     protected static final int TYPE_NAME_USER   = 0;
-	/** The type name of learn word */
+    /** The type name of learn word */
     protected static final int TYPE_NAME_LEARN  = 1;
 
     /** The column name of database */
@@ -105,10 +105,10 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
     /*
      * Constants to define the upper limit of query.
-	 *
-	 * That is used to fix the size of query expression.
-	 * If the number of approximate patterns for a character is exceeded MAX_PATTERN_OF_APPROX,
-	 * increase that constant to the maximum number of patterns.
+     *
+     * That is used to fix the size of query expression.
+     * If the number of approximate patterns for a character is exceeded MAX_PATTERN_OF_APPROX,
+     * increase that constant to the maximum number of patterns.
      */
     /** Constants to define the upper limit of approximate patterns */
     protected final static int MAX_PATTERN_OF_APPROX    = 6;
@@ -117,23 +117,23 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     /**
      * Constants to define the turn around time of query.
      * <br>
-	 * It can be set between 1 to {@code MAX_LENGTH_OF_QUERY}. If the length of query
-	 * string is shorter than {@code FAST_QUERY_LENGTH}, the simple search logic is applied.
-	 * Therefore, the turn around time for short query string is fast so that it is short.
-	 * However, the difference of turn around time at the border length grows big.
-	 * the value should be fixed carefully.
+     * It can be set between 1 to {@code MAX_LENGTH_OF_QUERY}. If the length of query
+     * string is shorter than {@code FAST_QUERY_LENGTH}, the simple search logic is applied.
+     * Therefore, the turn around time for short query string is fast so that it is short.
+     * However, the difference of turn around time at the border length grows big.
+     * the value should be fixed carefully.
      */
     protected final static int FAST_QUERY_LENGTH        = 20;
 
-	/*
-	 * DEFINITION OF PRIVATE FIELD
-	 */
-	/** Internal work area for the dictionary search library */
-	protected long mWnnWork = 0;
+    /*
+     * DEFINITION OF PRIVATE FIELD
+     */
+    /** Internal work area for the dictionary search library */
+    protected long mWnnWork = 0;
 
-	/** The file path of the writable dictionary */
+    /** The file path of the writable dictionary */
     protected String mDicFilePath = "";
-	/** The writable dictionary object */
+    /** The writable dictionary object */
     protected SQLiteDatabase mDbDic = null;
     /** The search cursor of the writable dictionary */
     protected SQLiteCursor mDbCursor = null;
@@ -177,31 +177,31 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     /** The Frequency offset of learn dictionary */
     protected int mFrequencyOffsetOfLearnDictionary = -1;
 
-	/*
-	 * DEFINITION OF METHODS
-	 */
-	/**
-	 * The constructor of this class without writable dictionary.
+    /*
+     * DEFINITION OF METHODS
+     */
+    /**
+     * The constructor of this class without writable dictionary.
      *
-	 * Create a internal work area for the search engine. It is allocated for each object.
-	 *
-	 * @param dicLibPath	The dictionary library file path
-	 */
-	public OpenWnnDictionaryImpl( String dicLibPath ) {
+     * Create a internal work area for the search engine. It is allocated for each object.
+     *
+     * @param dicLibPath    The dictionary library file path
+     */
+    public OpenWnnDictionaryImpl( String dicLibPath ) {
         this( dicLibPath, null );
-	}
+    }
 
-	/**
-	 * The constructor of this class with writable dictionary.
+    /**
+     * The constructor of this class with writable dictionary.
      *
-	 * Create a internal work area and the writable dictionary for the search engine. It is allocated for each object.
-	 *
-	 * @param dicLibPath	The dictionary library file path
-     * @param dicFilePath	The path name of writable dictionary
-	 */
-	public OpenWnnDictionaryImpl( String dicLibPath, String dicFilePath ) {
+     * Create a internal work area and the writable dictionary for the search engine. It is allocated for each object.
+     *
+     * @param dicLibPath    The dictionary library file path
+     * @param dicFilePath   The path name of writable dictionary
+     */
+    public OpenWnnDictionaryImpl( String dicLibPath, String dicFilePath ) {
         /* Create the internal work area */
-		this.mWnnWork = OpenWnnDictionaryImplJni.createWnnWork( dicLibPath );
+        this.mWnnWork = OpenWnnDictionaryImplJni.createWnnWork( dicLibPath );
 
         if( this.mWnnWork != 0 && dicFilePath != null ) {
             /* Create query base strings */
@@ -264,33 +264,33 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
 
             try {
-            	/* Create the database object */
+                /* Create the database object */
                 mDicFilePath = dicFilePath;
                 setInUseState( true );
 
-            	/* Create the table if not exist */
-            	createDictionaryTable( TABLE_NAME_DIC );
+                /* Create the table if not exist */
+                createDictionaryTable( TABLE_NAME_DIC );
             } catch( SQLException e ) {
             }
         }
-	}
+    }
 
-	/**
-	 * The finalizer of this class.
-	 * Destroy the internal work area for the search engine.
-	 */
-	protected void finalize( ) {
-		/* Free the internal work area */
-		if( this.mWnnWork != 0 ) {
-			OpenWnnDictionaryImplJni.freeWnnWork( this.mWnnWork );
-			this.mWnnWork = 0;
+    /**
+     * The finalizer of this class.
+     * Destroy the internal work area for the search engine.
+     */
+    protected void finalize( ) {
+        /* Free the internal work area */
+        if( this.mWnnWork != 0 ) {
+            OpenWnnDictionaryImplJni.freeWnnWork( this.mWnnWork );
+            this.mWnnWork = 0;
 
             freeDatabase();
-		}
-	}
+        }
+    }
 
-	/**
-	 * Create the table of writable dictionary.
+    /**
+     * Create the table of writable dictionary.
      *
      * @param tableName     The name of table
      */
@@ -312,103 +312,103 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         }
     }
 
-	/**
+    /**
      * Free the {@link SQLiteDatabase} of writable dictionary.
      */
     protected void freeDatabase( ) {
-		freeCursor();
+        freeCursor();
 
-		if( mDbDic != null ) {
+        if( mDbDic != null ) {
             /* The SQLiteDataBase object must close() before releasing. */
             mDbDic.close();
             mDbDic = null;
         }
     }
-	/**
+    /**
      * Free the {@link SQLiteCursor} of writable dictionary.
      */
     protected void freeCursor( ) {
-    	if( mDbCursor != null) {
+        if( mDbCursor != null) {
             /* The SQLiteCursor object must close() before releasing. */
-    		mDbCursor.close();
-    		mDbCursor = null;
+            mDbCursor.close();
+            mDbCursor = null;
 
             mTypeOfQuery = -1;
-    	}
+        }
     }
 
-	
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#setInUseState
-	 */
-	public boolean isActive() {
-		return (this.mWnnWork != 0);
-	}
-	
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#setInUseState
-	 */
+    
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#setInUseState
+     */
+    public boolean isActive() {
+        return (this.mWnnWork != 0);
+    }
+    
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#setInUseState
+     */
     public void setInUseState( boolean flag ) {
         if( flag ) {
             if( mDbDic == null ) {
-            	mDbDic = SQLiteDatabase.openOrCreateDatabase( mDicFilePath, null );
+                mDbDic = SQLiteDatabase.openOrCreateDatabase( mDicFilePath, null );
             }
         } else {
             freeDatabase();
         }
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#clearDictionary
-	 */
-	public int clearDictionary( ) {
-		if( this.mWnnWork != 0 ) {
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#clearDictionary
+     */
+    public int clearDictionary( ) {
+        if( this.mWnnWork != 0 ) {
             mFrequencyOffsetOfUserDictionary  = -1;
             mFrequencyOffsetOfLearnDictionary = -1;
 
-			return OpenWnnDictionaryImplJni.clearDictionaryParameters( this.mWnnWork );
-		} else {
-			return -1;
-		}
-	}
+            return OpenWnnDictionaryImplJni.clearDictionaryParameters( this.mWnnWork );
+        } else {
+            return -1;
+        }
+    }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#setDictionary
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#setDictionary
+     */
     public int setDictionary(int index, int base, int high ) {
-		if( this.mWnnWork != 0 ) {
-			switch( index ) {
-			case WnnDictionary.INDEX_USER_DICTIONARY:
+        if( this.mWnnWork != 0 ) {
+            switch( index ) {
+            case WnnDictionary.INDEX_USER_DICTIONARY:
                 if( base < 0 || high < 0 || base > high
                     /* || base < OFFSET_FREQUENCY_OF_USER_DICTIONARY || high >= OFFSET_FREQUENCY_OF_LEARN_DICTIONARY */ ) {
                     mFrequencyOffsetOfUserDictionary = -1;
                 } else {
                     mFrequencyOffsetOfUserDictionary = high;
                 }
-				return 0;
-			case WnnDictionary.INDEX_LEARN_DICTIONARY:
+                return 0;
+            case WnnDictionary.INDEX_LEARN_DICTIONARY:
                 if( base < 0 || high < 0 || base > high
                     /* || base < OFFSET_FREQUENCY_OF_LEARN_DICTIONARY */ ) {
                     mFrequencyOffsetOfLearnDictionary = -1;
                 } else {
                     mFrequencyOffsetOfLearnDictionary = high;
                 }
-				return 0;
-			default:
+                return 0;
+            default:
                 return OpenWnnDictionaryImplJni.setDictionaryParameter( this.mWnnWork, index, base, high );
-			}
-		} else {
-			return -1;
-		}
-	}
+            }
+        } else {
+            return -1;
+        }
+    }
 
     /**
      * Query to the database
      *
-     * @param keyString		The key string
+     * @param keyString     The key string
      * @param wnnWord      The previous word for link search
      * @param operation    The search operation
-     * @param order			The type of sort order
+     * @param order         The type of sort order
      */
     protected void createQuery( String keyString, WnnWord wnnWord, int operation, int order) {
         int newTypeOfQuery, maxBindsOfQuery;
@@ -422,45 +422,45 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         switch( operation ) {
         case WnnDictionary.SEARCH_EXACT:
             querySqlOrderByFreq = mExactQuerySqlOrderByFreq; 
-            querySqlOrderByKey	= mExactQuerySqlOrderByKey;
+            querySqlOrderByKey  = mExactQuerySqlOrderByKey;
             newTypeOfQuery      = 0;
-            queryArgs			= mExactQueryArgs;
+            queryArgs           = mExactQueryArgs;
 
             queryArgs[ 0 ]      = keyString;
             break;
 
         case WnnDictionary.SEARCH_PREFIX:
         case WnnDictionary.SEARCH_LINK:
-        	/* Select the suitable parameters for the query */
-        	if( keyString.length() <= FAST_QUERY_LENGTH ) {
+            /* Select the suitable parameters for the query */
+            if( keyString.length() <= FAST_QUERY_LENGTH ) {
                 if( wnnWord != null ) {
-            		querySqlOrderByFreq = mFastLinkQuerySqlOrderByFreq; 
-            		querySqlOrderByKey	= mFastLinkQuerySqlOrderByKey;
-            		newTypeOfQuery      = 1;
+                    querySqlOrderByFreq = mFastLinkQuerySqlOrderByFreq; 
+                    querySqlOrderByKey  = mFastLinkQuerySqlOrderByKey;
+                    newTypeOfQuery      = 1;
                 } else {
-            		querySqlOrderByFreq = mFastPrefixQuerySqlOrderByFreq; 
-            		querySqlOrderByKey	= mFastPrefixQuerySqlOrderByKey;
-            		newTypeOfQuery      = 2;
+                    querySqlOrderByFreq = mFastPrefixQuerySqlOrderByFreq; 
+                    querySqlOrderByKey  = mFastPrefixQuerySqlOrderByKey;
+                    newTypeOfQuery      = 2;
                 }
-        		maxBindsOfQuery		= FAST_QUERY_LENGTH;
-        		queryArgs			= mFastQueryArgs;
-        	} else {
+                maxBindsOfQuery     = FAST_QUERY_LENGTH;
+                queryArgs           = mFastQueryArgs;
+            } else {
                 if( wnnWord != null ) {
-            		querySqlOrderByFreq = mFullLinkQuerySqlOrderByFreq; 
-            		querySqlOrderByKey	= mFullLinkQuerySqlOrderByKey;
-            		newTypeOfQuery      = 3;
+                    querySqlOrderByFreq = mFullLinkQuerySqlOrderByFreq; 
+                    querySqlOrderByKey  = mFullLinkQuerySqlOrderByKey;
+                    newTypeOfQuery      = 3;
                 } else {
-            		querySqlOrderByFreq = mFullPrefixQuerySqlOrderByFreq; 
-            		querySqlOrderByKey	= mFullPrefixQuerySqlOrderByKey;
-            		newTypeOfQuery      = 4;
+                    querySqlOrderByFreq = mFullPrefixQuerySqlOrderByFreq; 
+                    querySqlOrderByKey  = mFullPrefixQuerySqlOrderByKey;
+                    newTypeOfQuery      = 4;
                 }
-        		maxBindsOfQuery		= MAX_LENGTH_OF_QUERY;
-        		queryArgs			= mFullQueryArgs;
-        	}
+                maxBindsOfQuery     = MAX_LENGTH_OF_QUERY;
+                queryArgs           = mFullQueryArgs;
+            }
 
             if( wnnWord != null ) {
                 /* If link search is enabled, insert information of the previous word */
-            	String[] queryArgsTemp = OpenWnnDictionaryImplJni.createBindArray( this.mWnnWork, keyString, maxBindsOfQuery, MAX_PATTERN_OF_APPROX );
+                String[] queryArgsTemp = OpenWnnDictionaryImplJni.createBindArray( this.mWnnWork, keyString, maxBindsOfQuery, MAX_PATTERN_OF_APPROX );
 
                 queryArgs = new String[ queryArgsTemp.length + 2 ];
                 for( int i = 0 ; i < queryArgsTemp.length ; i++ ) {
@@ -470,110 +470,110 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                 queryArgs[ 0 ] = wnnWord.stroke;
                 queryArgs[ 1 ] = wnnWord.candidate;
             } else {
-            	queryArgs = OpenWnnDictionaryImplJni.createBindArray( this.mWnnWork, keyString, maxBindsOfQuery, MAX_PATTERN_OF_APPROX );
+                queryArgs = OpenWnnDictionaryImplJni.createBindArray( this.mWnnWork, keyString, maxBindsOfQuery, MAX_PATTERN_OF_APPROX );
             }
             break;
 
         default:
-    		mCountCursor = 0;
+            mCountCursor = 0;
             freeCursor( );
             return;
         }
 
-    	/* Create the cursor and set arguments */
-		mCountCursor = 0;
+        /* Create the cursor and set arguments */
+        mCountCursor = 0;
 
-		if( mDbCursor == null || mTypeOfQuery != newTypeOfQuery ) {
-   			/* If the cursor is not exist or the type of query is changed, compile the query string and query words */
+        if( mDbCursor == null || mTypeOfQuery != newTypeOfQuery ) {
+            /* If the cursor is not exist or the type of query is changed, compile the query string and query words */
             freeCursor( );
 
             try {
-            	switch( order ) {
-            	case WnnDictionary.ORDER_BY_FREQUENCY:
-            		mDbCursor = ( SQLiteCursor )mDbDic.rawQuery( querySqlOrderByFreq, queryArgs );
-        			break;
-            	case WnnDictionary.ORDER_BY_KEY:
-            		mDbCursor = ( SQLiteCursor )mDbDic.rawQuery( querySqlOrderByKey, queryArgs );
-        			break;
-            	default:
-            		return;
-            	}
-        	} catch( SQLException e ) {
-        		return;
-        	}
+                switch( order ) {
+                case WnnDictionary.ORDER_BY_FREQUENCY:
+                    mDbCursor = ( SQLiteCursor )mDbDic.rawQuery( querySqlOrderByFreq, queryArgs );
+                    break;
+                case WnnDictionary.ORDER_BY_KEY:
+                    mDbCursor = ( SQLiteCursor )mDbDic.rawQuery( querySqlOrderByKey, queryArgs );
+                    break;
+                default:
+                    return;
+                }
+            } catch( SQLException e ) {
+                return;
+            }
 
-    		mTypeOfQuery = newTypeOfQuery;
-    	} else {
-    		/* If the cursor is exist, bind new arguments and re-query words (DO NOT recompile the query string) */
+            mTypeOfQuery = newTypeOfQuery;
+        } else {
+            /* If the cursor is exist, bind new arguments and re-query words (DO NOT recompile the query string) */
             try {
-        		mDbCursor.setSelectionArguments( queryArgs );
-        		mDbCursor.requery( );
-        	} catch( SQLException e ) {
-        		return;
-        	}
-    	}
-
-		if( mDbCursor != null ) {
-            /* If querying is succeed, count the number of words */
-			mCountCursor = mDbCursor.getCount();
-            if( mCountCursor == 0 ) {
-                /* If no word is retrieved, deactivate the cursor for reduce the resource */
-        		mDbCursor.deactivate( );
+                mDbCursor.setSelectionArguments( queryArgs );
+                mDbCursor.requery( );
+            } catch( SQLException e ) {
+                return;
             }
         }
 
-		return;
+        if( mDbCursor != null ) {
+            /* If querying is succeed, count the number of words */
+            mCountCursor = mDbCursor.getCount();
+            if( mCountCursor == 0 ) {
+                /* If no word is retrieved, deactivate the cursor for reduce the resource */
+                mDbCursor.deactivate( );
+            }
+        }
+
+        return;
     }
 
     /**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#searchWord
-	 */
-	public int searchWord( int operation, int order, String keyString ) {
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#searchWord
+     */
+    public int searchWord( int operation, int order, String keyString ) {
         /* Unset the previous word information */
         OpenWnnDictionaryImplJni.clearResult( this.mWnnWork );
 
         /* Search to user/learn dictionary */
         if( mDbDic != null && ( mFrequencyOffsetOfUserDictionary  >= 0 ||
                                 mFrequencyOffsetOfLearnDictionary >= 0 ) ) {
-			try {
-    			if( keyString.length() > 0 ) {
-    				createQuery( keyString, null, operation, order );
-    				if( mDbCursor != null ) {
-        				mDbCursor.moveToFirst();
-    				}
-   				} else {
+            try {
+                if( keyString.length() > 0 ) {
+                    createQuery( keyString, null, operation, order );
+                    if( mDbCursor != null ) {
+                        mDbCursor.moveToFirst();
+                    }
+                } else {
                     /* If the key string is "", no word is retrieved */
                     if( mDbCursor != null ) {
                         mDbCursor.deactivate();
                     }
                     mCountCursor = 0;
-   				}
-			} catch( SQLException e ) {
+                }
+            } catch( SQLException e ) {
                 if( mDbCursor != null ) {
                     mDbCursor.deactivate();
                 }
                 mCountCursor = 0;
-	        }
+            }
         } else {
             mCountCursor = 0;
         }
 
         /* Search to fixed dictionary */
-		if( this.mWnnWork != 0 ) {
-			int ret = OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
-			if (mCountCursor > 0) {
-				ret = 1;
-			}
-			return ret;
-		} else {
-			return -1;
-		}
-	}
+        if( this.mWnnWork != 0 ) {
+            int ret = OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
+            if (mCountCursor > 0) {
+                ret = 1;
+            }
+            return ret;
+        } else {
+            return -1;
+        }
+    }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#searchWord
-	 */
-	public int searchWord( int operation, int order, String keyString, WnnWord wnnWord ) {
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#searchWord
+     */
+    public int searchWord( int operation, int order, String keyString, WnnWord wnnWord ) {
         if( wnnWord == null || wnnWord.partOfSpeech == null ) {
             return -1;
         }
@@ -581,17 +581,17 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         /* Search to user/learn dictionary with link information */
         if( mDbDic != null && ( mFrequencyOffsetOfUserDictionary  >= 0 ||
                                 mFrequencyOffsetOfLearnDictionary >= 0 ) ) {
-			try {
-				createQuery( keyString, wnnWord, operation, order );
-				if( mDbCursor != null ) {
-    				mDbCursor.moveToFirst();
-				}
-			} catch( SQLException e ) {
+            try {
+                createQuery( keyString, wnnWord, operation, order );
+                if( mDbCursor != null ) {
+                    mDbCursor.moveToFirst();
+                }
+            } catch( SQLException e ) {
                 if( mDbCursor != null ) {
                     mDbCursor.deactivate();
                 }
                 mCountCursor = 0;
-	        }
+            }
         } else {
             mCountCursor = 0;
         }
@@ -604,33 +604,33 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         OpenWnnDictionaryImplJni.setRightPartOfSpeech( this.mWnnWork, wnnWord.partOfSpeech.right );
         OpenWnnDictionaryImplJni.selectWord( this.mWnnWork );
 
-		if( this.mWnnWork != 0 ) {
-			int ret = OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
-			if (mCountCursor > 0) {
-				ret = 1;
-			}
-			return ret;
-		} else {
-			return -1;
-		}
-	}
+        if( this.mWnnWork != 0 ) {
+            int ret = OpenWnnDictionaryImplJni.searchWord( this.mWnnWork, operation, order, keyString );
+            if (mCountCursor > 0) {
+                ret = 1;
+            }
+            return ret;
+        } else {
+            return -1;
+        }
+    }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
-	 */
-	public WnnWord getNextWord( ) {
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
+     */
+    public WnnWord getNextWord( ) {
         return getNextWord( 0 );
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
-	 */
-	public WnnWord getNextWord( int length ) {
-		if( this.mWnnWork != 0 ) {
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#getNextWord
+     */
+    public WnnWord getNextWord( int length ) {
+        if( this.mWnnWork != 0 ) {
             if( mDbDic != null && mDbCursor != null && mCountCursor > 0 ) {
                 /* If the user/learn dictionary is queried, get the result from the user/learn dictionary */
-				WnnWord result = new WnnWord( );
-            	try {
+                WnnWord result = new WnnWord( );
+                try {
                     /* Skip results if that is not contained the type of search or length of stroke is not equal specified length */
                     while( mCountCursor > 0 &&
                            ( ( mFrequencyOffsetOfUserDictionary < 0  && mDbCursor.getInt( 4 ) == TYPE_NAME_USER      ) ||
@@ -642,8 +642,8 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
                     if( mCountCursor > 0 ) {
                         /* Get the information of word */
-        				result.stroke		        = mDbCursor.getString( 0 );
-        				result.candidate	        = mDbCursor.getString( 1 );
+                        result.stroke               = mDbCursor.getString( 0 );
+                        result.candidate            = mDbCursor.getString( 1 );
                         result.partOfSpeech.left    = mDbCursor.getInt( 2 );
                         result.partOfSpeech.right   = mDbCursor.getInt( 3 );
 
@@ -663,46 +663,46 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                     } else {
                         /* if no result is found, terminate the searching of user/learn dictionary */
                         mDbCursor.deactivate();
-                		result = null;
+                        result = null;
                     }
-            	} catch( SQLException e ) {
+                } catch( SQLException e ) {
                     mDbCursor.deactivate();
                     mCountCursor = 0;
-            		result = null;
-            	}
+                    result = null;
+                }
             }
 
             /* Get the result from fixed dictionary */
-			int res = OpenWnnDictionaryImplJni.getNextWord( this.mWnnWork, length );
-			if( res > 0 ) {
-				WnnWord result = new WnnWord( );
+            int res = OpenWnnDictionaryImplJni.getNextWord( this.mWnnWork, length );
+            if( res > 0 ) {
+                WnnWord result = new WnnWord( );
                 if( result != null ) {
-    				result.stroke		        = OpenWnnDictionaryImplJni.getStroke( this.mWnnWork );
-    				result.candidate	        = OpenWnnDictionaryImplJni.getCandidate( this.mWnnWork );
-    				result.frequency	        = OpenWnnDictionaryImplJni.getFrequency( this.mWnnWork );
+                    result.stroke               = OpenWnnDictionaryImplJni.getStroke( this.mWnnWork );
+                    result.candidate            = OpenWnnDictionaryImplJni.getCandidate( this.mWnnWork );
+                    result.frequency            = OpenWnnDictionaryImplJni.getFrequency( this.mWnnWork );
                     result.partOfSpeech.left    = OpenWnnDictionaryImplJni.getLeftPartOfSpeech( this.mWnnWork );
                     result.partOfSpeech.right   = OpenWnnDictionaryImplJni.getRightPartOfSpeech( this.mWnnWork );
                 }
-				return result;
-			} else if ( res == 0 ) {
-				/* No result is found. */
-				return null;
-			} else {
-				/* An error occur (It is regarded as "No result is found".) */
-				return null;
-			}
-		} else {
-			return null;
-		}
-	}
+                return result;
+            } else if ( res == 0 ) {
+                /* No result is found. */
+                return null;
+            } else {
+                /* An error occur (It is regarded as "No result is found".) */
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#getUserDictionaryWords
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#getUserDictionaryWords
+     */
     public WnnWord[] getUserDictionaryWords( ) {
-		if( this.mWnnWork != 0 && mDbDic != null ) {
+        if( this.mWnnWork != 0 && mDbDic != null ) {
             int numOfWords, i;
-    		SQLiteCursor cursor = null;
+            SQLiteCursor cursor = null;
 
             try {
                 /* Count all words in the user dictionary */
@@ -720,16 +720,16 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                     cursor.moveToFirst();
                     for( i = 0 ; i < numOfWords ; i++ ) {
                         words[ i ] = new WnnWord();
-        				words[ i ].stroke       = cursor.getString( 0 );
-        				words[ i ].candidate    = cursor.getString( 1 );
+                        words[ i ].stroke       = cursor.getString( 0 );
+                        words[ i ].candidate    = cursor.getString( 1 );
                         cursor.moveToNext();
                     }
 
                     return words;
                 }
             } catch( SQLException e ) {
-            	/* An error occurs */
-            	return null;
+                /* An error occurs */
+                return null;
             } finally {
                 if( cursor != null ) {
                     cursor.close( );
@@ -739,67 +739,67 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         return null;
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#clearApproxPattern
-	 */
-	public void clearApproxPattern( ) {
-		if( this.mWnnWork != 0 ) {
-			OpenWnnDictionaryImplJni.clearApproxPatterns( this.mWnnWork );
-		}
-	}
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#clearApproxPattern
+     */
+    public void clearApproxPattern( ) {
+        if( this.mWnnWork != 0 ) {
+            OpenWnnDictionaryImplJni.clearApproxPatterns( this.mWnnWork );
+        }
+    }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#setApproxPattern
-	 */
-	public int setApproxPattern( String src, String dst ) {
-		if( this.mWnnWork != 0 ) {
-			return OpenWnnDictionaryImplJni.setApproxPattern( this.mWnnWork, src, dst );
-		} else {
-			return -1;
-		}
-	}
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#setApproxPattern
+     */
+    public int setApproxPattern( String src, String dst ) {
+        if( this.mWnnWork != 0 ) {
+            return OpenWnnDictionaryImplJni.setApproxPattern( this.mWnnWork, src, dst );
+        } else {
+            return -1;
+        }
+    }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#setApproxPattern
-	 */
-	public int setApproxPattern( int approxPattern ) {
-		if( this.mWnnWork != 0 ) {
-			return OpenWnnDictionaryImplJni.setApproxPattern( this.mWnnWork, approxPattern );
-		} else {
-			return -1;
-		}
-	}
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#setApproxPattern
+     */
+    public int setApproxPattern( int approxPattern ) {
+        if( this.mWnnWork != 0 ) {
+            return OpenWnnDictionaryImplJni.setApproxPattern( this.mWnnWork, approxPattern );
+        } else {
+            return -1;
+        }
+    }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#getConnectMatrix
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#getConnectMatrix
+     */
     public byte[][] getConnectMatrix( ) {
         byte[][]    result;
         int         lcount, i;
 
         if (this.mWnnWork != 0) {
-        	/* 1-origin */
-        	lcount = OpenWnnDictionaryImplJni.getNumberOfLeftPOS( this.mWnnWork );
-        	result = new byte[ lcount + 1 ][ ];
+            /* 1-origin */
+            lcount = OpenWnnDictionaryImplJni.getNumberOfLeftPOS( this.mWnnWork );
+            result = new byte[ lcount + 1 ][ ];
 
-        	if( result != null ) {
-        		for( i = 0 ; i < lcount + 1 ; i++ ) {
-        			result[ i ] = OpenWnnDictionaryImplJni.getConnectArray( this.mWnnWork, i );
+            if( result != null ) {
+                for( i = 0 ; i < lcount + 1 ; i++ ) {
+                    result[ i ] = OpenWnnDictionaryImplJni.getConnectArray( this.mWnnWork, i );
 
-        			if( result[ i ] == null ) {
-        				return null;
-        			}
-        		}
-        	}
+                    if( result[ i ] == null ) {
+                        return null;
+                    }
+                }
+            }
         } else {
-        	result = new byte[1][1];
+            result = new byte[1][1];
         }
         return result;
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#getPOS
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#getPOS
+     */
     public WnnPOS getPOS( int type ) {
         WnnPOS result = new WnnPOS( );
 
@@ -814,38 +814,38 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         return result;
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#clearUserDictionary
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#clearUserDictionary
+     */
     public int clearUserDictionary() {
         if( mDbDic != null ) {
-        	mDbDic.execSQL( String.format( "delete from %s where %s=%d", TABLE_NAME_DIC, COLUMN_NAME_TYPE, TYPE_NAME_USER ) );
+            mDbDic.execSQL( String.format( "delete from %s where %s=%d", TABLE_NAME_DIC, COLUMN_NAME_TYPE, TYPE_NAME_USER ) );
         }
 
         /* If no writable dictionary exists, no error occurs. */
         return 0;
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#clearLearnDictionary
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#clearLearnDictionary
+     */
     public int clearLearnDictionary() {
         if( mDbDic != null ) {
-        	mDbDic.execSQL( String.format( "delete from %s where %s=%d", TABLE_NAME_DIC, COLUMN_NAME_TYPE, TYPE_NAME_LEARN ) );
+            mDbDic.execSQL( String.format( "delete from %s where %s=%d", TABLE_NAME_DIC, COLUMN_NAME_TYPE, TYPE_NAME_LEARN ) );
         }
         
         /* If no writable dictionary exists, no error occurs. */
         return 0;
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#addWordToUserDictionary
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#addWordToUserDictionary
+     */
     public int addWordToUserDictionary( WnnWord[] word ) {
-		int result = 0;
+        int result = 0;
 
-		if( mDbDic != null ) {
-    		SQLiteCursor cursor;
+        if( mDbDic != null ) {
+            SQLiteCursor cursor;
 
             /* Count all words in the user dictionary */
             cursor = ( SQLiteCursor )mDbDic.query(
@@ -855,18 +855,18 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                 null, null, null, null);
 
             int count = cursor.getCount();
-           	cursor.close();
+            cursor.close();
 
             if( count + word.length > MAX_WORDS_IN_USER_DICTIONARY ) {
                 /* If user dictionary is full, an error occurs. */
                 return -1;
             } else {
-            	mDbDic.beginTransaction();
+                mDbDic.beginTransaction();
                 try {
                     StringBuilder strokeSQL    = new StringBuilder();
                     StringBuilder candidateSQL = new StringBuilder();
 
-                	for( int index = 0 ; index < word.length ; index++ ) {
+                    for( int index = 0 ; index < word.length ; index++ ) {
                         if( word[index].stroke.length()    > 0 && word[index].stroke.length()    <= MAX_STROKE_LENGTH &&
                             word[index].candidate.length() > 0 && word[index].candidate.length() <= MAX_CANDIDATE_LENGTH ) {
                             strokeSQL.setLength( 0 );
@@ -874,7 +874,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                             DatabaseUtils.appendEscapedSQLString( strokeSQL, word[index].stroke );
                             DatabaseUtils.appendEscapedSQLString( candidateSQL, word[index].candidate );
 
-    	                	cursor = ( SQLiteCursor )mDbDic.query(
+                            cursor = ( SQLiteCursor )mDbDic.query(
                                 TABLE_NAME_DIC,
                                 new String[] { COLUMN_NAME_ID },
                                 String.format( "%s=%d and %s=%s and %s=%s",
@@ -882,31 +882,31 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                                                COLUMN_NAME_STROKE, strokeSQL.toString(),
                                                COLUMN_NAME_CANDIDATE, candidateSQL.toString() ),
                                 null, null, null, null );
-    		
-    		                if( cursor.getCount() > 0 ) {
-    		                	/* if the specified word is exist, an error reported and skipped that word. */
-    		                	result = -2;
-    		                } else {
-    			            	ContentValues content = new ContentValues();
-    			
-    			                content.clear();
-    			                content.put( COLUMN_NAME_TYPE,      TYPE_NAME_USER );
-    			                content.put( COLUMN_NAME_STROKE,    word[index].stroke );
-    			                content.put( COLUMN_NAME_CANDIDATE, word[index].candidate );
-    			                content.put( COLUMN_NAME_POS_LEFT,  word[index].partOfSpeech.left );
-    			                content.put( COLUMN_NAME_POS_RIGHT, word[index].partOfSpeech.right );
-    		
-    		                    mDbDic.insert( TABLE_NAME_DIC, null, content );
-    		                }
+            
+                            if( cursor.getCount() > 0 ) {
+                                /* if the specified word is exist, an error reported and skipped that word. */
+                                result = -2;
+                            } else {
+                                ContentValues content = new ContentValues();
+                
+                                content.clear();
+                                content.put( COLUMN_NAME_TYPE,      TYPE_NAME_USER );
+                                content.put( COLUMN_NAME_STROKE,    word[index].stroke );
+                                content.put( COLUMN_NAME_CANDIDATE, word[index].candidate );
+                                content.put( COLUMN_NAME_POS_LEFT,  word[index].partOfSpeech.left );
+                                content.put( COLUMN_NAME_POS_RIGHT, word[index].partOfSpeech.right );
+            
+                                mDbDic.insert( TABLE_NAME_DIC, null, content );
+                            }
 
                             cursor.close( );
                             cursor = null;
                         }
-                	}
+                    }
                     mDbDic.setTransactionSuccessful();
                 } catch( SQLException e ) {
-                	/* An error occurs */
-                	return -1;
+                    /* An error occurs */
+                    return -1;
                 } finally {
                     mDbDic.endTransaction();
                     if( cursor != null ) {
@@ -920,28 +920,28 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         return result;
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#addWordToUserDictionary
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#addWordToUserDictionary
+     */
     public int addWordToUserDictionary( WnnWord word ) {
-    	WnnWord[] words = new WnnWord[1];
-    	words[0] = word;
+        WnnWord[] words = new WnnWord[1];
+        words[0] = word;
    
-    	return addWordToUserDictionary( words );
+        return addWordToUserDictionary( words );
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#removeWordFromUserDictionary
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#removeWordFromUserDictionary
+     */
     public int removeWordFromUserDictionary( WnnWord[] word ) {
-    	if( mDbDic != null ) {
-        	/* Remove the specified word */
-        	mDbDic.beginTransaction();
+        if( mDbDic != null ) {
+            /* Remove the specified word */
+            mDbDic.beginTransaction();
             try {
                 StringBuilder strokeSQL    = new StringBuilder();
                 StringBuilder candidateSQL = new StringBuilder();
 
-            	for( int index = 0 ; index < word.length ; index++ ) {
+                for( int index = 0 ; index < word.length ; index++ ) {
                     if( word[index].stroke.length()    > 0 && word[index].stroke.length()    <= MAX_STROKE_LENGTH &&
                         word[index].candidate.length() > 0 && word[index].candidate.length() <= MAX_CANDIDATE_LENGTH ) {
                         strokeSQL.setLength( 0 );
@@ -949,18 +949,18 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                         DatabaseUtils.appendEscapedSQLString( strokeSQL, word[index].stroke );
                         DatabaseUtils.appendEscapedSQLString( candidateSQL, word[index].candidate );
 
-    	            	mDbDic.delete( TABLE_NAME_DIC,
+                        mDbDic.delete( TABLE_NAME_DIC,
                             String.format( "%s=%d and %s=%s and %s=%s",
                                            COLUMN_NAME_TYPE, TYPE_NAME_USER,
                                            COLUMN_NAME_STROKE, strokeSQL,
                                            COLUMN_NAME_CANDIDATE, candidateSQL ),
                             null );
                     }
-            	}
-            	mDbDic.setTransactionSuccessful();
+                }
+                mDbDic.setTransactionSuccessful();
             } catch( SQLException e ) {
-            	/* An error occurs */
-            	return -1;
+                /* An error occurs */
+                return -1;
             } finally {
                 mDbDic.endTransaction();
             }
@@ -970,9 +970,9 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         return 0;
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#removeWordFromUserDictionary
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#removeWordFromUserDictionary
+     */
     public int removeWordFromUserDictionary( WnnWord word ) {
         WnnWord[] words = new WnnWord[1];
         words[0] = word;
@@ -980,9 +980,9 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         return removeWordFromUserDictionary( words );
     }
 
-	/**
-	 * @see jp.co.omronsoft.openwnn.WnnDictionary#learnWord
-	 */
+    /**
+     * @see jp.co.omronsoft.openwnn.WnnDictionary#learnWord
+     */
     public int learnWord( WnnWord word ) {
         return learnWord( word, null );
     }
@@ -990,9 +990,9 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
     /**
      * Learn the word with connection.
      * 
-     * @param word           	The word to learn
-     * @param previousWord   	The word which is selected previously.
-     * @return					0 if success; minus value if fail.
+     * @param word              The word to learn
+     * @param previousWord      The word which is selected previously.
+     * @return                  0 if success; minus value if fail.
      */
     public int learnWord( WnnWord word, WnnWord previousWord ) {
         if( mDbDic != null ) {
@@ -1016,7 +1016,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                 DatabaseUtils.appendEscapedSQLString( strokeSQL, word.stroke );
                 DatabaseUtils.appendEscapedSQLString( candidateSQL, word.candidate );
 
-            	SQLiteCursor cursor;
+                SQLiteCursor cursor;
 
                 /* If the words which have same stroke and same candidate is already learned, move to the tail */
                 cursor = ( SQLiteCursor )mDbDic.query(
@@ -1047,7 +1047,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
 
                     boolean isExistConnectLearnData = false;
 
-                	mDbDic.beginTransaction();
+                    mDbDic.beginTransaction();
                     try {
                         do {
                             /* Record the ID that is removed later */
@@ -1092,7 +1092,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                         return -1;
                     } finally {
                         mDbDic.endTransaction();
-                    	cursor.close();
+                        cursor.close();
                     }
                 } else {
                     cursor.close();
@@ -1129,7 +1129,7 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                         return -1;
                     } finally {
                         mDbDic.endTransaction();
-                    	cursor.close();
+                        cursor.close();
                     }
                 } else {
                     cursor.close();

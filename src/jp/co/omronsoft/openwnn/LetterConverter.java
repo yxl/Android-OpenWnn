@@ -35,8 +35,8 @@ public interface LetterConverter {
      * Romaji-to-Kana conversion in Japanese <it>(ex: "w"+"a" to "&#x308F;")</it>, 
      * Hangul conversion in Korean.
      *
-     * @param text  	The text data includes input sequence(layer #0) and output area(layer #1)
-     * @return 		{@code true} if conversion is completed; {@code false} if not.
+     * @param text      The text data includes input sequence(layer #0) and output area(layer #1)
+     * @return      {@code true} if conversion is completed; {@code false} if not.
      */
     public boolean convert(ComposingText text);
 

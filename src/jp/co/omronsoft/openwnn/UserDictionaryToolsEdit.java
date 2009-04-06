@@ -138,11 +138,11 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
         Intent intent = getIntent();
         String action = intent.getAction();
         if (action.equals(Intent.ACTION_INSERT)) {
-        	/* add a word */
+            /* add a word */
             mEntryButton.setEnabled(false);
             mRequestState = STATE_INSERT;
         } else if (action.equals(Intent.ACTION_EDIT)) {
-        	/* edit a word */
+            /* edit a word */
             mEntryButton.setEnabled(true);
             mReadEditText.setText(((TextView)sFocusingView).getText());
             mCandidateEditText.setText(((TextView)sFocusingPairView).getText());
@@ -153,7 +153,7 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
             mBeforeEditWnnWord.stroke = ((TextView)sFocusingView).getText().toString();
             mBeforeEditWnnWord.candidate = ((TextView)sFocusingPairView).getText().toString();
         } else {
-        	/* finish if it is unknown request */
+            /* finish if it is unknown request */
             Log.e("OpenWnn", "onCreate() : Invaled Get Intent. ID=" + intent);
             finish();
             return;
@@ -187,11 +187,11 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-            	if ((mReadEditText.getText().toString().length() != 0) && 
+                if ((mReadEditText.getText().toString().length() != 0) && 
                     (mCandidateEditText.getText().toString().length() != 0)) {
-            		mEntryButton.setEnabled(true);
+                    mEntryButton.setEnabled(true);
                 } else {
-                	mEntryButton.setEnabled(false);
+                    mEntryButton.setEnabled(false);
                 }
             }
         });
@@ -218,21 +218,21 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
         mEntryButton.setEnabled(false);
         mCancelButton.setEnabled(false);
 
-    	switch (v.getId()) {
+        switch (v.getId()) {
             case R.id.addButton:
-            	/* save the word */
+                /* save the word */
                 doSaveAction();
                 break;
  
             case R.id.cancelButton:
-            	/* cancel the edit */
+                /* cancel the edit */
                 doRevertAction();
                 break;
 
             default:
                 Log.e("OpenWnn", "onClick: Get Invalid ButtonID. ID=" + v.getId());
                 finish();
-            	return;
+                return;
         }
     }
 
@@ -243,7 +243,7 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
 
         switch (mRequestState) {
         case STATE_INSERT:
-        	/* register a word */
+            /* register a word */
             if (inputDataCheck(mReadEditText) && inputDataCheck(mCandidateEditText)) {
                     String stroke = mReadEditText.getText().toString();
                     String candidate = mCandidateEditText.getText().toString();
@@ -254,7 +254,7 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
             break;
             
         case STATE_EDIT:
-        	/* edit a word (=delete the word selected & add the word edited) */
+            /* edit a word (=delete the word selected & add the word edited) */
             if (inputDataCheck(mReadEditText) && inputDataCheck(mCandidateEditText)) {
                 deleteDictionary(mBeforeEditWnnWord);
                     String stroke = mReadEditText.getText().toString();
@@ -290,7 +290,7 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
     @Override protected Dialog onCreateDialog(int id) {
         switch (id) {
             case DIALOG_CONTROL_WORDS_DUPLICATE:
-            	/* there is the same word in the dictionary */
+                /* there is the same word in the dictionary */
                 return new AlertDialog.Builder(UserDictionaryToolsEdit.this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setMessage(R.string.user_dictionary_words_duplication_message)
@@ -304,8 +304,8 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
                         .create();
 
             case DIALOG_CONTROL_OVER_MAX_TEXT_SIZE:
-               	/* the length of the word exceeds the limit */
-            	return new AlertDialog.Builder(UserDictionaryToolsEdit.this)
+                /* the length of the word exceeds the limit */
+                return new AlertDialog.Builder(UserDictionaryToolsEdit.this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setMessage(R.string.user_dictionary_over_max_text_size_message)
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -323,9 +323,9 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
     /**
      * Add the word
      *
-     * @param  stroke    	The stroke of the word
-     * @param  candidate 	The string of the word
-     * @return           	{@code true} if success; {@code false} if fail.
+     * @param  stroke       The stroke of the word
+     * @param  candidate    The string of the word
+     * @return              {@code true} if success; {@code false} if fail.
      */
     private boolean addDictionary(String stroke, String candidate) {
 

@@ -22,14 +22,14 @@ package jp.co.omronsoft.openwnn;
  * @author Copyright (C) 2008-2009, OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class WnnWord {
-	/** The word's Id */
-	public int      id;
-	/** The string of this word. */
-	public String   candidate;
-	/** The reading of this word. */
-	public String   stroke;
-	/** The score of this word. */
-	public int      frequency;
+    /** The word's Id */
+    public int      id;
+    /** The string of this word. */
+    public String   candidate;
+    /** The reading of this word. */
+    public String   stroke;
+    /** The score of this word. */
+    public int      frequency;
     /** The part of speech this word. */
     public WnnPOS   partOfSpeech;
     /** The attribute of this word when it is assumed a candidate. */
