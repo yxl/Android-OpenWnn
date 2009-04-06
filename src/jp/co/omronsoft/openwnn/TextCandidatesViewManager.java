@@ -174,12 +174,13 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         this.mEndPositionArray = new ArrayList<Integer>();
         this.mPositionToWordIndexArray = new ArrayList<Integer>();
         this.mWnnWordArray = new ArrayList<WnnWord>();
+        this.mAutoHideMode = true;
     }
 
     /**
      * Set auto-hide mode.
-     * @param hide		{@code true} if the view will hidden when no candidate exists;
-     *					{@code false} if the view is always shown.
+     * @param hide      {@code true} if the view will hidden when no candidate exists;
+     *                  {@code false} if the view is always shown.
      */
     public void setAutoHide(boolean hide) {
         mAutoHideMode = hide;
@@ -208,7 +209,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mViewBodyText.setGravity(Gravity.TOP);
         
         mReadMoreText = (TextView)mViewBody.findViewById(R.id.read_more_text);
-    	mReadMoreText.setText(mWnn.getResources().getString(R.string.read_more));
+        mReadMoreText.setText(mWnn.getResources().getString(R.string.read_more));
         mReadMoreText.setTextSize(24.0f);
 
         mPortrait = (height > 450)? true : false;
@@ -231,38 +232,47 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         if (readMore) {
             displayCandidates(this.mConverter, false, -1);
         } else { 
-        	if (type == CandidatesViewManager.VIEW_TYPE_NORMAL) {
+            if (type == CandidatesViewManager.VIEW_TYPE_NORMAL) {
                 mIsFullView = false;
-        	    if (mDisplayEndOffset > 0) {
+                if (mDisplayEndOffset > 0) {
                     int maxLine = getMaxLine();
                     displayCandidates(this.mConverter, false, maxLine);
-       	        } else {
-       	        	setReadMore();
-       	        }
-       	    }
+                } else {
+                    setReadMore();
+                }
+            } else {
+                if (mViewBody.isShown()) {
+                	mWnn.setCandidatesViewShown(false);
+                }
+            }
         }
     }
 
     /**
      * Set the view layout
      *
-     * @param type		View type
-     * @return			{@code true} if display is updated; {@code false} if otherwise
+     * @param type      View type
+     * @return          {@code true} if display is updated; {@code false} if otherwise
      */
     private boolean setViewLayout(int type) {
         mViewType = type;
         boolean readMore = false;
         int height;
         if (type == CandidatesViewManager.VIEW_TYPE_CLOSE) {
-            height = 1;
-        } else if (mPortrait) {
+        	mViewBody.setVisibility(View.GONE);
+            return false;
+        }
+        
+        mViewBody.setVisibility(View.VISIBLE);
+
+        if (mPortrait) {
             if (type == CandidatesViewManager.VIEW_TYPE_NORMAL) {
                 mViewBodyScroll.scrollTo(0, 0);
                 height = LINE_HEIGHT * LINE_NUM_PORTRAIT;
                 mViewBodyText.setMaxLines(LINE_NUM_PORTRAIT);
                 mViewBodyText.setLines(LINE_NUM_PORTRAIT);
                 if (mWordCount > 1) {
-                    int displayEndCount = (mWordCountInNormalView != -1)	? mWordCountInNormalView : mWordCount;
+                    int displayEndCount = (mWordCountInNormalView != -1)    ? mWordCountInNormalView : mWordCount;
                     int endPosition = mEndPositionArray.get(displayEndCount - 1);
                     mViewBodyText.setText(mCandidates.subSequence(0, endPosition));
                     mViewBodyText.setSelection(0, 0);
@@ -282,7 +292,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mViewBodyText.setMaxLines(LINE_NUM_LANDSCAPE);
                 mViewBodyText.setLines(LINE_NUM_LANDSCAPE);
                 if (mWordCount > 1) {
-                    int displayEndCount = (mWordCountInNormalView != -1)	? mWordCountInNormalView : mWordCount;
+                    int displayEndCount = (mWordCountInNormalView != -1)    ? mWordCountInNormalView : mWordCount;
                     int endPosition = mEndPositionArray.get(displayEndCount - 1);
                     mViewBodyText.setText(mCandidates.subSequence(0, endPosition));
                     mViewBodyText.setSelection(0, 0);
@@ -311,7 +321,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
     /** @see CandidatesViewManager#displayCandidates */
     public void displayCandidates(WnnEngine converter) {
-    	mCanReadMore = false;
+        mCanReadMore = false;
         mDisplayEndOffset = 0;
         mIsFullView = false;
         int maxLine = getMaxLine();
@@ -349,8 +359,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     /**
      * Count lines using {@link Paint#measureText}.
      *
-     * @param text		The text to display
-     * @return  		Number of lines
+     * @param text      The text to display
+     * @return          Number of lines
      */
     private int countLineUsingMeasureText(CharSequence text) {
         StringBuffer tmpText = new StringBuffer(text);
@@ -404,7 +414,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         StringBuffer tmp = new StringBuffer();
         tmp.append(mCandidates);
         if ((!dispFirst) && (mLastWord != null) && (mLastWord.candidate.length() != 0)) {
-        	mLineWordCount = -1;
+            mLineWordCount = -1;
 
             StringBuffer displayText = createDisplayText(mLastWord, maxLine);
 
@@ -415,9 +425,9 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mWnnWordArray.add(mWordCount, mLastWord);
                 int i = 0;
                 for (i = 0 ; i < tmp.length(); i++) {
-                	if (!displayText.subSequence(i, i + 1).equals("\n")) {
-                		break;
-                	}
+                    if (!displayText.subSequence(i, i + 1).equals("\n")) {
+                        break;
+                    }
                 }
                 mStartPositionArray.add(mWordCount, tmp.length() + i);
                 tmp.append(displayText);
@@ -436,15 +446,15 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
             displayText = createDisplayText(result, maxLine);
             if (displayText == null) {
-            	continue;
+                continue;
             }
             
             mWnnWordArray.add(mWordCount, result);
             int i = 0;
             for (i = 0 ; i < tmp.length(); i++) {
-            	if (!displayText.subSequence(i, i + 1).equals("\n")) {
-            		break;
-            	}
+                if (!displayText.subSequence(i, i + 1).equals("\n")) {
+                    break;
+                }
             }
             mStartPositionArray.add(mWordCount, tmp.length() + i);
             tmp.append(displayText);
@@ -455,7 +465,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
             if (mIsFullView) {
                 continue;
             }
-	    
+        
             mViewBodyText.setText(tmp);
             int lineNum = mViewBodyText.getLineCount();
             if (lineNum == 0) {
@@ -465,14 +475,13 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 }
             }
             if (dispFirst &&  lineNum > maxLine) {
-            
                 if (mWordCount == 1) {
-                	setViewLayout(CandidatesViewManager.VIEW_TYPE_FULL);
-                	maxLine = -1;
+                    setViewLayout(CandidatesViewManager.VIEW_TYPE_FULL);
+                    maxLine = -1;
                     mIsFullView = true;
                     continue;
-                }            	
-            	
+                }               
+                
                 mCanReadMore = true;
 
                     mLastWord = result;
@@ -488,10 +497,9 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mWordCountInNormalView = mWordCount;
                 break;
             } else {
-            
                 if (mWordCount == 1) {
-                	setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
-                }            	
+                    setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
+                }               
             }
         }
         
@@ -501,11 +509,11 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         int j = 0;
         for (int i = 0; i < mWordCount; i++) {
             while (j <= mEndPositionArray.get(i)) {
-            	if (j < mStartPositionArray.get(i)) {
+                if (j < mStartPositionArray.get(i)) {
                     mPositionToWordIndexArray.add(j,-1);
-            	} else {
+                } else {
                     mPositionToWordIndexArray.add(j,i);
-            	}
+                }
                 j++;
             }
             mPositionToWordIndexArray.add(j,-1);    
@@ -525,10 +533,10 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         endPosition += CANDIDATE_SEPARATOR.length();
 
         if (mDisplayEndOffset > 0 && maxLine != -1) {
-        	mCanReadMore = true;
-        	String str = mCandidates.substring(0, mDisplayEndOffset);
-        	StringBuffer sub = new StringBuffer(str);
-        	sub.append(CANDIDATE_SEPARATOR);
+            mCanReadMore = true;
+            String str = mCandidates.substring(0, mDisplayEndOffset);
+            StringBuffer sub = new StringBuffer(str);
+            sub.append(CANDIDATE_SEPARATOR);
             mViewBodyText.setText(sub.subSequence(0, mDisplayEndOffset + CANDIDATE_SEPARATOR.length()));
         } else {
             mViewBodyText.setText(mCandidates.subSequence(0, endPosition));
@@ -554,19 +562,19 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
      */
     private void setReadMore() {
         if (mCanReadMore && !mIsFullView && !mCandidateDeleteState) {
-        	mReadMoreText.setHeight(mViewHeight);
-        	mReadMoreText.setVisibility(View.VISIBLE);
+            mReadMoreText.setHeight(mViewHeight);
+            mReadMoreText.setVisibility(View.VISIBLE);
         } else {
-        	mReadMoreText.setVisibility(View.GONE);
+            mReadMoreText.setVisibility(View.GONE);
         }
     }
-    	
+        
     /**
      * Create the string to show in the candidate window.
      *
-     * @param word 		A candidate word
-     * @param maxLine	The maximum number of line in the candidate window
-     * @return 		The string to show
+     * @param word      A candidate word
+     * @param maxLine   The maximum number of line in the candidate window
+     * @return      The string to show
      */
     private StringBuffer createDisplayText(WnnWord word, int maxLine) {
         StringBuffer tmp = new StringBuffer();
@@ -579,22 +587,20 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         float separatorLength = measureText(p, CANDIDATE_SEPARATOR, 0, CANDIDATE_SEPARATOR.length());
         boolean isFirstWordOfLine = (mLineLength == 0);
 
-   	    int maxWidth = 0;
-  	    int lineLength = 0;
-  	    lineLength += newLineLength;
-  	   
-  	    maxWidth += width - separatorLength;
-  	    
-  	    mLineLength += newLineLength;
+        int maxWidth = 0;
+        int lineLength = 0;
+        lineLength += newLineLength;
+        maxWidth += width - separatorLength;
+        
+        mLineLength += newLineLength;
         mLineLength += separatorLength;
-  	    mLineWordCount++;
+        mLineWordCount++;
 
-  	   
-    	if (mLineWordCount == 0) {
-    		mLineLength = lineLength;
-    		mLineLength += separatorLength;
-    	}
-    	
+        if (mLineWordCount == 0) {
+            mLineLength = lineLength;
+            mLineLength += separatorLength;
+        }
+        
         if (!isFirstWordOfLine && (width < mLineLength) && mLineWordCount != 0) {
             tmp.append("\n");
             mLineLength = lineLength;
@@ -606,61 +612,59 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
 
     
     /**
-	 * Adjust the width of specified string
+     * Adjust the width of specified string
      *
-     * @param word				A candidate word
-     * @param tmp				A work area
-     * @param newLineLength		The line length to show
-     * @param maxwidth			The maximum number of width that can be displayed in the candidate window
-     * @param maxLine			The maximum number of line in the candidate window
-     * @return 				The string to show
+     * @param word              A candidate word
+     * @param tmp               A work area
+     * @param newLineLength     The line length to show
+     * @param maxwidth          The maximum number of width that can be displayed in the candidate window
+     * @param maxLine           The maximum number of line in the candidate window
+     * @return              The string to show
      */
     private StringBuffer adjustDisplaySize(WnnWord word, StringBuffer tmp, int newLineLength, int maxWidth, int maxLine) {
         StringBuffer string = new StringBuffer(tmp);
-  	   
         if (newLineLength > maxWidth) {
             TextPaint p = mViewBodyText.getPaint();
             float separatorLength = measureText(p, CANDIDATE_SEPARATOR, 0, CANDIDATE_SEPARATOR.length());
-  	        int length = word.candidate.length();
-  	        int size = 0;
-  	        int count = 0;
-  	        int line = 0;
-  	        float LineLength = 0;
-  	        for (int i = 0 ; i < length;i++) {
-  	            string.append(word.candidate.charAt(i));
-   	            LineLength = measureText(p, string, count, count + 1);
-   	            size += LineLength;
-  	            if (size > maxWidth) {
-  	            	line++;
+            int length = word.candidate.length();
+            int size = 0;
+            int count = 0;
+            int line = 0;
+            float LineLength = 0;
+            for (int i = 0 ; i < length;i++) {
+                string.append(word.candidate.charAt(i));
+                LineLength = measureText(p, string, count, count + 1);
+                size += LineLength;
+                if (size > maxWidth) {
+                    line++;
                     string.delete(string.length() - 1, string.length());
                     if (mDisplayEndOffset == 0 && line == maxLine && mWordCount == 0) {
-                    	mDisplayEndOffset = count;
+                        mDisplayEndOffset = count;
                     }
-     	           
                     string.append("\n");
                     string.append(word.candidate.charAt(i));
-     	            size = 0;
-     	            count++;
-       	            LineLength = measureText(p, string, count, count + 1);
-       	            size += LineLength;
-  	    	    }
-   	            count++;
-  	        }
+                    size = 0;
+                    count++;
+                    LineLength = measureText(p, string, count, count + 1);
+                    size += LineLength;
+                }
+                count++;
+            }
 
             mLineWordCount = 0;
             mLineLength = newLineLength;
             mLineLength += separatorLength;
         } else {
-        	string.append(word.candidate);
+            string.append(word.candidate);
         }
         return string;
     }
-    	
-    	
+        
+        
     /** @see CandidatesViewManager#clearCandidates */
     public void clearCandidates() {
         mViewBodyText.setText("");
-	
+    
         mCandidates.delete(0, mCandidates.length());
         mWordCount = 0;
         mWordCountInNormalView = -1;
@@ -669,10 +673,12 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         mPositionToWordIndexArray.clear();
         mWnnWordArray.clear();
 
-    	mLineLength = 0;
-    	mLineWordCount = -1;
+        mLineLength = 0;
+        mLineWordCount = -1;
 
-        setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
+        if (mAutoHideMode) {
+            setViewLayout(CandidatesViewManager.VIEW_TYPE_CLOSE);
+        }
 
         if (mCandidateDeleteState) {
             mViewBodyScroll.removeAllViews();
@@ -685,7 +691,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         if (mAutoHideMode && mViewBody.isShown()) {
             mWnn.setCandidatesViewShown(false);
         }
-        if(!mAutoHideMode){
+        if (!mAutoHideMode) {
             mCanReadMore = false;
             setReadMore();
         }
@@ -726,7 +732,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     /**
      * Process CANDIDATE_VIEW_TOUCH event.
      * 
-     * @return		{@code true} if event is processed; {@code false} if otherwise
+     * @return      {@code true} if event is processed; {@code false} if otherwise
      */
     public boolean onTouchSync() {
         if (!mHasCreatedCandidateList) {
@@ -758,28 +764,28 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
     /**
      * Convert a coordinate into the offset of character
      *
-     * @param x 	The horizontal position
-     * @param y		The vertical position
-     * @return 	The offset of character
+     * @param x     The horizontal position
+     * @param y     The vertical position
+     * @return  The offset of character
      */
-	public int getOffset(int x,int y){
-	    Layout layout = mViewBodyText.getLayout();
-	    int line = layout.getLineForVertical(y);
-	    
-	    if( y >= layout.getLineTop(line+1) ){
-	    	return layout.getText().length();
-	    }
+    public int getOffset(int x,int y){
+        Layout layout = mViewBodyText.getLayout();
+        int line = layout.getLineForVertical(y);
+        
+        if( y >= layout.getLineTop(line+1) ){
+            return layout.getText().length();
+        }
 
-	    int offset = layout.getOffsetForHorizontal(line,x);
+        int offset = layout.getOffsetForHorizontal(line,x);
         offset -= TOUCH_ADJUSTED_VALUE;
         if (offset < 0) {
             offset = 0;
         }
-	    return offset;
-	}
+        return offset;
+    }
 
-	/** from GestureDetector.OnGestureListener class */
-	public boolean onDown(MotionEvent arg0) {
+    /** from GestureDetector.OnGestureListener class */
+    public boolean onDown(MotionEvent arg0) {
         if (!mCandidateDeleteState) {
             int position = getOffset((int)arg0.getX(),(int)arg0.getY());
             int wordIndex = mPositionToWordIndexArray.get(position);
@@ -787,7 +793,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 int startPosition = mStartPositionArray.get(wordIndex);
                 int endPosition = 0;
                 if (mDisplayEndOffset > 0 && getViewType() == CandidatesViewManager.VIEW_TYPE_NORMAL) {
-                	endPosition = mDisplayEndOffset + CANDIDATE_SEPARATOR.length();
+                    endPosition = mDisplayEndOffset + CANDIDATE_SEPARATOR.length();
                 } else {
                     endPosition = mEndPositionArray.get(wordIndex);
                 }
@@ -797,11 +803,11 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mHasStartedSelect = true;
             }
         }
-		return true;
-	}
+        return true;
+    }
 
     /** from GestureDetector.OnGestureListener class */
-	public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2, float arg3) {
+    public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2, float arg3) {
 
         if (mCandidateDeleteState) {
             return false;
@@ -828,11 +834,11 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
             }
         }
 
-		return consumed;
-	}
+        return consumed;
+    }
 
     /** from GestureDetector.OnGestureListener class */
-	public void onLongPress(MotionEvent arg0) {
+    public void onLongPress(MotionEvent arg0) {
         if (!mHasStartedSelect) {
             return;
         }
@@ -853,7 +859,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mLinerLayout = new  LinearLayout(mViewBodyScroll.getContext());
                 mLinerLayout.setOrientation(LinearLayout.VERTICAL);
                 Resources r = mViewBodyScroll.getContext().getResources();
-              	int color = r.getColor(R.color.candidate_background);
+                int color = r.getColor(R.color.candidate_background);
                 mLinerLayout.setBackgroundColor(color);
                 TextView text = new TextView(mViewBodyScroll.getContext());
                 text.setText(mWord.candidate);
@@ -873,20 +879,20 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 mViewBodyScroll.addView(mLinerLayout);
             }
         }
-	}
+    }
 
     /** from GestureDetector.OnGestureListener class */
-	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
-			float arg3) {
-		return false;
-	}
+    public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
+            float arg3) {
+        return false;
+    }
 
     /** from GestureDetector.OnGestureListener class */
-	public void onShowPress(MotionEvent arg0) {
-	}
+    public void onShowPress(MotionEvent arg0) {
+    }
 
     /** from GestureDetector.OnGestureListener class */
-	public boolean onSingleTapUp(MotionEvent arg0) {
+    public boolean onSingleTapUp(MotionEvent arg0) {
         if (!mHasStartedSelect) {
             return true;
         }
@@ -909,15 +915,15 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                 }
             }
         }
-		return false;
-	}
-	
+        return false;
+    }
+    
     /**
      * Create the select button.
      *
      * @return Button The button object
      */
-	private Button createSelectButton(){
+    private Button createSelectButton(){
         final Button selectB;
         selectB= new Button(mViewBodyScroll.getContext()) {
             public boolean onTouchEvent(MotionEvent me) {
@@ -929,10 +935,9 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                     break;
                 case MotionEvent.ACTION_UP:
                 default:
-                	d.clearColorFilter();
+                    d.clearColorFilter();
                     break;
                 }
-            
                 return ret;
             }
         };
@@ -943,14 +948,14 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         });
         selectB.setText(mSelectBottonText);
         return selectB;
-	}
+    }
 
     /**
      * Create the cancel button
      *
-     * @return Button 		the button object
+     * @return Button       the button object
      */
-	private Button createCancelButton(){
+    private Button createCancelButton(){
         final Button cancelB;
         cancelB= new Button(mViewBodyScroll.getContext()) {
             public boolean onTouchEvent(MotionEvent me) {
@@ -962,18 +967,16 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
                     break;
                 case MotionEvent.ACTION_UP:
                 default:
-                	d.clearColorFilter();
+                    d.clearColorFilter();
                     break;
                 }
-            
                 return ret;
             }
         };
         cancelB.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            	setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
+                setViewLayout(CandidatesViewManager.VIEW_TYPE_NORMAL);
                 mViewBodyScroll.removeAllViews();
-            
                 mCandidateDeleteState = false;
                 mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.UPDATE_CANDIDATE));
                 mViewBodyScroll.addView(mViewBodyText);
@@ -981,13 +984,13 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
         });
         cancelB.setText(mCancelBottonText);
         return cancelB;
-	}
+    }
 
 
     /**
      * Set the show state of hardware keyboard
      * 
-     * @param hidden 	{@code true} if the hardware keyboard is not shown
+     * @param hidden    {@code true} if the hardware keyboard is not shown
      */
     public void setHardKeyboardHidden(boolean hidden) {
         mHardKeyboardHidden = hidden;
@@ -997,11 +1000,11 @@ public class TextCandidatesViewManager implements CandidatesViewManager, OnTouch
      * Retrieve the width of string to draw
      * (Emoji is supported by this method)
      * 
-     * @param paint 		The information to draw
-     * @param text			The string
-     * @param start			The start position (specified by the number of character)
-     * @param end 			The end position (specified by the number of character)
-     * @return 			The width of string to draw
+     * @param paint         The information to draw
+     * @param text          The string
+     * @param start         The start position (specified by the number of character)
+     * @param end           The end position (specified by the number of character)
+     * @return          The width of string to draw
      */ 
     public int measureText(TextPaint paint, CharSequence text, int start, int end) {
         return (int)Styled.measureText(paint, new TextPaint(), text, start, end, null);

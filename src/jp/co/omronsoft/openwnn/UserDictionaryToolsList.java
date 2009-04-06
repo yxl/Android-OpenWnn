@@ -493,8 +493,8 @@ public abstract class UserDictionaryToolsList extends Activity
     /**
      * Delete the specified word
      *
-     * @param  searchword	The information of searching
-     * @return 			{@code true} if success; {@code false} if fail.
+     * @param  searchword   The information of searching
+     * @return          {@code true} if success; {@code false} if fail.
      */
     public boolean deleteWord(WnnWord searchword) {
         OpenWnnEvent event = new OpenWnnEvent(OpenWnnEvent.LIST_WORDS_IN_USER_DICTIONARY,
@@ -620,10 +620,10 @@ public abstract class UserDictionaryToolsList extends Activity
     /**
      * Create the list of words.
      *
-     * @param  position		Start position to create the list
-     * @param  max			Maximum number of words to display
-     * @param  self			UserDictionaryToolsList
-     * @return 			{@code true} if more words undisplayed; {@code false} if no more.
+     * @param  position     Start position to create the list
+     * @param  max          Maximum number of words to display
+     * @param  self         UserDictionaryToolsList
+     * @return          {@code true} if more words undisplayed; {@code false} if no more.
      */
     private boolean createWordList(int position ,int max, UserDictionaryToolsList self) {
         boolean ret = true;
@@ -697,7 +697,3 @@ public abstract class UserDictionaryToolsList extends Activity
         return ret;
     }
 }
-
-
-
-
