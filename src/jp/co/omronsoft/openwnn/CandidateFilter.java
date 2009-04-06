@@ -28,43 +28,43 @@ import java.util.regex.Pattern;
  */
 public class CandidateFilter {
     /** Filtering pattern (No filter) */
-	public static final int FILTER_NONE = 0x0;
+    public static final int FILTER_NONE = 0x0;
     /** Filtering pattern (Emoji filter) */
-	public static final int FILTER_EMOJI = 0x1;
+    public static final int FILTER_EMOJI = 0x1;
 
     /** Regular expression pattern for emoji */
     private static final Pattern PATTERN_EMOJI = Pattern.compile("[\uDBB8\uDBB9\uDBBA\uDBBB]");
 
     /** Current filter type */
-	private int mFilter = 0;
+    private int mFilter = 0;
 
-	/**
-	 * Set specified filter type.
-	 * 
-	 * @param filter	The filter type
-	 * @see jp.co.omronsoft.openwnn.CandidateFilter#FILTER_NONE
-	 * @see jp.co.omronsoft.openwnn.CandidateFilter#FILTER_EMOJI
-	 */
-	public void setFilter(int filter) {
-		mFilter = filter;
-	}
-	
-	/**
-	 * Checking whether a specified word is filtered.
-	 * 
-	 * @param word		A word
-	 * @return			{@code true} if the word is allowed; {@code false} if the word is denied.
-	 */
-	public boolean isAllowed(WnnWord word) {
-		if (mFilter == 0) {
-			return true;
-		}
-		if ((mFilter & FILTER_EMOJI) != 0) {
-			Matcher m = PATTERN_EMOJI.matcher(word.candidate);
-			if (m.matches()) {
-				return false;
-			}
-		}		
-		return true;
-	}
+    /**
+     * Set specified filter type.
+     * 
+     * @param filter    The filter type
+     * @see jp.co.omronsoft.openwnn.CandidateFilter#FILTER_NONE
+     * @see jp.co.omronsoft.openwnn.CandidateFilter#FILTER_EMOJI
+     */
+    public void setFilter(int filter) {
+        mFilter = filter;
+    }
+    
+    /**
+     * Checking whether a specified word is filtered.
+     * 
+     * @param word      A word
+     * @return          {@code true} if the word is allowed; {@code false} if the word is denied.
+     */
+    public boolean isAllowed(WnnWord word) {
+        if (mFilter == 0) {
+            return true;
+        }
+        if ((mFilter & FILTER_EMOJI) != 0) {
+            Matcher m = PATTERN_EMOJI.matcher(word.candidate);
+            if (m.matches()) {
+                return false;
+            }
+        }       
+        return true;
+    }
 }
