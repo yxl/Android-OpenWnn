@@ -1,0 +1,5 @@
+<resources>
+  <!-- If this input method should be used as the default for ja,
+       set im_is_default true. -->
+  <bool name="im_is_default">false</bool>
+</resources>
