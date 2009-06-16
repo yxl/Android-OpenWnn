@@ -19,6 +19,7 @@ package jp.co.omronsoft.openwnn.ZH;
 import jp.co.omronsoft.openwnn.*;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.inputmethodservice.Keyboard;
 import android.util.Log;
 import android.view.View;
@@ -38,16 +39,11 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         KEYMODE_CN_PINYIN, KEYMODE_CN_ALPHABET, KEYMODE_CN_HALF_NUMBER
     };
 
-    /** Definition for {@code mInputType} (toggle) */
-    private static final int INPUT_TYPE_TOGGLE = 1;
-    /** Definition for {@code mInputType} (commit instantly) */
-    private static final int INPUT_TYPE_INSTANT = 2;
-
     /** The constant for mFixedKeyMode. It means that input mode is not fixed. */
-    private static final int INVALID_KEYMODE = -1;    
+    private static final int INVALID_KEYMODE = -1;
 
     /** Input mode that is not able to be changed. If ENABLE_CHANGE_KEYMODE is set, input mode can change. */
-    private int mFixedKeyMode = INVALID_KEYMODE;
+    private int[] mLimitedKeyMode = null;
 
     /** Input mode that is given the first priority. If ENABLE_CHANGE_KEYMODE is set, input mode can change. */
     private int mPreferenceKeyMode = INVALID_KEYMODE;
@@ -62,32 +58,34 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
     /** Auto caps mode */
     private boolean mEnableAutoCaps = true;
 
-    /**
-     * Default constructor
-     */
+    /** Whether the InputType is null */
+    private boolean mIsInputTypeNull = false;
+    
+
+    /** Default constructor */
     public DefaultSoftKeyboardZH() {
         mCurrentLanguage     = LANG_CN;
         mCurrentKeyboardType = KEYBOARD_QWERTY;
         mShiftOn             = KEYBOARD_SHIFT_OFF;
         mCurrentKeyMode      = KEYMODE_CN_PINYIN;
     }
-	
+    
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#createKeyboards */
     @Override protected void createKeyboards(OpenWnn parent) {
         mKeyboard = new Keyboard[3][2][4][2][7][2];
 
         if (mHardKeyboardHidden) {
-        	/* Create the suitable keyboard object */
-        	if (mDisplayMode == DefaultSoftKeyboard.PORTRAIT) {
-        		createKeyboardsPortrait(parent);
-        	} else {
-        	
-        	}
+            /* Create the suitable keyboard object */
+            if (mDisplayMode == DefaultSoftKeyboard.PORTRAIT) {
+                createKeyboardsPortrait(parent);
+            } else {
+            }
         }
         mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
-        		OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
+                OpenWnnZHCN.ENGINE_MODE_OPT_TYPE_QWERTY));
     }
+
     /**
      * Commit the pre-edit string for committing operation that is not explicit
      * (ex. when a candidate is selected)
@@ -104,28 +102,21 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
      * @param keyMode   The type of input mode
      */
     public void changeKeyMode(int keyMode) {
-    	int targetMode = keyMode;
-    	commitText();
+        int targetMode = filterKeyMode(keyMode);
+        if (targetMode == INVALID_KEYMODE) {
+            return;
+        }
+        
+        commitText();
 
-    	if (mCapsLock) {
-    		mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_SOFT_KEY,
+        if (mCapsLock) {
+            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_SOFT_KEY,
                                           new KeyEvent(KeyEvent.ACTION_UP,
                                                        KeyEvent.KEYCODE_SHIFT_LEFT)));
-    		mCapsLock = false;
-    	}
-    	mShiftOn = KEYBOARD_SHIFT_OFF;
-
-    	if (mFixedKeyMode != INVALID_KEYMODE) {
-    		targetMode = mFixedKeyMode;
-    	}
-
-        if (!mHardKeyboardHidden) {
-        	if (targetMode == KEYMODE_CN_HALF_NUMBER) {
-        		targetMode = KEYMODE_CN_ALPHABET;
-        	} else if (targetMode == KEYMODE_CN_FULL_NUMBER) {
-        		targetMode = KEYMODE_CN_PINYIN;
-        	}
+            mCapsLock = false;
         }
+        mShiftOn = KEYBOARD_SHIFT_OFF;
+
         Keyboard kbd = getModeChangeKeyboard(targetMode);
         mCurrentKeyMode = targetMode;
         
@@ -163,9 +154,9 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#initView */
     @Override public View initView(OpenWnn parent, int width, int height) {
-    	View view = super.initView(parent, width, height);
-    	changeKeyboard(mKeyboard[mCurrentLanguage][mDisplayMode][mCurrentKeyboardType][mShiftOn][mCurrentKeyMode][0]);
-    	return view;
+        View view = super.initView(parent, width, height);
+        changeKeyboard(mKeyboard[mCurrentLanguage][mDisplayMode][mCurrentKeyboardType][mShiftOn][mCurrentKeyMode][0]);
+        return view;
     }
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#changeKeyboardType */
@@ -183,7 +174,9 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
 
         switch (primaryCode) {
         case KEYCODE_QWERTY_TOGGLE_MODE:
-            nextKeyMode();
+            if (!mIsInputTypeNull) {
+                nextKeyMode();
+            }
             break;
 
         case KEYCODE_QWERTY_BACKSPACE:
@@ -207,8 +200,8 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
             break;
 
         case KEYCODE_QWERTY_EMOJI:
-        	commitText();
-        	mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE, OpenWnnZHCN.ENGINE_MODE_SYMBOL));
+            commitText();
+            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE, OpenWnnZHCN.ENGINE_MODE_SYMBOL));
             break;
 
         case KEYCODE_QWERTY_HAN_ALPHA:
@@ -256,6 +249,7 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
             break;
         }
 
+        /* update shift key's state */
         if (!mCapsLock && (primaryCode != DefaultSoftKeyboard.KEYCODE_QWERTY_SHIFT)) {
             setShiftByEditorInfo();
         }
@@ -266,15 +260,25 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         super.setPreferences(pref, editor);
 
         int inputType = editor.inputType;
-        if (inputType == EditorInfo.TYPE_NULL) {
-            return;
+        if (mHardKeyboardHidden) {
+            if (inputType == EditorInfo.TYPE_NULL) {
+                if (!mIsInputTypeNull) {
+                    mIsInputTypeNull = true;
+                }
+                return;
+            }
+            
+            if (mIsInputTypeNull) {
+                mIsInputTypeNull = false;
+            }
         }
 
         mEnableAutoCaps = pref.getBoolean("auto_caps", true);
-        mFixedKeyMode = INVALID_KEYMODE;
+        mLimitedKeyMode = null;
         mPreferenceKeyMode = INVALID_KEYMODE;
         mNoInput = true;
         mDisableKeyInput = false;
+        mCapsLock = false;
 
         switch (inputType & EditorInfo.TYPE_MASK_CLASS) {
 
@@ -284,17 +288,23 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
             break;
 
         case EditorInfo.TYPE_CLASS_PHONE:
-            mFixedKeyMode = KEYMODE_CN_PHONE;
+            if (mHardKeyboardHidden) {
+                mLimitedKeyMode = new int[] {KEYMODE_CN_PHONE};
+            } else {
+                mLimitedKeyMode = new int[] {KEYMODE_CN_ALPHABET};
+            }
             break;
 
         case EditorInfo.TYPE_CLASS_TEXT:
             switch (inputType & EditorInfo.TYPE_MASK_VARIATION) {
 
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
-                mPreferenceKeyMode = KEYMODE_CN_ALPHABET;
+                mLimitedKeyMode = new int[] {KEYMODE_CN_ALPHABET, KEYMODE_CN_HALF_NUMBER};
                 break;
 
             case EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
+                mLimitedKeyMode = new int[] {KEYMODE_CN_ALPHABET, KEYMODE_CN_HALF_NUMBER};
+                break;
             case EditorInfo.TYPE_TEXT_VARIATION_URI:
                 mPreferenceKeyMode = KEYMODE_CN_ALPHABET;
                 break;
@@ -313,6 +323,7 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
             mLastInputType = inputType;
         }
 
+        setStatusIcon();
         setShiftByEditorInfo();
     }
 
@@ -331,6 +342,8 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         int keymode = KEYMODE_CN_PINYIN;
         if (mPreferenceKeyMode != INVALID_KEYMODE) {
             keymode = mPreferenceKeyMode;
+        } else if (mLimitedKeyMode != null) {
+            keymode = mLimitedKeyMode[0];
         }
         changeKeyMode(keymode);
     } 
@@ -338,7 +351,8 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
     /**
      * Change to the next input mode
      */
-    private void nextKeyMode() {
+    public void nextKeyMode() {
+        /* Search the current mode in the toggle table */
         boolean found = false;
         int index;
         for (index = 0; index < CN_MODE_CYCLE_TABLE.length; index++) {
@@ -349,14 +363,24 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         }
 
         if (!found) {
+            /* If the current mode not exists, set the default mode */
             setDefaultKeyboard();
         } else {
-            index++;
-            if (CN_MODE_CYCLE_TABLE.length <= index) {
-                index = 0;
+            /* If the current mode exists, set the next input mode */
+            int size = CN_MODE_CYCLE_TABLE.length;
+            int keyMode = INVALID_KEYMODE;
+            for (int i = 0; i < size; i++) {
+                index = (++index) % size;
+
+                keyMode = filterKeyMode(CN_MODE_CYCLE_TABLE[index]);
+                if (keyMode != INVALID_KEYMODE) {
+                    break;
+                }
             }
 
-            changeKeyMode(CN_MODE_CYCLE_TABLE[index]);
+            if (keyMode != INVALID_KEYMODE) {
+                changeKeyMode(keyMode);
+            }
         }
     }
 
@@ -381,7 +405,7 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         /* qwerty shift_on */
         keyList = mKeyboard[LANG_CN][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_ON];
         keyList[KEYMODE_CN_ALPHABET][0] = 
-        	mKeyboard[LANG_CN][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_CN_ALPHABET][0];
+            mKeyboard[LANG_CN][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_CN_ALPHABET][0];
         keyList[KEYMODE_CN_HALF_NUMBER][0] = new Keyboard(parent, R.xml.default_cn_half_symbols_shift);
         keyList[KEYMODE_CN_PHONE][0] = new Keyboard(parent, R.xml.keyboard_12key_phone);
         keyList[KEYMODE_CN_PINYIN][0] = new Keyboard(parent, R.xml.default_cn_qwerty_pinyin_shift);
@@ -410,7 +434,7 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
             icon = R.drawable.immodeic_half_number;
             break;
         default:
-        	break;
+            break;
         }
 
         mWnn.showStatusIcon(icon);
@@ -419,12 +443,17 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
     /**
      * Get the shift key state from the editor.
      * <br>
-     * @param editor	The editor information
-     * @return			The state id of the shift key (0:off, 1:on)
+     * @param editor    The editor information
+     * @return          The state id of the shift key (0:off, 1:on)
      */
     protected int getShiftKeyState(EditorInfo editor) {
-        int caps = mWnn.getCurrentInputConnection().getCursorCapsMode(editor.inputType);
-        return (caps == 0) ? 0 : 1;
+        InputConnection connection = mWnn.getCurrentInputConnection();
+        if (connection != null) {
+            int caps = connection.getCursorCapsMode(editor.inputType);
+            return (caps == 0) ? 0 : 1;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -439,5 +468,51 @@ public class DefaultSoftKeyboardZH extends DefaultSoftKeyboard {
         }
     }
 
+    /**
+     * Change the key-mode to the allowed one which is restricted
+     *  by the text input field or the type of the keyboard.
+     * @param keyMode The key-mode
+     * @return the key-mode allowed
+     */
+    private int filterKeyMode(int keyMode) {
+        int targetMode = keyMode;
+        int[] limits = mLimitedKeyMode;
+
+        if (!mHardKeyboardHidden) { /* for hardware keyboard */
+            if (targetMode == KEYMODE_CN_HALF_NUMBER) {
+                targetMode = KEYMODE_CN_ALPHABET;
+            } else if (targetMode == KEYMODE_CN_FULL_NUMBER) {
+                targetMode = KEYMODE_CN_PINYIN;
+            }
+        } 
+
+        /* restrict by the type of the text field */
+        if (limits != null) {
+            boolean hasAccepted = false;
+            boolean hasRequiredChange = true;
+            int size = limits.length;
+            int nowMode = mCurrentKeyMode;
+
+            for (int i = 0; i < size; i++) {
+                if (targetMode == limits[i]) {
+                    hasAccepted = true;
+                    break;
+                }
+                if (nowMode == limits[i]) {
+                    hasRequiredChange = false;
+                }
+            }
+
+            if (!hasAccepted) {
+                if (hasRequiredChange) {
+                    targetMode = mLimitedKeyMode[0];
+                } else {
+                    targetMode = INVALID_KEYMODE;
+                }
+            }
+        }
+
+        return targetMode;
+    }
 }
 

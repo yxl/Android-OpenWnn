@@ -16,9 +16,6 @@
 
 package jp.co.omronsoft.openwnn;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * The filter class for candidates.
  * This class is used for filtering candidates by {link WnnEngine}.
@@ -29,26 +26,12 @@ import java.util.regex.Pattern;
 public class CandidateFilter {
     /** Filtering pattern (No filter) */
     public static final int FILTER_NONE = 0x0;
-    /** Filtering pattern (Emoji filter) */
-    public static final int FILTER_EMOJI = 0x1;
-
-    /** Regular expression pattern for emoji */
-    private static final Pattern PATTERN_EMOJI = Pattern.compile("[\uDBB8\uDBB9\uDBBA\uDBBB]");
+    /** Filtering pattern (Non ASCII) */
+    public static final int FILTER_NON_ASCII = 0x2;
 
     /** Current filter type */
-    private int mFilter = 0;
+    public int filter = 0;
 
-    /**
-     * Set specified filter type.
-     * 
-     * @param filter    The filter type
-     * @see jp.co.omronsoft.openwnn.CandidateFilter#FILTER_NONE
-     * @see jp.co.omronsoft.openwnn.CandidateFilter#FILTER_EMOJI
-     */
-    public void setFilter(int filter) {
-        mFilter = filter;
-    }
-    
     /**
      * Checking whether a specified word is filtered.
      * 
@@ -56,15 +39,17 @@ public class CandidateFilter {
      * @return          {@code true} if the word is allowed; {@code false} if the word is denied.
      */
     public boolean isAllowed(WnnWord word) {
-        if (mFilter == 0) {
+        if (filter == 0) {
             return true;
         }
-        if ((mFilter & FILTER_EMOJI) != 0) {
-            Matcher m = PATTERN_EMOJI.matcher(word.candidate);
-            if (m.matches()) {
-                return false;
+        if ((filter & FILTER_NON_ASCII) != 0) {
+            String str = word.candidate;
+            for (int i = 0; i < str.length(); i++) {
+                if (str.charAt(i) < 0x20 || 0x7E < str.charAt(i)) {
+                    return false;
+                }
             }
-        }       
+        }
         return true;
     }
 }

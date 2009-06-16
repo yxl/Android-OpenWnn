@@ -21,7 +21,7 @@
   <uses-permission xmlns:android="http://schemas.android.com/apk/res/android" android:name="android.permission.VIBRATE"/>
     <application android:label="OpenWnn">
 
-        <service android:name="OpenWnnJAJP" android:label="OpenWnn Japanese"
+        <service android:name="OpenWnnJAJP" android:label="Japanese IME"
 		 android:permission="android.permission.BIND_INPUT_METHOD"
 		 android:id="@+id/openwnn_japanese">
             <intent-filter>

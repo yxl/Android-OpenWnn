@@ -19,6 +19,8 @@ package jp.co.omronsoft.openwnn.JAJP;
 import jp.co.omronsoft.openwnn.*;
 import android.view.View;
 import android.view.Window;
+import java.util.Comparator;
+
 /**
  * The user dictionary tool class for Japanese IME.
  *
@@ -55,4 +57,15 @@ public class UserDictionaryToolsListJAJP extends UserDictionaryToolsList {
         return false;
     }
 
+    /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#getComparator */
+    @Override protected Comparator<WnnWord> getComparator() {
+    	return new ListComparatorJAJP();
+    }
+
+    /** Comparator class for sorting the list of Japanese user dictionary */
+    protected class ListComparatorJAJP implements Comparator<WnnWord>{
+        public int compare(WnnWord word1, WnnWord word2) {
+            return word1.stroke.compareTo(word2.stroke);
+        };
+    }
 }

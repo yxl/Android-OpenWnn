@@ -32,7 +32,8 @@ import jp.co.omronsoft.openwnn.WnnWord;
  */
 public class KanaConverter {
 
-    private static final HashMap<String,String> mHanSuujiMap = new HashMap<String,String>() {{
+	/** Conversion rule for half-width numeric */
+    private static final HashMap<String,String> mHalfNumericMap = new HashMap<String,String>() {{
         put( "\u3042", "1");
         put( "\u3044", "11");
         put( "\u3046", "111");
@@ -92,7 +93,8 @@ public class KanaConverter {
         put( "\u30fc", "00000");
     }};
 
-    private static final HashMap<String,String> mZenSuujiMap = new HashMap<String,String>() {{
+    /** Conversion rule for full-width numeric */
+    private static final HashMap<String,String> mFullNumericMap = new HashMap<String,String>() {{
         put( "\u3042", "\uff11");
         put( "\u3044", "\uff11\uff11");
         put( "\u3046", "\uff11\uff11\uff11");
@@ -152,7 +154,8 @@ public class KanaConverter {
         put( "\u30fc", "\uff10\uff10\uff10\uff10\uff10");
     }};
 
-    private static final HashMap<String,String> mHanKataMap = new HashMap<String,String>() {{
+    /** Conversion rule for half-width Katakana */
+    private static final HashMap<String,String> mHalfKatakanaMap = new HashMap<String,String>() {{
         put( "\u3042", "\uff71");
         put( "\u3044", "\uff72");
         put( "\u3046", "\uff73");
@@ -242,7 +245,8 @@ public class KanaConverter {
         put( "\u30fc", "\uff70");
     }};
 
-    private static final HashMap<String,String> mZenKataMap = new HashMap<String,String>() {{
+    /** Conversion rule for full-width Katakana */
+    private static final HashMap<String,String> mFullKatakanaMap = new HashMap<String,String>() {{
         put( "\u3042", "\u30a2");
         put( "\u3044", "\u30a4");
         put( "\u3046", "\u30a6");
@@ -332,7 +336,8 @@ public class KanaConverter {
         put( "\u30fc", "\u30fc");
     }};
 
-    private static final HashMap<String,String> mHanEijiMap = new HashMap<String,String>() {{
+    /** Conversion rule for half-width alphabet */
+    private static final HashMap<String,String> mHalfAlphabetMap = new HashMap<String,String>() {{
         put( "\u3042", ".");
         put( "\u3044", "@");
         put( "\u3046", "-");
@@ -369,7 +374,8 @@ public class KanaConverter {
         put( "\u308f", "-");
     }};
 
-    private static final HashMap<String,String> mZenEijiMap = new HashMap<String,String>() {{
+    /** Conversion rule for full-width alphabet */
+    private static final HashMap<String,String> mFullAlphabetMap = new HashMap<String,String>() {{
         put( "\u3042", "\uff0e");
         put( "\u3044", "\uff20");
         put( "\u3046", "\u30fc");
@@ -406,7 +412,8 @@ public class KanaConverter {
         put( "\u308f", "\u30fc" );
     }};
 
-    private static final HashMap<String,String> mZenEijiMapQwety = new HashMap<String,String>() {{
+    /** Conversion rule for full-width alphabet (QWERTY mode) */
+    private static final HashMap<String,String> mFullAlphabetMapQwety = new HashMap<String,String>() {{
         put( "a", "\uff41");
         put( "b", "\uff42");
         put( "c", "\uff43");
@@ -462,9 +469,12 @@ public class KanaConverter {
         put( "Z", "\uff3a");
     }};
 
+    /** Decimal format using comma */
     private static final DecimalFormat mFormat = new DecimalFormat("###,###");
 
+    /** List of the generated candidates */
     private List<WnnWord> mAddCandidateList;
+    /** Work area for generating string */
     private StringBuffer mStringBuff;
 
     /** part of speech (default) */
@@ -515,10 +525,10 @@ public class KanaConverter {
         /* Create pseudo candidates for all keyboard type */
         /* Hiragana(reading) / Full width katakana / Half width katakana */
         list.add(new WnnWord(inputHiragana, inputHiragana));
-        if (createCandidateString(inputHiragana, mZenKataMap, mStringBuff)) {
+        if (createCandidateString(inputHiragana, mFullKatakanaMap, mStringBuff)) {
             list.add(new WnnWord(mStringBuff.toString(), inputHiragana, mPosDefault));
         }
-        if (createCandidateString(inputHiragana, mHanKataMap, mStringBuff)) {
+        if (createCandidateString(inputHiragana, mHalfKatakanaMap, mStringBuff)) {
             list.add(new WnnWord(mStringBuff.toString(), inputHiragana, mPosDefault));
         }
 
@@ -529,7 +539,7 @@ public class KanaConverter {
             /* Create pseudo candidates for 12key */
 
         	/* Create pseudo candidates for half width numeric */
-            if (createCandidateString(inputHiragana, mHanSuujiMap, mStringBuff)) {
+            if (createCandidateString(inputHiragana, mHalfNumericMap, mStringBuff)) {
                 String convHanSuuji = mStringBuff.toString();
                 String convNumComma = convertNumber(convHanSuuji);
                 list.add(new WnnWord(convHanSuuji, inputHiragana, mPosNumber));
@@ -539,12 +549,12 @@ public class KanaConverter {
             }
 
             /* Create pseudo candidates for full width numeric */
-            if (createCandidateString(inputHiragana, mZenSuujiMap, mStringBuff)) {
+            if (createCandidateString(inputHiragana, mFullNumericMap, mStringBuff)) {
                 list.add(new WnnWord(mStringBuff.toString(), inputHiragana, mPosNumber));
             }
 
             /* Create pseudo candidates for half width alphabet */
-            if (createCandidateString(inputHiragana, mHanEijiMap, mStringBuff)) {
+            if (createCandidateString(inputHiragana, mHalfAlphabetMap, mStringBuff)) {
                 String convHanEiji = mStringBuff.toString();
                 String convHanEijiLower = convHanEiji.toLowerCase();
                 list.add(new WnnWord(convHanEijiLower, inputHiragana, mPosSymbol));
@@ -553,7 +563,7 @@ public class KanaConverter {
             }
 
             /* Create pseudo candidates for full width alphabet */
-            if (createCandidateString(inputHiragana, mZenEijiMap, mStringBuff)) {
+            if (createCandidateString(inputHiragana, mFullAlphabetMap, mStringBuff)) {
                 String convZenEiji = mStringBuff.toString();
                 String convZenEijiLower = convZenEiji.toLowerCase(Locale.JAPAN);
                 list.add(new WnnWord(convZenEijiLower, inputHiragana, mPosSymbol));
@@ -581,7 +591,7 @@ public class KanaConverter {
         list.add(new WnnWord(inputRomaji.toUpperCase(), inputHiragana, mPosSymbol));
 
         /* Create pseudo candidates for the full width alphabet */
-        if (createCandidateString(inputRomaji, mZenEijiMapQwety, mStringBuff)) {
+        if (createCandidateString(inputRomaji, mFullAlphabetMapQwety, mStringBuff)) {
             String convZenEiji = mStringBuff.toString();
             String convZenEijiLower = convZenEiji.toLowerCase(Locale.JAPAN);
             list.add(new WnnWord(convZenEiji, inputHiragana, mPosSymbol));

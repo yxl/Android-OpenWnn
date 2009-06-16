@@ -21,7 +21,6 @@ import java.util.ArrayList;
 
 import jp.co.omronsoft.openwnn.*;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 /**
  * The OpenWnn engine class for English IME.

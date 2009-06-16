@@ -20,8 +20,7 @@ import jp.co.omronsoft.openwnn.EN.*;
 import android.content.SharedPreferences;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.inputmethodservice.InputMethodService;
-import android.os.Bundle;
+import android.os.Message;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.SpannableStringBuilder;
@@ -29,10 +28,12 @@ import android.text.Spanned;
 import android.text.method.MetaKeyKeyListener;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
@@ -51,20 +52,17 @@ public class OpenWnnEN extends OpenWnn {
     private static final CharacterStyle SPAN_EXACT_BGCOLOR_HL     = new BackgroundColorSpan(0xFF66CDAA);
     /** Highlight color style for the composing text */
     private static final CharacterStyle SPAN_REMAIN_BGCOLOR_HL    = new BackgroundColorSpan(0xFFF0FFFF);
+    /** Highlight text color */
+    private static final CharacterStyle SPAN_TEXTCOLOR  = new ForegroundColorSpan(0xFF000000);
 
     /** A private area code(ALT+SHIFT+X) to be ignore (G1 specific). */
     private static final int PRIVATE_AREA_CODE = 61184;
     /** Never move cursor in to the composing text (adapting to IMF's specification change) */
     private static final boolean FIX_CURSOR_TEXT_END = true;
 
-    /** Whether using Emoji or not */
-    private static final boolean ENABLE_EMOJI_LIMITATION = true;
-    
     /** Spannable string for the composing text */
     protected SpannableStringBuilder mDisplayText;
 
-    /** Handler for drawing the candidates view */
-    private Handler mDelayUpdateHandler;
     /** Characters treated as a separator */
     private String mWordSeparators;
     /** Previous event's code */
@@ -100,12 +98,63 @@ public class OpenWnnEN extends OpenWnn {
 
     /** Shift lock toggle definition */
     private static final int[] mShiftKeyToggle = {0, MetaKeyKeyListener.META_SHIFT_ON, MetaKeyKeyListener.META_CAP_LOCKED};
-    /** Alt lock toggle definition */
+    /** ALT lock toggle definition */
     private static final int[] mAltKeyToggle = {0, MetaKeyKeyListener.META_ALT_ON, MetaKeyKeyListener.META_ALT_LOCKED};
     /** Auto caps mode */
     private boolean mAutoCaps = false;
     
-    private CandidateFilter mFilter;
+    /** Whether dismissing the keyboard when the enter key is pressed */
+    private boolean mEnableAutoHideKeyboard = true;
+    
+    /** Tutorial */
+    private TutorialEN mTutorial;
+
+    /** Whether tutorial mode or not */
+    private boolean mEnableTutorial;
+
+    /** Message for {@code mHandler} (execute prediction) */
+    private static final int MSG_PREDICTION = 0;
+
+    /** Message for {@code mHandler} (execute tutorial) */
+    private static final int MSG_START_TUTORIAL = 1;
+
+    /** Message for {@code mHandler} (close) */
+    private static final int MSG_CLOSE = 2;
+
+    /** Delay time(msec.) to start prediction after key input when the candidates view is not shown. */
+    private static final int PREDICTION_DELAY_MS_1ST = 200;
+
+    /** Delay time(msec.) to start prediction after key input when the candidates view is shown. */
+    private static final int PREDICTION_DELAY_MS_SHOWING_CANDIDATE = 200;
+    
+    /** {@code Handler} for drawing candidates/displaying tutorial */
+    Handler mHandler = new Handler() {
+            @Override public void handleMessage(Message msg) {
+                switch (msg.what) {
+                case MSG_PREDICTION:
+                    updatePrediction();
+                    break;
+                case MSG_START_TUTORIAL:
+                    if (mTutorial == null) {
+                        if (isInputViewShown()) {
+                            DefaultSoftKeyboardEN inputManager = ((DefaultSoftKeyboardEN) mInputViewManager);
+                            View v = inputManager.getKeyboardView();
+                            mTutorial = new TutorialEN(OpenWnnEN.this, v, inputManager);
+                                                         
+                            mTutorial.start();
+                        } else {
+                            /* Try again soon if the view is not yet showing */
+                            sendMessageDelayed(obtainMessage(MSG_START_TUTORIAL), 100);
+                        }
+                    }
+                    break;
+                case MSG_CLOSE:
+                    if (mConverterEN != null) mConverterEN.close();
+                    if (mSymbolList != null) mSymbolList.close();
+                    break;
+                }
+            }
+        };
 
     /**
      * Constructor
@@ -120,13 +169,11 @@ public class OpenWnnEN extends OpenWnn {
         mInputViewManager = new DefaultSoftKeyboardEN();
         mConverterEN = new OpenWnnEngineEN("/data/data/jp.co.omronsoft.openwnn/writableEN.dic");
         mConverter = mConverterEN;
-        mFilter = new CandidateFilter();
         mSymbolList = null;
 
         /* etc */
         mDisplayText = new SpannableStringBuilder();
         mAutoHideMode = false;
-        mDelayUpdateHandler = new Handler();
         mSymbolMode = false;
         mOptPrediction = true;
         mOptSpellCorrection = true;
@@ -212,7 +259,7 @@ public class OpenWnnEN extends OpenWnn {
      */
     private void setSymbolMode(String mode) {
         if (mode != null) {
-            mDelayUpdateHandler.removeCallbacks(updatePredictionRunnable);
+            mHandler.removeMessages(MSG_PREDICTION);
             mSymbolMode = true;
             mSymbolList.setDictionary(mode);
             mConverter = mSymbolList;
@@ -220,7 +267,7 @@ public class OpenWnnEN extends OpenWnn {
             if (!mSymbolMode) {
                 return;
             }
-            mDelayUpdateHandler.removeCallbacks(updatePredictionRunnable);
+            mHandler.removeMessages(MSG_PREDICTION);
             mSymbolMode = false;
             mConverter = mConverterEN;
         }
@@ -244,8 +291,7 @@ public class OpenWnnEN extends OpenWnn {
         int hiddenState = getResources().getConfiguration().hardKeyboardHidden;
         boolean hidden = (hiddenState == Configuration.HARDKEYBOARDHIDDEN_YES);
         ((DefaultSoftKeyboardEN) mInputViewManager).setHardKeyboardHidden(hidden);
-        ((TextCandidatesViewManager)
-                mCandidatesViewManager).setHardKeyboardHidden(hidden);
+        mEnableTutorial = hidden;
 
         return super.onCreateInputView();
     }
@@ -274,76 +320,42 @@ public class OpenWnnEN extends OpenWnn {
         /* display status icon */
         showStatusIcon(R.drawable.immodeic_half_alphabet);
 
-        /* set prediction & spell correction mode */
-        mOptPrediction      = pref.getBoolean("opt_en_prediction", true);
-        mOptSpellCorrection = pref.getBoolean("opt_en_spell_correction", true);
-        mOptLearning        = pref.getBoolean("opt_en_enable_learning", true);
-
-        /* prediction on/off */
-        switch (attribute.inputType & EditorInfo.TYPE_MASK_CLASS) {
-        case EditorInfo.TYPE_CLASS_NUMBER:
-        case EditorInfo.TYPE_CLASS_DATETIME:
-        case EditorInfo.TYPE_CLASS_PHONE:
-            mOptPrediction = false;
-            mOptLearning = false;
-            break;
-
-        case EditorInfo.TYPE_CLASS_TEXT:
-            switch (attribute.inputType & EditorInfo.TYPE_MASK_VARIATION) {
-            case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
-            case EditorInfo.TYPE_TEXT_VARIATION_PHONETIC:
-                mOptLearning = false;
-                mOptPrediction = false;
-                break;
-            default:
-                break;
-            }
-        }
-
-        /* set engine's mode */
-        if (mOptSpellCorrection) {
-            mConverterEN.setDictionary(OpenWnnEngineEN.DICT_FOR_CORRECT_MISTYPE);
-        } else {
-            mConverterEN.setDictionary(OpenWnnEngineEN.DICT_DEFAULT);
-        }
-        /* emoji */
-        if (ENABLE_EMOJI_LIMITATION) {
-            Bundle bundle = attribute.extras;
-            if (bundle != null && bundle.getBoolean("allowEmoji")) {
-                mConverterEN.setFilter(null);
-            } else {
-                mFilter.setFilter(CandidateFilter.FILTER_EMOJI);
-                mConverterEN.setFilter(mFilter);
-            }
-        } else {
-            mConverterEN.setFilter(null);
-        }
-
-        /* doesn't learn any word if it is not prediction mode */
-        if (!mOptPrediction) {
-            mOptLearning = false;
-        }
-
         if (mComposingText != null) {
             mComposingText.clear();
         }
         /* initialize the engine's state */
         fitInputType(pref, attribute);
+        
+        ((DefaultSoftKeyboard) mInputViewManager).resetCurrentKeyboard();
     }
 
-    /** @see jp.co.omronsoft.openwnn.OpenWnn#onComputeInsets */
-    @Override public void onComputeInsets(InputMethodService.Insets outInsets) {
-        /* use default value. means;
-         * outInsets.touchableInsets = InputMethodService.Insets.TOUCHABLE_INSETS_VISIBLE;
-         */
+    /** @see jp.co.omronsoft.openwnn.OpenWnn#hideWindow */
+    @Override public void hideWindow() {
+        mComposingText.clear();
+        mInputViewManager.onUpdateState(this);
+        mHandler.removeMessages(MSG_START_TUTORIAL);
+        mInputViewManager.closing();
+        if (mTutorial != null) {
+            mTutorial.close();
+            mTutorial = null;
+        }
+
+        super.hideWindow();
     }
 
     /** @see jp.co.omronsoft.openwnn.OpenWnn#onUpdateSelection */
     @Override public void onUpdateSelection(int oldSelStart, int oldSelEnd,
             int newSelStart, int newSelEnd, int candidatesStart,
             int candidatesEnd) {
-        if (mComposingText.size(1) != 0) {
+
+        boolean isNotComposing = ((candidatesStart < 0) && (candidatesEnd < 0));
+        if (isNotComposing) {
+            mComposingText.clear();
             updateComposingText(1);
+        } else {
+            if (mComposingText.size(1) != 0) {
+                updateComposingText(1);
+            }
         }
     }
 
@@ -354,6 +366,10 @@ public class OpenWnnEN extends OpenWnn {
             if (mInputConnection != null) {
                 updateComposingText(1);
             }
+            /* Hardware keyboard */
+            int hiddenState = newConfig.hardKeyboardHidden;
+            boolean hidden = (hiddenState == Configuration.HARDKEYBOARDHIDDEN_YES);
+            mEnableTutorial = hidden;
         } catch (Exception ex) {
         }
     }
@@ -415,6 +431,10 @@ public class OpenWnnEN extends OpenWnn {
         case OpenWnnEvent.CHANGE_MODE:
             return false;
             
+        case OpenWnnEvent.UPDATE_CANDIDATE:
+            updateComposingText(ComposingText.LAYER1);
+            return true;
+
         case OpenWnnEvent.CHANGE_INPUT_VIEW:
             setInputView(onCreateInputView());
             return true;
@@ -445,6 +465,9 @@ public class OpenWnnEN extends OpenWnn {
 
         if (ev.code == OpenWnnEvent.LIST_CANDIDATES_FULL) {
             mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_FULL);
+            return true;
+        } else if (ev.code == OpenWnnEvent.LIST_CANDIDATES_NORMAL) {
+            mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
             return true;
         }
 
@@ -531,7 +554,7 @@ public class OpenWnnEN extends OpenWnn {
         }
 
         if (mCandidatesViewManager.getViewType() == CandidatesViewManager.VIEW_TYPE_FULL) {
-            mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
+        	mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
         }
 
         return ret;
@@ -680,10 +703,50 @@ public class OpenWnnEN extends OpenWnn {
             case KeyEvent.KEYCODE_DPAD_CENTER:
                 commitText(1);
                 mComposingText.clear();
+                if (mEnableAutoHideKeyboard) {
+                    mInputViewManager.closing();
+                    requestHideSelf(0);
+                }
                 return true;
 
             default:
                 break;
+            }
+        } else {
+            /* if there is no composing string. */
+            if (mCandidatesViewManager.getCurrentView().isShown()) {
+            	if (key == KeyEvent.KEYCODE_BACK) {
+            		if (mCandidatesViewManager.getViewType() == CandidatesViewManager.VIEW_TYPE_FULL) {
+            			mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
+            		} else {
+            			mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_CLOSE);
+            		}
+            		return true;
+            	}
+            } else {
+                switch (key) {
+                case KeyEvent.KEYCODE_DPAD_CENTER:
+                case KeyEvent.KEYCODE_ENTER:
+                    if (mEnableAutoHideKeyboard) {
+                        mInputViewManager.closing();
+                        requestHideSelf(0);
+                        return true;
+                    }
+                    break;
+                case KeyEvent.KEYCODE_BACK:
+                    /*
+                     * If 'BACK' key is pressed when the SW-keyboard is shown
+                     * and the candidates view is not shown, dismiss the SW-keyboard.
+                     */
+                    if (isInputViewShown()) {
+                        mInputViewManager.closing();
+                        requestHideSelf(0);
+                        return true;
+                    }
+                    break;
+                default:
+                    break;
+                }
             }
         }
 
@@ -691,23 +754,21 @@ public class OpenWnnEN extends OpenWnn {
     }
 
     /**
-     * Runnable for a thread getting and displaying candidates.
+     * Thread for updating the candidates view
      */
-    private final Runnable updatePredictionRunnable = new Runnable() {
-        public void run() {
-            int candidates = 0;
-            if (mConverter != null) {
-                /* normal prediction */
-                candidates = mConverter.predict(mComposingText, 0, -1);
-            }
-            /* update the candidates view */
-            if (candidates > 0) {
-                mCandidatesViewManager.displayCandidates(mConverter);
-            } else {
-                mCandidatesViewManager.clearCandidates();
-            }
+    private void updatePrediction() {
+        int candidates = 0;
+        if (mConverter != null) {
+            /* normal prediction */
+            candidates = mConverter.predict(mComposingText, 0, -1);
         }
-    };
+        /* update the candidates view */
+        if (candidates > 0) {
+            mCandidatesViewManager.displayCandidates(mConverter);
+        } else {
+            mCandidatesViewManager.clearCandidates();
+        }
+    }
 
     /**
      * Update the composing text.
@@ -720,25 +781,27 @@ public class OpenWnnEN extends OpenWnn {
             commitText(1);
             mComposingText.clear();
             if (mSymbolMode) {
-                mDelayUpdateHandler.removeCallbacks(updatePredictionRunnable);
-                mDelayUpdateHandler.postDelayed(updatePredictionRunnable, 0);         
+                mHandler.removeMessages(MSG_PREDICTION);
+                mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_PREDICTION), 0);
             }
         } else {
             if (mComposingText.size(1) != 0) {
-                mDelayUpdateHandler.removeCallbacks(updatePredictionRunnable);
-                mDelayUpdateHandler.postDelayed(updatePredictionRunnable, 250);
+                mHandler.removeMessages(MSG_PREDICTION);
+                if (mCandidatesViewManager.getCurrentView().isShown()) {
+                    mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_PREDICTION),
+                                                PREDICTION_DELAY_MS_SHOWING_CANDIDATE);
+                } else {
+                    mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_PREDICTION),
+                                                PREDICTION_DELAY_MS_1ST);
+                }
             } else {
-                mDelayUpdateHandler.removeCallbacks(updatePredictionRunnable);
-                mDelayUpdateHandler.postDelayed(updatePredictionRunnable, 0);         
+                mHandler.removeMessages(MSG_PREDICTION);
+                mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_PREDICTION), 0);
             }
 
             /* notice to the input view */
             this.mInputViewManager.onUpdateState(this);
 
-            /* set the candidates view to the normal size */
-            if (mCandidatesViewManager.getViewType() != CandidatesViewManager.VIEW_TYPE_NORMAL) {
-                mCandidatesViewManager.setViewType(CandidatesViewManager.VIEW_TYPE_NORMAL);
-            }
             /* set the text for displaying as the composing text */
             SpannableStringBuilder disp = mDisplayText;
             disp.clear();
@@ -754,6 +817,8 @@ public class OpenWnnEN extends OpenWnn {
                 if (cursor < disp.length()) {
                     mDisplayText.setSpan(SPAN_REMAIN_BGCOLOR_HL, cursor, disp.length(),
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    mDisplayText.setSpan(SPAN_TEXTCOLOR, 0, disp.length(),
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); 
                 }
                 
                 disp.setSpan(SPAN_UNDERLINE, 0, disp.length(),
@@ -892,5 +957,94 @@ public class OpenWnnEN extends OpenWnn {
             mDirectInputMode = true;
             return;
         }
+
+        mEnableAutoHideKeyboard = false;
+        
+        /* set prediction & spell correction mode */
+        mOptPrediction      = preference.getBoolean("opt_en_prediction", true);
+        mOptSpellCorrection = preference.getBoolean("opt_en_spell_correction", true);
+        mOptLearning        = preference.getBoolean("opt_en_enable_learning", true);
+
+        /* prediction on/off */
+        switch (info.inputType & EditorInfo.TYPE_MASK_CLASS) {
+        case EditorInfo.TYPE_CLASS_NUMBER:
+        case EditorInfo.TYPE_CLASS_DATETIME:
+        case EditorInfo.TYPE_CLASS_PHONE:
+            mOptPrediction = false;
+            mOptLearning = false;
+            break;
+
+        case EditorInfo.TYPE_CLASS_TEXT:
+            switch (info.inputType & EditorInfo.TYPE_MASK_VARIATION) {
+            case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
+                mEnableAutoHideKeyboard = true;
+                mOptLearning = false;
+                mOptPrediction = false;
+                break;
+
+            case EditorInfo.TYPE_TEXT_VARIATION_PHONETIC:
+                mOptLearning = false;
+                mOptPrediction = false;
+                break;
+            default:
+                break;
+            }
+        }
+
+        /* doesn't learn any word if it is not prediction mode */
+        if (!mOptPrediction) {
+            mOptLearning = false;
+        }
+
+        /* set engine's mode */
+        if (mOptSpellCorrection) {
+            mConverterEN.setDictionary(OpenWnnEngineEN.DICT_FOR_CORRECT_MISTYPE);
+        } else {
+            mConverterEN.setDictionary(OpenWnnEngineEN.DICT_DEFAULT);
+        }
+        checkTutorial(info.privateImeOptions);
+    }
+
+    /**
+     * Check and start the tutorial if it is the tutorial mode.
+     * 
+     * @param privateImeOptions IME's options
+     */
+    private void checkTutorial(String privateImeOptions) {
+        if (privateImeOptions == null) return;
+        if (privateImeOptions.equals("com.android.setupwizard:ShowTutorial")) {
+            if ((mTutorial == null) && mEnableTutorial) startTutorial();
+        } else if (privateImeOptions.equals("com.android.setupwizard:HideTutorial")) {
+            if (mTutorial != null) {
+                if (mTutorial.close()) {
+                    mTutorial = null;
+                }
+            }
+        }
+    }
+
+    /**
+     * Start the tutorial
+     */
+    private void startTutorial() {
+        DefaultSoftKeyboardEN inputManager = ((DefaultSoftKeyboardEN) mInputViewManager);
+        View v = inputManager.getKeyboardView();
+        v.setOnTouchListener(new View.OnTouchListener() {
+				public boolean onTouch(View v, MotionEvent event) {
+					return true;
+				}});
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_START_TUTORIAL), 500);
+    }
+
+    /**
+     * Close the tutorial
+     */
+    public void tutorialDone() {
+        mTutorial = null;
+    }
+
+    /** @see OpenWnn#close */
+    @Override protected void close() {
+        mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_CLOSE), 0);
     }
 }

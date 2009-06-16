@@ -15,8 +15,10 @@
  limitations under the License.
 -->
 <resources>
-    <dimen name="key_height">54px</dimen>
-    <dimen name="key_height_landscape">34px</dimen>
-    <dimen name="candidate_font_size">18sp</dimen>
-    <dimen name="candidate_delete_word_size">32px</dimen>
+    <dimen name="key_height">50dip</dimen>
+    <dimen name="key_height_landscape">34dip</dimen>
+    <dimen name="candidate_font_size">20sp</dimen>
+    <dimen name="candidate_delete_word_size">32dip</dimen>
+    <dimen name="candidate_delete_word_size_landscape">28dip</dimen>
+    <dimen name="bubble_pointer_offset">22dip</dimen>
 </resources>

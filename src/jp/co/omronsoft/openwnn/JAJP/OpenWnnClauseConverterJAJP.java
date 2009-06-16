@@ -17,10 +17,7 @@
 package jp.co.omronsoft.openwnn.JAJP;
 
 import jp.co.omronsoft.openwnn.*;
-
 import java.util.*;
-
-import android.util.Log;
 
 /**
  * The penWnn Clause Converter class for Japanese IME.
@@ -537,7 +534,7 @@ public class OpenWnnClauseConverterJAJP {
      * and the default part-of-speech tag.
      *
      * @param input    Input string
-     * @return			Default cluase
+     * @return			Default clause
      */
     private WnnClause defaultClause(String input) {
         return (new WnnClause(input, input, mPosDefault, (CLAUSE_COST - 1) * input.length()));

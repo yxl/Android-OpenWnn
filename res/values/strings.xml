@@ -33,7 +33,7 @@
     <string name="preference_key_vibration_title"> Vibrate on Key Press </string>
     <string name="preference_key_vibration_summary"> Enable key click vibration. </string>
 
-    <string name="preference_preview_title"> Key preview </string>
+    <string name="preference_preview_title"> Key Preview </string>
     <string name="preference_preview_summary"> Enable key preview. </string>
 
     <string name="preference_auto_caps_title"> Auto Capitalization </string>
@@ -42,14 +42,9 @@
     <string name="preference_keyboard_skin_title">Keyboard Image</string>
     <string name="preference_keyboard_skin_summary">Change keyboard image.</string>
 
-    <string name="preference_keyboard_android_default">Default</string>
+    <string name="preference_keyboard_android_default">Standard</string>
     <string name="preference_keyboard_simple">Simple</string>
     <string name="preference_keyboard_metal">Metal</string>
-    <string name="preference_keyboard_light">Light</string>
-    <string name="preference_keyboard_ice">Ice</string>
-    <string name="preference_keyboard_classic">Classic</string>
-    <string name="preference_keyboard_wood">Wood</string>
-    <string name="preference_keyboard_kyoto">Kyoto</string>
 
     <string name="preference_conversion_menu">Conversion</string>
 
@@ -110,25 +105,26 @@
     <string name="user_dictionary_words_duplication_message">Already registered.</string>
     <string name="user_dictionary_over_max_text_size_message">Length of the string exceeds the limit.</string>
     <string name="user_dictionary_creating_wordlist">Loading</string>
-    <string name="user_dictionary_init">initialize?</string>
-    
+    <string name="user_dictionary_init">Initialize?</string>
+    <string name="user_dictionary_prev_button">　≪　</string>
+    <string name="user_dictionary_next_button">　≫　</string>
 
   <!-- IME dependency -->
     <!-- OpenWnn English -->
-    <string name="openwnn_english_copyright">Ver.1.21-RC-20090403\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_english_copyright">Ver.1.3.1\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_english">OpenWnn English</string>
     <string name="openwnn_english_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so</string>
     <string name="openwnn_english_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableEN.dic</string>
     <string name="en_word_separators">.,;:!?</string>
 
     <!-- OpenWnn Japanese -->
-    <string name="openwnn_japanese_copyright">Ver.1.21-RC-20090403\nOMRON SOFTWARE Co., Ltd.</string>
-    <string name="openwnn_japanese">OpenWnn Japanese</string>
+    <string name="openwnn_japanese_copyright">Ver.1.3.1\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_japanese">Japanese IME</string>
     <string name="openwnn_japanese_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so</string>
     <string name="openwnn_japanese_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableJAJP.dic</string>
 
     <!-- OpenWnn Chinese -->
-    <string name="openwnn_china_copyright">Ver.1.21-RC-20090403\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_china_copyright">Ver.1.3.1\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_china">OpenWnn Chinese</string>
     <string name="openwnn_china_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnZHCNDic.so</string>
 <!-- After Config Change -->
@@ -140,7 +136,6 @@
       <string name="button_candidate_delete">Delete learning?</string>
       <string name="button_candidate_cancel">Close</string>
 
-      <string name="read_more">･･･▲</string>
 
   <!-- Key top -->
     <string name="key_left_arrow">↤</string>
@@ -151,7 +146,6 @@
     <string name="key_convert">変換</string>
     <string name="key_switch_keyboard">KBD</string>
 
-    <string name="key_12key_emoji_kigo">絵記顔</string>
     <string name="key_12key_A">゛゜ 大小</string>
     <string name="key_12key_kutoten">、。</string>
     <string name="key_12key_eisuu_kana">英数カナ</string>
@@ -191,7 +185,6 @@
     <string name="key_12key_0">わ 0 -</string>
 
     <string name="key_qwerty_tyouon">ー</string>
-    <string name="key_qwerty_emoji_kigo">絵記顔</string>
     <string name="key_qwerty_full_touten">、</string>
     <string name="key_qwerty_full_kuten">。</string>
     <string name="key_qwerty_full_question">？</string>
@@ -228,6 +221,7 @@
     <string name="key_qwerty_full_dollar_sign">＄</string>
     <string name="key_qwerty_full_yen_sign">￥</string>
     <string name="key_qwerty_full_hat">＾</string>
+    <string name="key_qwerty_full_slash">／</string>
 
     <string name="key_12key_switch_full_hiragana">あ</string>
     <string name="key_12key_switch_full_katakana">カ</string>
@@ -246,6 +240,27 @@
 
     <string name="indicator_caps">CAPS</string>
     <string name="indicator_alt">ALT</string>
+
+
+    <!-- Tutorial -->
+    <string name="touch_to_continue">Next »</string>
+    <string name="touch_to_try">Try it on the button below.</string>
+    <string name="touch_to_finish">Try typing and using the keyboard yourself!</string>
+    <string name="tip_to_step1"><b>Like a normal mobile keyboard, tapping ○ three times will result\nin *C*.</b></string>
+    <string name="tip_to_step2_a"><b>For example, let\'s type \"hi.\"\n- Tap ○ twice to get \"h\"</b></string>
+    <string name="tip_to_step2_b"><b>\n- Tap → to advance to the right</b></string>
+    <string name="tip_to_step2_c"><b>\n- Tap ○ three times to get \"i\"</b></string>
+    <string name="tip_to_step2_d"><b>\n- Use touch or ↓ to set the word.</b></string>
+    <string name="tip_to_step3_a"><b>The ■ key switches between Japanese, English, and number input.</b></string>
+    <string name="tip_to_step3_b"><b>We\'ve switched from English to numbers. Next is Japanese.</b></string>
+    <string name="tip_to_step3_c"><b>Let\'s return to English now.</b></string>
+    <string name="tip_to_step4"><b>For other input modes (like full width)\nor a PC style keyboard, hold ■\nfor 3 seconds to show the input menu.</b></string>
+    <string name="tip_to_step5"><b>When you\'re done typing, hit the \"back\" key (←) to close the keyboard.</b></string>
+    <string name="tip_to_step6"><b>This is the end of the tutorial.</b></string>
+
+    <string name="tip_en_to_open_keyboard"><b>The keyboard opens any time you touch a text field.</b></string>
+    <string name="tip_en_to_close_keyboard"><b>Press \"back\" (←) to close the keyboard.</b></string>
+    <string name="tip_en_end_of_tutorial"><b>This is the end of the tutorial.</b></string>
 
 </resources>
 

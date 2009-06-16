@@ -1,14 +1,14 @@
 -------------------------------------------------------------------------------
-                            OpenWnn for Android README
+                                   OpenWnn README
 
-                             Version 1.21-RC-20090403
+                                   Version 1.3.1
                   
      (C) Copyright OMRON SOFTWARE Co., Ltd. 2008,2009 All Rights Reserved.
 -------------------------------------------------------------------------------
 
-1. About OpenWnn for Android
+1. About OpenWnn
 
-    OpenWnn for Android is a IME(Input Method Editor) package which
+    OpenWnn is a IME(Input Method Editor) package which
     works on Android's IMF(Input Method Framework).  This version
     contains Japanese, Chinese and English IME.
 
@@ -24,7 +24,7 @@
 
     o Building environment
         . Building control file             (XML, makefile, shell script)
-        . IME native library source code    (C language)
+        . IME native library source code    (C)
         . IME resource                      (XML, PNG)
         . IME source code                   (Java)
 
@@ -88,6 +88,8 @@
     res/                                      IME resource (XML, PNG)
         drawable/                             |
             *.xml                             |
+            *.png                             |
+        drawable-ja/                          |
             *.png                             |
         layout/                               |
             *.xml                             |

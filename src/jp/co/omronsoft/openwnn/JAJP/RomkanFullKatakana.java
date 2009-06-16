@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 /**
- * The Romaji to Full Katakana converter class for Japanese IME.
+ * The Romaji to full-width Katakana converter class for Japanese IME.
  *
  * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */

@@ -19,19 +19,14 @@ package jp.co.omronsoft.openwnn.JAJP;
 import jp.co.omronsoft.openwnn.*;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.inputmethodservice.Keyboard;
-import android.inputmethodservice.Keyboard.Key;
-import android.inputmethodservice.KeyboardView;
-import android.widget.Toast;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
-import android.content.Context;
 import android.content.SharedPreferences;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
+import java.util.List;
 
 /**
  * The default Software Keyboard class for Japanese IME.
@@ -83,6 +78,9 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
     /** Definition for {@code mInputType} (commit instantly) */
     private static final int INPUT_TYPE_INSTANT = 2;
+
+    /** Max key number of the 12 key keyboard (depends on the definition of keyboards) */
+    private static final int KEY_NUMBER_12KEY = 20;
 
     /** Toggle cycle table for full-width HIRAGANA */
     private static final String[][] JP_FULL_HIRAGANA_CYCLE_TABLE = {
@@ -264,6 +262,12 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /** The constant for mFixedKeyMode. It means that input mode is not fixed. */
     private static final int INVALID_KEYMODE = -1;
 
+    /** KeyIndex of "Moji" key on 12 keyboard (depends on the definition of keyboards) */
+    private static final int KEY_INDEX_CHANGE_MODE_12KEY = 15;
+    
+    /** KeyIndex of "Moji" key on QWERTY keyboard (depends on the definition of keyboards) */
+    private static final int KEY_INDEX_CHANGE_MODE_QWERTY = 29;
+
     /** Type of input mode */
     private int mInputType = INPUT_TYPE_TOGGLE;
 
@@ -277,7 +281,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     private char[] mCurrentInstantTable = null;
 
     /** Input mode that is not able to be changed. If ENABLE_CHANGE_KEYMODE is set, input mode can change. */
-    private int mFixedKeyMode = INVALID_KEYMODE;
+    private int[] mLimitedKeyMode = null;
 
     /** Input mode that is given the first priority. If ENABLE_CHANGE_KEYMODE is set, input mode can change. */
     private int mPreferenceKeyMode = INVALID_KEYMODE;
@@ -288,6 +292,18 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /** Auto caps mode */
     private boolean mEnableAutoCaps = true;
 
+    /** PopupResId of "Moji" key (this is used for canceling long-press) */
+    private int mPopupResId = 0;
+    
+    /** Whether the InputType is null */
+    private boolean mIsInputTypeNull = false;
+    
+    /** {@code SharedPreferences} for save the keyboard type */
+    private SharedPreferences.Editor mPrefEditor = null;
+    
+    /** "Moji" key (this is used for canceling long-press) */
+    private Keyboard.Key mChangeModeKey = null;
+    
 
     /** Default constructor */
     public DefaultSoftKeyboardJAJP() {
@@ -304,7 +320,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         mKeyboard = new Keyboard[3][2][4][2][8][2];
 
         if (mHardKeyboardHidden) {
-        	/* Create the suitable keyboard object */
+            /* Create the suitable keyboard object */
             if (mDisplayMode == DefaultSoftKeyboard.PORTRAIT) {
                 createKeyboardsPortrait(parent);
             } else {
@@ -325,7 +341,8 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     }
 
     /**
-     * Commit the pre-edit string for committing operation that is not explicit (ex. when a candidate is selected)
+     * Commit the pre-edit string for committing operation that is not explicit
+     * (ex. when a candidate is selected)
      */
     private void commitText() {
         if (!mNoInput) {
@@ -339,41 +356,20 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
      * @param keyMode   The type of input mode
      */
     public void changeKeyMode(int keyMode) {
-        int targetMode = keyMode;
+        int targetMode = filterKeyMode(keyMode);
+        if (targetMode == INVALID_KEYMODE) {
+            return;
+        }
+        
         commitText();
 
         if (mCapsLock) {
-			mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_SOFT_KEY,
+            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_SOFT_KEY,
                                           new KeyEvent(KeyEvent.ACTION_UP,
                                                        KeyEvent.KEYCODE_SHIFT_LEFT)));
             mCapsLock = false;
         }
         mShiftOn = KEYBOARD_SHIFT_OFF;
-
-        if (mFixedKeyMode != INVALID_KEYMODE) {
-            targetMode = mFixedKeyMode;
-        }
-
-        if (!mHardKeyboardHidden) {
-            if ((targetMode != KEYMODE_JA_FULL_HIRAGANA)
-                && (targetMode != KEYMODE_JA_HALF_ALPHABET)) {
-
-                Locale locale = Locale.getDefault();
-                int keymode = KEYMODE_JA_HALF_ALPHABET;
-                if (locale.getLanguage().equals(Locale.JAPANESE.getLanguage())) {
-                    switch (targetMode) {
-                    case KEYMODE_JA_FULL_HIRAGANA:
-                    case KEYMODE_JA_FULL_KATAKANA:
-                    case KEYMODE_JA_HALF_KATAKANA:
-                        keymode = KEYMODE_JA_FULL_HIRAGANA;
-                        break;
-                    default:
-                        break;
-                    }
-                }
-                targetMode = keymode;
-            }
-        }
         Keyboard kbd = getModeChangeKeyboard(targetMode);
         mCurrentKeyMode = targetMode;
         mPrevInputKeyCode = 0;
@@ -441,12 +437,35 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         return view;
      }
 
+    /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#changeKeyboard */
+    @Override protected boolean changeKeyboard(Keyboard keyboard) {
+        if (keyboard != null) {
+            if (mIsInputTypeNull) {
+                mChangeModeKey.popupResId = mPopupResId;
+            }
+
+            List<Keyboard.Key> keys = keyboard.getKeys();
+            int keyIndex = (KEY_NUMBER_12KEY < keys.size())
+                ? KEY_INDEX_CHANGE_MODE_QWERTY : KEY_INDEX_CHANGE_MODE_12KEY;
+            mChangeModeKey = keys.get(keyIndex);
+
+            if (mIsInputTypeNull) {
+                mPopupResId = mChangeModeKey.popupResId;
+                mChangeModeKey.popupResId = 0;
+            }
+        }
+            
+        return super.changeKeyboard(keyboard);
+    }
+
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#changeKeyboardType */
     @Override public void changeKeyboardType(int type) {
         commitText();
         Keyboard kbd = getTypeChangeKeyboard(type);
         if (kbd != null) {
             mCurrentKeyboardType = type;
+            mPrefEditor.putBoolean("opt_enable_qwerty", type == KEYBOARD_QWERTY);
+            mPrefEditor.commit();
             changeKeyboard(kbd);
         }
         if (type == KEYBOARD_12KEY) {
@@ -466,7 +485,9 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         switch (primaryCode) {
         case KEYCODE_JP12_TOGGLE_MODE:
         case KEYCODE_QWERTY_TOGGLE_MODE:
-            nextKeyMode();
+            if (!mIsInputTypeNull) {
+                nextKeyMode();
+            }
             break;
 
         case DefaultSoftKeyboard.KEYCODE_QWERTY_BACKSPACE:
@@ -520,18 +541,19 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         case KEYCODE_JP12_9:
         case KEYCODE_JP12_0:
         case KEYCODE_JP12_SHARP:
-        	/* Processing to input by ten key */
-        	if (mInputType == INPUT_TYPE_INSTANT) {
-        		/* Send a input character directly if instant input type is selected */
+            /* Processing to input by ten key */
+            if (mInputType == INPUT_TYPE_INSTANT) {
+                /* Send a input character directly if instant input type is selected */
                 commitText();
                 mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_CHAR,
                                               mCurrentInstantTable[getTableIndex(primaryCode)]));
             } else {
                 if ((mPrevInputKeyCode != primaryCode)) {
+                    mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.TOUCH_OTHER_KEY));
                     if ((mCurrentKeyMode == KEYMODE_JA_HALF_ALPHABET)
                             && (primaryCode == KEYCODE_JP12_SHARP)) {
-                    	/* Commit text by symbol character (',' '.') when alphabet input mode is selected */
-                    	commitText();
+                        /* Commit text by symbol character (',' '.') when alphabet input mode is selected */
+                        commitText();
                     }
                 }
 
@@ -554,9 +576,9 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                 mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.INPUT_CHAR,
                                               mCurrentInstantTable[getTableIndex(primaryCode)]));
             } else {
-            	if (!mNoInput) {
-            		/* Processing to toggle Dakuten, Handakuten, and capital */
-            		HashMap replaceTable = getReplaceTable();
+                if (!mNoInput) {
+                    /* Processing to toggle Dakuten, Handakuten, and capital */
+                    HashMap replaceTable = getReplaceTable();
                     if (replaceTable == null) {
                         Log.e("OpenWnn", "not founds replace table");
                     } else {
@@ -568,38 +590,38 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             break;
 
         case KEYCODE_SWITCH_FULL_HIRAGANA:
-        	/* Change mode to Full width hiragana */
-        	changeKeyMode(KEYMODE_JA_FULL_HIRAGANA);
+            /* Change mode to Full width hiragana */
+            changeKeyMode(KEYMODE_JA_FULL_HIRAGANA);
             break;
 
         case KEYCODE_SWITCH_FULL_KATAKANA:
-        	/* Change mode to Full width katakana */
-        	changeKeyMode(KEYMODE_JA_FULL_KATAKANA);
+            /* Change mode to Full width katakana */
+            changeKeyMode(KEYMODE_JA_FULL_KATAKANA);
             break;
 
         case KEYCODE_SWITCH_FULL_ALPHABET:
-        	/* Change mode to Full width alphabet */
-        	changeKeyMode(KEYMODE_JA_FULL_ALPHABET);
+            /* Change mode to Full width alphabet */
+            changeKeyMode(KEYMODE_JA_FULL_ALPHABET);
             break;
 
         case KEYCODE_SWITCH_FULL_NUMBER:
-        	/* Change mode to Full width numeric */
-        	changeKeyMode(KEYMODE_JA_FULL_NUMBER);
+            /* Change mode to Full width numeric */
+            changeKeyMode(KEYMODE_JA_FULL_NUMBER);
             break;
 
         case KEYCODE_SWITCH_HALF_KATAKANA:
-        	/* Change mode to Half width katakana */
-        	changeKeyMode(KEYMODE_JA_HALF_KATAKANA);
+            /* Change mode to Half width katakana */
+            changeKeyMode(KEYMODE_JA_HALF_KATAKANA);
             break;
 
         case KEYCODE_SWITCH_HALF_ALPHABET: 
-        	/* Change mode to Half width alphabet */
-        	changeKeyMode(KEYMODE_JA_HALF_ALPHABET);
+            /* Change mode to Half width alphabet */
+            changeKeyMode(KEYMODE_JA_HALF_ALPHABET);
             break;
 
         case KEYCODE_SWITCH_HALF_NUMBER:
-        	/* Change mode to Half width numeric */
-        	changeKeyMode(KEYMODE_JA_HALF_NUMBER);
+            /* Change mode to Half width numeric */
+            changeKeyMode(KEYMODE_JA_HALF_NUMBER);
             break;
 
 
@@ -661,18 +683,37 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#setPreferences */
     @Override public void setPreferences(SharedPreferences pref, EditorInfo editor) {
+        mPrefEditor = pref.edit();
+        boolean isQwerty = pref.getBoolean("opt_enable_qwerty", false);
+        if (isQwerty && (mCurrentKeyboardType == KEYBOARD_12KEY)) {
+            changeKeyboardType(KEYBOARD_QWERTY);
+        }
+
         super.setPreferences(pref, editor);
 
         int inputType = editor.inputType;
-        if (inputType == EditorInfo.TYPE_NULL) {
-            return;
+        if (mHardKeyboardHidden) {
+            if (inputType == EditorInfo.TYPE_NULL) {
+                if (!mIsInputTypeNull) {
+                    mIsInputTypeNull = true;
+                    mPopupResId = mChangeModeKey.popupResId;
+                    mChangeModeKey.popupResId = 0;
+                }
+                return;
+            }
+            
+            if (mIsInputTypeNull) {
+                mIsInputTypeNull = false;
+                mChangeModeKey.popupResId = mPopupResId;
+            }
         }
 
         mEnableAutoCaps = pref.getBoolean("auto_caps", true);
-        mFixedKeyMode = INVALID_KEYMODE;
+        mLimitedKeyMode = null;
         mPreferenceKeyMode = INVALID_KEYMODE;
         mNoInput = true;
         mDisableKeyInput = false;
+        mCapsLock = false;
 
         switch (inputType & EditorInfo.TYPE_MASK_CLASS) {
 
@@ -682,17 +723,23 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             break;
 
         case EditorInfo.TYPE_CLASS_PHONE:
-            mFixedKeyMode = KEYMODE_JA_HALF_PHONE;
+            if (mHardKeyboardHidden) {
+                mLimitedKeyMode = new int[] {KEYMODE_JA_HALF_PHONE};
+            } else {
+                mLimitedKeyMode = new int[] {KEYMODE_JA_HALF_ALPHABET};
+            }
             break;
 
         case EditorInfo.TYPE_CLASS_TEXT:
             switch (inputType & EditorInfo.TYPE_MASK_VARIATION) {
 
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
-                mPreferenceKeyMode = KEYMODE_JA_HALF_ALPHABET;
+                mLimitedKeyMode = new int[] {KEYMODE_JA_HALF_ALPHABET, KEYMODE_JA_HALF_NUMBER};
                 break;
 
             case EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
+                mLimitedKeyMode = new int[] {KEYMODE_JA_HALF_ALPHABET, KEYMODE_JA_HALF_NUMBER};
+                break;
             case EditorInfo.TYPE_TEXT_VARIATION_URI:
                 mPreferenceKeyMode = KEYMODE_JA_HALF_ALPHABET;
                 break;
@@ -711,6 +758,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             mLastInputType = inputType;
         }
 
+        setStatusIcon();
         setShiftByEditorInfo();
     }
 
@@ -731,6 +779,8 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
         if (mPreferenceKeyMode != INVALID_KEYMODE) {
             keymode = mPreferenceKeyMode;
+        } else if (mLimitedKeyMode != null) {
+            keymode = mLimitedKeyMode[0];
         } else {
             if (!locale.getLanguage().equals(Locale.JAPANESE.getLanguage())) {
                 keymode = KEYMODE_JA_HALF_ALPHABET;
@@ -743,9 +793,9 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /**
      * Change to the next input mode
      */
-    private void nextKeyMode() {
-    	/* Search the current mode in the toggle table */
-    	boolean found = false;
+    public void nextKeyMode() {
+        /* Search the current mode in the toggle table */
+        boolean found = false;
         int index;
         for (index = 0; index < JP_MODE_CYCLE_TABLE.length; index++) {
             if (JP_MODE_CYCLE_TABLE[index] == mCurrentKeyMode) {
@@ -755,15 +805,24 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         }
 
         if (!found) {
-        	/* If the current mode not exists, set the default mode */
-        	setDefaultKeyboard();
+            /* If the current mode not exists, set the default mode */
+            setDefaultKeyboard();
         } else {
-        	/* If the current mode exists, set the next input mode */
-        	index++;
-            if (JP_MODE_CYCLE_TABLE.length <= index) {
-                index = 0;
+            /* If the current mode exists, set the next input mode */
+            int size = JP_MODE_CYCLE_TABLE.length;
+            int keyMode = INVALID_KEYMODE;
+            for (int i = 0; i < size; i++) {
+                index = (++index) % size;
+
+                keyMode = filterKeyMode(JP_MODE_CYCLE_TABLE[index]);
+                if (keyMode != INVALID_KEYMODE) {
+                    break;
+                }
             }
-            changeKeyMode(JP_MODE_CYCLE_TABLE[index]);
+
+            if (keyMode != INVALID_KEYMODE) {
+                changeKeyMode(keyMode);
+            }
         }
     }
 
@@ -776,28 +835,24 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         Keyboard[][] keyList;
         /* qwerty shift_off (portrait) */
         keyList = mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF];
-        keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty);
-        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_full_alphabet);
-        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_full_symbols);
-        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_full_katakana);
-        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_half_alphabet);
-        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_half_symbols);
-        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_half_katakana);
+        keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp);
+        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_alphabet);
+        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_symbols);
+        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_katakana);
+        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_alphabet);
+        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_symbols);
+        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_katakana);
         keyList[KEYMODE_JA_HALF_PHONE][0]    = new Keyboard(parent, R.xml.keyboard_12key_phone);
 
         /* qwerty shift_on (portrait) */
         keyList = mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_ON];
-        keyList[KEYMODE_JA_FULL_HIRAGANA][0] =
-            mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_FULL_HIRAGANA][0];
-        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_full_alphabet_shift);
-        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_full_symbols_shift);
-        keyList[KEYMODE_JA_FULL_KATAKANA][0] =
-            mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_FULL_KATAKANA][0];
-        keyList[KEYMODE_JA_HALF_ALPHABET][0] =
-            mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_ALPHABET][0];
-        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_half_symbols_shift);
-        keyList[KEYMODE_JA_HALF_KATAKANA][0] =
-            mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_KATAKANA][0];
+        keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_shift);
+        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_alphabet_shift);
+        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_symbols_shift);
+        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_katakana_shift);
+        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_alphabet_shift);
+        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_symbols_shift);
+        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_katakana_shift);
         keyList[KEYMODE_JA_HALF_PHONE][0] =
             mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_PHONE][0];
 
@@ -806,16 +861,16 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
         keyList = mKeyboard[LANG_JA][PORTRAIT][KEYBOARD_12KEY][KEYBOARD_SHIFT_OFF];
         keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_12keyjp);
         keyList[KEYMODE_JA_FULL_HIRAGANA][1] = new Keyboard(parent, R.xml.keyboard_12keyjp_input);
-        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_alphabet);
-        keyList[KEYMODE_JA_FULL_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_alphabet_input);
-        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_num);
-        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_katakana);
-        keyList[KEYMODE_JA_FULL_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_katakana_input);
-        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_alphabet);
-        keyList[KEYMODE_JA_HALF_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_alphabet_input);
-        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_num);
-        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_katakana);
-        keyList[KEYMODE_JA_HALF_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_katakana_input);
+        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_full_alphabet);
+        keyList[KEYMODE_JA_FULL_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_full_alphabet_input);
+        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_full_num);
+        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_full_katakana);
+        keyList[KEYMODE_JA_FULL_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_full_katakana_input);
+        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_half_alphabet);
+        keyList[KEYMODE_JA_HALF_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_half_alphabet_input);
+        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_half_num);
+        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_half_katakana);
+        keyList[KEYMODE_JA_HALF_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_half_katakana_input);
         keyList[KEYMODE_JA_HALF_PHONE][0]    = new Keyboard(parent, R.xml.keyboard_12key_phone);
 
         /* 12-keys shift_on (portrait) */
@@ -845,52 +900,54 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
      * @param parent  The context
      */
     private void createKeyboardsLandscape(OpenWnn parent) {
+    	/*
         Keyboard[][] keyList;
+        */
         /* qwerty shift_off (landscape) */
-/*        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF];
-        keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_landscape);
-        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_full_alphabet_landscape);
-        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_full_symbols_landscape);
-        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_full_katakana_landscape);
-        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_half_alphabet_landscape);
-        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_half_symbols_landscape);
-        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_half_katakana_landscape);
+        /*
+        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF];
+        keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_landscape);
+        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_alphabet_landscape);
+        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_symbols_landscape);
+        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_katakana_landscape);
+        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_alphabet_landscape);
+        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_symbols_landscape);
+        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_katakana_landscape);
         keyList[KEYMODE_JA_HALF_PHONE][0]    = new Keyboard(parent, R.xml.keyboard_12key_phone_landscape);
-*/
+        */
         /* qwerty shift_on (landscape) */
-/*        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_ON];
-        keyList[KEYMODE_JA_FULL_HIRAGANA][0] =
-            mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_FULL_HIRAGANA][0];
-        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_full_alphabet_shift_landscape);
-        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_full_symbols_shift_landscape);
-        keyList[KEYMODE_JA_FULL_KATAKANA][0] =
-            mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_FULL_KATAKANA][0];
-        keyList[KEYMODE_JA_HALF_ALPHABET][0] =
-            mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_ALPHABET][0];
-        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_half_symbols_shift_landscape);
-        keyList[KEYMODE_JA_HALF_KATAKANA][0] =
-            mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_KATAKANA][0];
+        /*
+        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_ON];
+        keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_shift_landscape);
+        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_alphabet_shift_landscape);
+        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_symbols_shift_landscape);
+        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_full_katakana_shift_landscape);
+        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_alphabet_shift_landscape);
+        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_symbols_shift_landscape);
+        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_qwerty_jp_half_katakana_shift_landscape);
         keyList[KEYMODE_JA_HALF_PHONE][0] =
             mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_QWERTY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_PHONE][0];
-*/
+        */
         /* 12-keys shift_off (landscape) */
-/*        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_12KEY][KEYBOARD_SHIFT_OFF];
+        /*
+        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_12KEY][KEYBOARD_SHIFT_OFF];
         keyList[KEYMODE_JA_FULL_HIRAGANA][0] = new Keyboard(parent, R.xml.keyboard_12keyjp_landscape);
         keyList[KEYMODE_JA_FULL_HIRAGANA][1] = new Keyboard(parent, R.xml.keyboard_12keyjp_input_landscape);
-        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_alphabet_landscape);
-        keyList[KEYMODE_JA_FULL_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_alphabet_input_landscape);
-        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_num_landscape);
-        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_katakana_landscape);
-        keyList[KEYMODE_JA_FULL_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_katakana_input_landscape);
-        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_alphabet_landscape);
-        keyList[KEYMODE_JA_HALF_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_alphabet_input_landscape);
-        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_num_landscape);
-        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_katakana_landscape);
-        keyList[KEYMODE_JA_HALF_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_katakana_input_landscape);
+        keyList[KEYMODE_JA_FULL_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_full_alphabet_landscape);
+        keyList[KEYMODE_JA_FULL_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_full_alphabet_input_landscape);
+        keyList[KEYMODE_JA_FULL_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_full_num_landscape);
+        keyList[KEYMODE_JA_FULL_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_full_katakana_landscape);
+        keyList[KEYMODE_JA_FULL_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_full_katakana_input_landscape);
+        keyList[KEYMODE_JA_HALF_ALPHABET][0] = new Keyboard(parent, R.xml.keyboard_12key_half_alphabet_landscape);
+        keyList[KEYMODE_JA_HALF_ALPHABET][1] = new Keyboard(parent, R.xml.keyboard_12key_half_alphabet_input_landscape);
+        keyList[KEYMODE_JA_HALF_NUMBER][0]   = new Keyboard(parent, R.xml.keyboard_12key_half_num_landscape);
+        keyList[KEYMODE_JA_HALF_KATAKANA][0] = new Keyboard(parent, R.xml.keyboard_12key_half_katakana_landscape);
+        keyList[KEYMODE_JA_HALF_KATAKANA][1] = new Keyboard(parent, R.xml.keyboard_12key_half_katakana_input_landscape);
         keyList[KEYMODE_JA_HALF_PHONE][0]    = new Keyboard(parent, R.xml.keyboard_12key_phone_landscape);
-*/
+        */
         /* 12-keys shift_on (landscape) */
-/*        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_12KEY][KEYBOARD_SHIFT_ON];
+        /*
+        keyList = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_12KEY][KEYBOARD_SHIFT_ON];
         keyList[KEYMODE_JA_FULL_HIRAGANA]
             = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_12KEY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_FULL_HIRAGANA];
         keyList[KEYMODE_JA_FULL_ALPHABET]
@@ -907,7 +964,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_12KEY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_KATAKANA];
         keyList[KEYMODE_JA_HALF_PHONE]
             = mKeyboard[LANG_JA][LANDSCAPE][KEYBOARD_12KEY][KEYBOARD_SHIFT_OFF][KEYMODE_JA_HALF_PHONE];
-*/
+        */
     }
 
     /**
@@ -957,7 +1014,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
         case KEYMODE_JA_FULL_NUMBER:
         case KEYMODE_JA_HALF_NUMBER:
-        	/* Because these modes belong to direct input group, No toggle table exists */ 
+            /* Because these modes belong to direct input group, No toggle table exists */ 
             break;
 
         case KEYMODE_JA_HALF_ALPHABET:
@@ -995,7 +1052,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
         case KEYMODE_JA_FULL_NUMBER:
         case KEYMODE_JA_HALF_NUMBER:
-        	/* Because these modes belong to direct input group, No replacing table exists */ 
+            /* Because these modes belong to direct input group, No replacing table exists */ 
             break;
 
         case KEYMODE_JA_HALF_ALPHABET:
@@ -1051,12 +1108,17 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /**
      * Get the shift key state from the editor.
      * <br>
-     * @param editor	The editor information
-     * @return			state ID of the shift key (0:off, 1:on)
+     * @param editor    The editor information
+     * @return          The state id of the shift key (0:off, 1:on)
      */
     protected int getShiftKeyState(EditorInfo editor) {
-        int caps = mWnn.getCurrentInputConnection().getCursorCapsMode(editor.inputType);
-        return (caps == 0) ? 0 : 1;
+        InputConnection connection = mWnn.getCurrentInputConnection();
+        if (connection != null) {
+            int caps = connection.getCursorCapsMode(editor.inputType);
+            return (caps == 0) ? 0 : 1;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -1073,13 +1135,85 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
 
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#setHardKeyboardHidden */
     @Override public void setHardKeyboardHidden(boolean hidden) {
-        if ((mWnn != null) && !mHardKeyboardHidden) {
-            mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
-            		OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
+        if (mWnn != null) {
+            if (!hidden) {
+                mWnn.onEvent(new OpenWnnEvent(OpenWnnEvent.CHANGE_MODE,
+                                              OpenWnnJAJP.ENGINE_MODE_OPT_TYPE_QWERTY));
+            }
+
+            if (mHardKeyboardHidden != hidden) {
+                if ((mLimitedKeyMode != null)
+                    || ((mCurrentKeyMode != KEYMODE_JA_FULL_HIRAGANA)
+                        && (mCurrentKeyMode != KEYMODE_JA_HALF_ALPHABET))) {
+
+                    mLastInputType = EditorInfo.TYPE_NULL;
+                    if (mWnn.isInputViewShown()) {
+                        setDefaultKeyboard();
+                    }
+                }
+            }
         }
         super.setHardKeyboardHidden(hidden);
     }
+
+    /**
+     * Change the key-mode to the allowed one which is restricted
+     *  by the text input field or the type of the keyboard.
+     * @param keyMode The key-mode
+     * @return the key-mode allowed
+     */
+    private int filterKeyMode(int keyMode) {
+        int targetMode = keyMode;
+        int[] limits = mLimitedKeyMode;
+
+        if (!mHardKeyboardHidden) { /* for hardware keyboard */
+            if ((targetMode != KEYMODE_JA_FULL_HIRAGANA)
+                && (targetMode != KEYMODE_JA_HALF_ALPHABET)) {
+
+                Locale locale = Locale.getDefault();
+                int keymode = KEYMODE_JA_HALF_ALPHABET;
+                if (locale.getLanguage().equals(Locale.JAPANESE.getLanguage())) {
+                    switch (targetMode) {
+                    case KEYMODE_JA_FULL_HIRAGANA:
+                    case KEYMODE_JA_FULL_KATAKANA:
+                    case KEYMODE_JA_HALF_KATAKANA:
+                        keymode = KEYMODE_JA_FULL_HIRAGANA;
+                        break;
+                    default:
+                        /* half-alphabet */
+                        break;
+                    }
+                }
+                targetMode = keymode;
+            }
+        } 
+
+        /* restrict by the type of the text field */
+        if (limits != null) {
+            boolean hasAccepted = false;
+            boolean hasRequiredChange = true;
+            int size = limits.length;
+            int nowMode = mCurrentKeyMode;
+
+            for (int i = 0; i < size; i++) {
+                if (targetMode == limits[i]) {
+                    hasAccepted = true;
+                    break;
+                }
+                if (nowMode == limits[i]) {
+                    hasRequiredChange = false;
+                }
+            }
+
+            if (!hasAccepted) {
+                if (hasRequiredChange) {
+                    targetMode = mLimitedKeyMode[0];
+                } else {
+                    targetMode = INVALID_KEYMODE;
+                }
+            }
+        }
+
+        return targetMode;
+    }
 }
-
-
-

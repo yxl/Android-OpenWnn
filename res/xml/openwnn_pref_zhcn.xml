@@ -57,7 +57,8 @@
     <CheckBoxPreference android:key="opt_zhcn_spell_correction"
 			android:title="@string/preference_correct_spell_title"
 			android:summary="@string/preference_correct_spell_summary"
-			android:defaultValue="true" />
+			android:defaultValue="true"
+			android:dependency="opt_zhcn_prediction" />
   </PreferenceCategory>
     
   <PreferenceCategory android:title="@string/preference_dictionary_menu">

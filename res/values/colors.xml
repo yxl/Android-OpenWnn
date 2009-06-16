@@ -15,10 +15,8 @@
  limitations under the License.
 -->
 <resources>
-    <color name="candidate_highlight">#BDFF8800</color>
     <color name="candidate_text">#ff404040</color>
-    <color name="candidate_background">#E0ffffc8</color>
-    <color name="candidate_shadow">#FF000000</color>
+    <color name="candidate_back">#FFEFEBEF</color>
     <color name="indicator_textcolor_default">#0032CD32</color>
     <color name="indicator_textcolor_caps_off">#0032CD32</color>
     <color name="indicator_textcolor_caps_on">#Cd32CD32</color>

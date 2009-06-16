@@ -111,6 +111,7 @@ public class OpenWnnEngineZH implements WnnEngine {
     /** Length of the search key */
     private int mSearchLength;
     
+    /* Cache for results of search */
     private HashMap<String,ArrayList<WnnWord>> mSearchCache;
     private ArrayList<WnnWord> mSearchCacheArray;
     private ArrayList<WnnWord> mNoWord;

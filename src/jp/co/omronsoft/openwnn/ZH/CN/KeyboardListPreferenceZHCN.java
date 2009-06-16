@@ -36,7 +36,7 @@ public class KeyboardListPreferenceZHCN extends ListPreference {
 		this(context, null);
 	}
 
-	/** see android.preference.DialogPreference#onDialogClosed */
+	/** @see android.preference.DialogPreference#onDialogClosed */
 	@Override protected void onDialogClosed(boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
 

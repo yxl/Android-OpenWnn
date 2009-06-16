@@ -21,7 +21,6 @@ import android.view.WindowManager;
 import android.content.Context;
 import android.view.View;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -31,6 +30,7 @@ import android.view.inputmethod.*;
 import android.content.res.Configuration;
 import android.graphics.*;
 import android.graphics.drawable.*;
+import android.view.MotionEvent;
 
 /**
  * The OpenWnn IME's base class.
@@ -113,7 +113,7 @@ public class OpenWnn extends InputMethodService {
     @Override public void onDestroy() {
         super.onDestroy();
 
-        if (mConverter != null) { mConverter.close(); }
+        close();
     }
 
     /** @see android.inputmethodservice.InputMethodService#onKeyDown */
@@ -190,6 +190,11 @@ public class OpenWnn extends InputMethodService {
         mDirectInputMode = true;
         hideStatusIcon();
     }
+    /** @see android.inputmethodservice.InputMethodService#onComputeInsets */
+    @Override public void onComputeInsets(InputMethodService.Insets outInsets) {
+        super.onComputeInsets(outInsets);
+        outInsets.contentTopInsets = outInsets.visibleTopInsets;
+    }
 
 
     /**********************************************************************
@@ -234,5 +239,12 @@ public class OpenWnn extends InputMethodService {
             }
         }
         return null;
+    }
+
+    /**
+     * Processing of resource open when IME ends.
+     */
+    protected void close() {
+        if (mConverter != null) { mConverter.close(); }
     }
 }

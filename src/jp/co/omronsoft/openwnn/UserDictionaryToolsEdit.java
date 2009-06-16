@@ -23,7 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -57,8 +56,6 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
 
     /** The error code (Already registered the same word) */
     private static final int RETURN_SAME_WORD = -11;
-    /** The error code (Insufficient the free space of the user dictionary) */
-    private static final int RETURN_USER_DICTIONARY_FULL = -12;
 
     /** The focus view and pair view */
     private static View sFocusingView = null;
@@ -181,12 +178,14 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
      */
     public void setAddButtonControl() {
 
+        /* Text changed listener for the reading text */
         mReadEditText.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
             }
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                /* Enable/disable the "Add" button */
                 if ((mReadEditText.getText().toString().length() != 0) && 
                     (mCandidateEditText.getText().toString().length() != 0)) {
                     mEntryButton.setEnabled(true);
@@ -195,12 +194,14 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
                 }
             }
         });
+        /* Text changed listener for the candidate text */
         mCandidateEditText.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
             }
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+            	/* Enable/disable the "Add" button */
                 if ((mReadEditText.getText().toString().length() != 0) && 
                     (mCandidateEditText.getText().toString().length() != 0)) {
                     mEntryButton.setEnabled(true);
@@ -301,6 +302,12 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
                             }
                         })
                         .setCancelable(true)
+                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            public void onCancel(DialogInterface dialog) {
+                                mEntryButton.setEnabled(true);
+                                mCancelButton.setEnabled(true);
+                            }
+                        })
                         .create();
 
             case DIALOG_CONTROL_OVER_MAX_TEXT_SIZE:
@@ -328,22 +335,26 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
      * @return              {@code true} if success; {@code false} if fail.
      */
     private boolean addDictionary(String stroke, String candidate) {
-
         boolean ret;
 
+        /* create WnnWord from the strings */
         WnnWord wnnWordAdd = new WnnWord();
         wnnWordAdd.stroke = stroke;
         wnnWordAdd.candidate = candidate;
+        /* add word event */
         OpenWnnEvent event = new OpenWnnEvent(OpenWnnEvent.ADD_WORD,
                                   WnnEngine.DICTIONARY_TYPE_USER,
                                   wnnWordAdd);
+        /* notify the event to IME */
         ret = sendEventToIME(event);
         if (ret == false) {
+            /* get error code if the process in IME is failed */
             int ret_code = event.errorCode;
             if (ret_code == RETURN_SAME_WORD) {
                 showDialog(DIALOG_CONTROL_WORDS_DUPLICATE);
             }
         } else {
+            /* update the dictionary */
             mListInstance = createUserDictionaryToolsList();
         }
         return ret;
@@ -355,7 +366,7 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
      * @param  word     The information of word
      */
     private void deleteDictionary(WnnWord word) {
-
+        /* delete the word from the dictionary */
         mListInstance = createUserDictionaryToolsList();
         boolean deleted = mListInstance.deleteWord(word);
         if (!deleted) {
@@ -363,7 +374,6 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
                            R.string.user_dictionary_delete_fail,
                            Toast.LENGTH_LONG).show();
         }
-
     }
 
     /**
@@ -379,6 +389,7 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
      */
     private boolean inputDataCheck(View v) {
 
+        /* return false if the length of the string exceeds the limit. */
         if ((((TextView)v).getTextSize()) > MAX_TEXT_SIZE) {
             showDialog(DIALOG_CONTROL_OVER_MAX_TEXT_SIZE);
             Log.e("OpenWnn", "inputDataCheck() : over max string length.");
@@ -394,10 +405,11 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
     private void screenTransition() {
         finish();
 
+        /* change to the word listing window */
         Intent intent = new Intent();
         intent.setClassName(mPackageName, mListViewName);
         startActivity(intent);
-
+        
     }
 
 }

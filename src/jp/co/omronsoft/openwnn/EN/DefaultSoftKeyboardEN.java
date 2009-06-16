@@ -22,6 +22,7 @@ import android.inputmethodservice.Keyboard;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
 import android.util.Log;
 
@@ -95,8 +96,13 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
      * @return 		state ID of the shift key (0:off, 1:on)
      */
     private int getShiftKeyState(EditorInfo editor) {
-        int caps = mWnn.getCurrentInputConnection().getCursorCapsMode(editor.inputType);
-        return (caps == 0) ? 0 : 1;
+        InputConnection connection = mWnn.getCurrentInputConnection();
+        if (connection != null) {
+            int caps = connection.getCursorCapsMode(editor.inputType);
+            return (caps == 0) ? 0 : 1;
+        } else {
+            return 0;
+        }
     }
 	
     /**
@@ -124,7 +130,6 @@ public class DefaultSoftKeyboardEN extends DefaultSoftKeyboard {
     	mCurrentKeyboardType = KEYBOARD_QWERTY;
     	mShiftOn             = KEYBOARD_SHIFT_OFF;
     	mCurrentKeyMode      = KEYMODE_EN_ALPHABET;
-    	mDisplayMode         = (width == 320)? PORTRAIT : LANDSCAPE;
 
     	Keyboard kbd = mKeyboard[mCurrentLanguage][mDisplayMode][mCurrentKeyboardType][mShiftOn][mCurrentKeyMode][0];
     	if (kbd == null) {
