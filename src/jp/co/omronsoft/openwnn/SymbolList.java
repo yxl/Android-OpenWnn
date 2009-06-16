@@ -55,8 +55,6 @@ public class SymbolList implements WnnEngine {
     /** Key string to get normal symbol list for Chinese */
     public static final String SYMBOL_CHINESE = "c1";
 
-    /** Key string to get EMOJI symbol list for Japanese */
-    public static final String SYMBOL_JAPANESE_EMOJI = "j_emoji";
     /** Key string to get face mark list for Japanese */
     public static final String SYMBOL_JAPANESE_FACE  = "j_face";
 
@@ -103,9 +101,9 @@ public class SymbolList implements WnnEngine {
             mSymbols.put(SYMBOL_ENGLISH, getXmlfile(R.xml.symbols_latin1_list));
             mSymbols.put(SYMBOL_JAPANESE, getXmlfile(R.xml.symbols_japan_list));
             mSymbols.put(SYMBOL_JAPANESE_FACE, getXmlfile(R.xml.symbols_japan_face_list));
-            mSymbols.put(SYMBOL_JAPANESE_EMOJI, getXmlfile(R.xml.symbols_japan_emoji_list));
             mCurrentList = mSymbols.get(SYMBOL_ENGLISH);
             break;
+
         case LANG_ZHCN: 
             /* symbols for Chinese IME */
             mSymbols.put(SYMBOL_CHINESE, getXmlfile(R.xml.symbols_china_list));

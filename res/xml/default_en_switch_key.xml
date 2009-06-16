@@ -16,9 +16,9 @@
 -->
 <Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
 	  android:keyWidth="15%p"
-	  android:horizontalGap="0px"
-	  android:verticalGap="0px"
-	  android:keyHeight="50px" >
+	  android:horizontalGap="0dip"
+	  android:verticalGap="0dip"
+	  android:keyHeight="50dip" >
   <Row>
     <Key android:codes="-113" android:keyLabel="@string/key_12key_switch_half_alphabet"
 	 android:keyEdgeFlags="left"/>

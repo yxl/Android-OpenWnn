@@ -17,10 +17,9 @@
 package jp.co.omronsoft.openwnn.EN;
 
 import jp.co.omronsoft.openwnn.*;
-import jp.co.omronsoft.openwnn.UserDictionaryToolsEdit;
-import jp.co.omronsoft.openwnn.UserDictionaryToolsList;
 import android.view.View;
 import android.view.Window;
+import java.util.Comparator;
 
 /**
  * The user dictionary tool class for English IME.
@@ -59,5 +58,17 @@ public class UserDictionaryToolsListEN extends UserDictionaryToolsList {
             /* do nothing if an error occurs */
         }
         return false;
+    }
+
+    /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#getComparator */
+    @Override protected Comparator<WnnWord> getComparator() {
+    	return new ListComparatorEN();
+    }
+
+    /** Comparator class for sorting the list of English user dictionary */
+    protected class ListComparatorEN implements Comparator<WnnWord>{
+        public int compare(WnnWord word1, WnnWord word2) {
+            return word1.stroke.compareTo(word2.stroke);
+        };
     }
 }

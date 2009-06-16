@@ -14,7 +14,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<!--symbols shuāngzìjiéyīqū -->
+<!--symbols -->
 <keystring>
   <string value="、"/>
   <string value="。"/>
@@ -205,6 +205,7 @@
   <string value="－"/>
   <string value="．"/>
   <string value="／"/>
+<!--
   <string value="０"/>
   <string value="１"/>
   <string value="２"/>
@@ -215,6 +216,7 @@
   <string value="７"/>
   <string value="８"/>
   <string value="９"/>
+-->
   <string value="："/>
   <string value="；"/>
   <string value="＜"/>
@@ -222,6 +224,7 @@
   <string value="＞"/>
   <string value="？"/>
   <string value="＠"/>
+<!--
   <string value="Ａ"/>
   <string value="Ｂ"/>
   <string value="Ｃ"/>
@@ -248,12 +251,14 @@
   <string value="Ｘ"/>
   <string value="Ｙ"/>
   <string value="Ｚ"/>
+-->
   <string value="［"/>
   <string value="＼"/>
   <string value="］"/>
   <string value="＾"/>
   <string value="＿"/>
   <string value="｀"/>
+<!--
   <string value="ａ"/>
   <string value="ｂ"/>
   <string value="ｃ"/>
@@ -280,10 +285,12 @@
   <string value="ｘ"/>
   <string value="ｙ"/>
   <string value="ｚ"/>
+-->
   <string value="｛"/>
   <string value="｜"/>
   <string value="｝"/>
   <string value="￣"/>
+<!--
   <string value="А"/>
   <string value="Б"/>
   <string value="В"/>
@@ -375,11 +382,14 @@
   <string value="ǜ"/>
   <string value="ü"/>
   <string value="ê"/>
+-->
 <!--  <string value="ɑ"/> -->
+<!-- no glyph in Droid font
   <string value="\u1e3f"/>
   <string value="ń"/>
   <string value="ň"/>
-<!--  <string value="\u01f9"/> -->
+-->
+<!-- no glyph in Droid font <string value="\u01f9"/> -->
 <!--  <string value="ɡ"/> -->
   <string value="ㄅ"/>
   <string value="ㄆ"/>
@@ -418,6 +428,7 @@
   <string value="ㄧ"/>
   <string value="ㄨ"/>
   <string value="ㄩ"/>
+<!--
   <string value="─"/>
   <string value="━"/>
   <string value="│"/>
@@ -711,7 +722,8 @@
   <string value="χ"/>
   <string value="ψ"/>
   <string value="ω"/>
-<!--
+-->
+<!-- no glyph in Droid font
   <string value="\ue78d"/>
   <string value="\ue78e"/>
   <string value="\ue78f"/>
@@ -720,6 +732,7 @@
   <string value="\ue792"/>
   <string value="\ue793"/>
 -->
+<!--
   <string value="︵"/>
   <string value="︶"/>
   <string value="︹"/>
@@ -732,18 +745,23 @@
   <string value="﹂"/>
   <string value="﹃"/>
   <string value="﹄"/>
-<!--
+-->
+<!-- no glyph in Droid font
   <string value="\ue794"/>
   <string value="\ue795"/>
 -->
+<!--
   <string value="︻"/>
   <string value="︼"/>
   <string value="︷"/>
   <string value="︸"/>
   <string value="︱"/>
-<!--  
+-->
+<!--  no glyph in Droid font
   <string value="\ue796"/>
 -->  
+<!--
   <string value="︳"/>
   <string value="︴"/>  
+-->
 </keystring>

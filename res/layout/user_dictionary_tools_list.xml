@@ -15,9 +15,31 @@
  limitations under the License.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+              android:orientation="vertical"
+              android:paddingTop="5sp"
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content">
+    <LinearLayout
+       android:orientation="horizontal"
+       android:gravity="center"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content">
+      <Button
+         android:id="@+id/user_dictionary_left_button" 
+         android:text="@string/user_dictionary_prev_button"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"/>
+      <TextView
+         android:id="@+id/user_dictionary_position_indicator" 
+         android:gravity="center"
+         android:layout_width="100sp"
+         android:layout_height="wrap_content"/>
+      <Button
+         android:id="@+id/user_dictionary_right_button" 
+         android:text="@string/user_dictionary_next_button"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"/>
+    </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -33,7 +55,7 @@
             android:layout_marginLeft="0dip"
             android:layout_marginBottom="1dip"
             android:text="@string/user_dictionary_title_read"
-            android:textSize="16px"
+            android:textSize="16dip"
             android:textColor="?android:attr/textColorTertiary"
             android:background="#FFFFFF"
             android:focusable="false"/>
@@ -46,7 +68,7 @@
             android:layout_marginLeft="1dip"
             android:layout_marginBottom="1dip"
             android:text="@string/user_dictionary_title_candidate"
-            android:textSize="16px"
+            android:textSize="16dip"
             android:textColor="?android:attr/textColorTertiary"
             android:background="#FFFFFF"
             android:focusable="false"/>

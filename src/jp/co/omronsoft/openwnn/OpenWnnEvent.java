@@ -219,6 +219,11 @@ public class OpenWnnEvent {
      */
     public static final int KEYUP = 0xF000001F;
 
+    /**
+     * Touch the other key.
+     */
+    public static final int TOUCH_OTHER_KEY = 0xF0000020;
+
     /** Event code */
     public int code = UNDEFINED;
     /** Detail mode of the event */

@@ -16,44 +16,45 @@
 -->
 <Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
     android:keyWidth="20%p"
-    android:horizontalGap="0px"
-    android:verticalGap="0px"
+    android:horizontalGap="0dip"
+    android:verticalGap="0dip"
     android:keyHeight="@dimen/key_height"
     >
   
     <Row>
         <Key android:codes="-219" android:keyIcon="@drawable/key_12key_reverse" android:iconPreview="@drawable/key_12key_reverse_b"
-             android:keyEdgeFlags="left"/>
-        <Key android:codes="-201" android:keyIcon="@drawable/key_12key_hiragana1" android:iconPreview="@drawable/key_12key_hiragana1_b"/>
+             android:keyEdgeFlags="left" android:keyWidth="18%"/>
+        <Key android:codes="-201" android:keyIcon="@drawable/key_12key_hiragana1" android:iconPreview="@drawable/key_12key_hiragana1_b" android:horizontalGap="2%"/>
         <Key android:codes="-202" android:keyIcon="@drawable/key_12key_hiragana2" android:iconPreview="@drawable/key_12key_hiragana2_b"/>
         <Key android:codes="-203" android:keyIcon="@drawable/key_12key_hiragana3" android:iconPreview="@drawable/key_12key_hiragana3_b"/>
         <Key android:codes="-214" android:keyIcon="@drawable/key_12key_del" android:iconPreview="@drawable/key_12key_del_b"
-             android:isRepeatable="true" android:keyEdgeFlags="right"/>
+             android:isRepeatable="true" android:keyEdgeFlags="right" android:horizontalGap="2%" android:keyWidth="18%"/>
     </Row>
     
     <Row>
-        <Key android:codes="-218" android:keyLabel="@string/key_left_arrow" android:isRepeatable="true" android:keyEdgeFlags="left"/>
-        <Key android:codes="-204" android:keyIcon="@drawable/key_12key_hiragana4" android:iconPreview="@drawable/key_12key_hiragana4_b"/>
+        <Key android:codes="-218" android:keyIcon="@drawable/key_12key_left" android:iconPreview="@drawable/key_12key_left_b" android:isRepeatable="true" android:keyEdgeFlags="left" android:keyWidth="18%"/>
+        <Key android:codes="-204" android:keyIcon="@drawable/key_12key_hiragana4" android:iconPreview="@drawable/key_12key_hiragana4_b" android:horizontalGap="2%"/>
         <Key android:codes="-205" android:keyIcon="@drawable/key_12key_hiragana5" android:iconPreview="@drawable/key_12key_hiragana5_b"/>
         <Key android:codes="-206" android:keyIcon="@drawable/key_12key_hiragana6" android:iconPreview="@drawable/key_12key_hiragana6_b"/>
-        <Key android:codes="-217" android:keyLabel="@string/key_right_arrow" android:isRepeatable="true" android:keyEdgeFlags="right"/>
+        <Key android:codes="-217" android:keyIcon="@drawable/key_12key_right" android:iconPreview="@drawable/key_12key_right_b" android:isRepeatable="true" android:keyEdgeFlags="right" android:horizontalGap="2%" android:keyWidth="18%"/>
     </Row>
     
     <Row>
-        <Key android:codes="-305" android:keyIcon="@drawable/key_12key_eisukana" android:iconPreview="@drawable/key_12key_eisukana_b"/>
-        <Key android:codes="-207" android:keyIcon="@drawable/key_12key_hiragana7" android:iconPreview="@drawable/key_12key_hiragana7_b"/>
+        <Key android:codes="-305" android:keyIcon="@drawable/key_12key_eisukana" android:iconPreview="@drawable/key_12key_eisukana_b" android:keyWidth="18%"/>
+        <Key android:codes="-207" android:keyIcon="@drawable/key_12key_hiragana7" android:iconPreview="@drawable/key_12key_hiragana7_b" android:horizontalGap="2%"/>
         <Key android:codes="-208" android:keyIcon="@drawable/key_12key_hiragana8" android:iconPreview="@drawable/key_12key_hiragana8_b"/>
         <Key android:codes="-209" android:keyIcon="@drawable/key_12key_hiragana9" android:iconPreview="@drawable/key_12key_hiragana9_b"/>
-        <Key android:codes="-215" android:keyLabel="@string/key_convert" android:keyEdgeFlags="right"/>
+        <Key android:codes="-215" android:keyIcon="@drawable/key_12key_space_jp" android:iconPreview="@drawable/key_12key_space_jp_b" android:keyEdgeFlags="right" android:horizontalGap="2%" android:keyWidth="18%"/>
     </Row>
     
     <Row android:rowEdgeFlags="bottom">
-        <Key android:codes="-230" android:keyLabel="@string/key_change_mode" android:popupKeyboard="@xml/keyboard_switch_key"
-             android:keyEdgeFlags="left"/>
-        <Key android:codes="-213" android:keyIcon="@drawable/key_12key_dakuten" android:iconPreview="@drawable/key_12key_dakuten_b"  />
+        <Key android:codes="-230" android:keyIcon="@drawable/key_12key_mode_hira" android:iconPreview="@drawable/key_mode_change_b"
+             android:popupKeyboard="@xml/keyboard_switch_key_jp"
+             android:keyEdgeFlags="left" android:keyWidth="18%"/>
+        <Key android:codes="-213" android:keyIcon="@drawable/key_12key_dakuten" android:iconPreview="@drawable/key_12key_dakuten_b"   android:horizontalGap="2%"/>
         <Key android:codes="-210" android:keyIcon="@drawable/key_12key_hiragana0" android:iconPreview="@drawable/key_12key_hiragana0_b"/>
-        <Key android:codes="-211" android:keyLabel="@string/key_12key_kutoten" />
-        <Key android:codes="-216" android:keyIcon="@drawable/key_12key_enter" android:iconPreview="@drawable/key_12key_enter_b" 
-             android:keyEdgeFlags="right"/>
+        <Key android:codes="-211" android:keyIcon="@drawable/key_12key_ten" android:iconPreview="@drawable/key_12key_ten_b" />
+        <Key android:codes="-216" android:keyIcon="@drawable/key_12key_enter_jp" android:iconPreview="@drawable/key_12key_enter_jp_b" 
+             android:keyEdgeFlags="right" android:horizontalGap="2%" android:keyWidth="18%"/>
     </Row>
 </Keyboard>

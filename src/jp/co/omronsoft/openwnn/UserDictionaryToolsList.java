@@ -23,7 +23,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
@@ -41,6 +40,12 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+
 
 /**
  * The abstract class for user dictionary tool.
@@ -74,8 +79,9 @@ public abstract class UserDictionaryToolsList extends Activity
     /** The size of font*/
     private final int WORD_TEXT_SIZE = 16;
 
-    /** The color of background */
+    /** The color of background (unfocused item) */
     private final int UNFOCUS_BACKGROUND_COLOR = 0xFF242424;
+    /** The color of background (focused item) */
     private final int FOCUS_BACKGROUND_COLOR = 0xFFFF8500;
 
     /** The minimum count of registered words */
@@ -83,31 +89,33 @@ public abstract class UserDictionaryToolsList extends Activity
     /** The maximum count of registered words */
     private final int MAX_WORD_COUNT = 100;
     /** Maximum word count to display */
-    private final int MAX_LIST_WORD_COUNT = 50;
-    /** Maximum word count to display (at the first step) */
-    private final int MAX_LIST_WORD_DELAY_COUNT = 50;
+    private final int MAX_LIST_WORD_COUNT = 100;
 
     /** The threshold time of the double tapping */
     private final int DOUBLE_TAP_TIME = 300;
 
     /** Widgets which constitute this screen of activity */
     private Menu mMenu;
+    /** Table layout for the lists */
     private TableLayout mTableLayout;
+    /** Focusing view */
     private static View sFocusingView = null;
+    /** Focusing pair view */
     private static View sFocusingPairView = null;
 
     /** Objects which control state transitions */
     private Intent mIntent;
-    private OpenWnnEvent mEvent;
-    private Handler mDelayUpdateHandler;
 
     /** The number of the registered words */
-    private int mWordCount = -1;
+    private int mWordCount = 0;
 
-    /** The state of menu items */
+    /** The state of "Add" menu item */
     private boolean mAddMenuEnabled;
+    /** The state of "Edit" menu item */
     private boolean mEditMenuEnabled;
+    /** The state of "Delete" menu item */
     private boolean mDeleteMenuEnabled;
+    /** The state of "Initialize" menu item */
     private boolean mInitMenuEnabled;
 
     /** {@code true} if the menu option is initialized */
@@ -121,7 +129,20 @@ public abstract class UserDictionaryToolsList extends Activity
     /** The time of previous action */
     private static long sJustBeforeActionTime = -1;
 
-    private boolean mHasCreatedList = false;
+    /** List of the words in the user dictionary */
+    private ArrayList<WnnWord> mWordList = null;
+
+    /** Work area for sorting the word list */
+    private WnnWord[] mSortData;
+
+    /** Whether the view is initialized */
+    private boolean mInit = false;
+
+    /** Page left button */
+    private Button mLeftButton = null;
+
+    /** Page right button */
+    private Button mRightButton = null;
 
     /**
      * Send the specified event to IME
@@ -130,6 +151,8 @@ public abstract class UserDictionaryToolsList extends Activity
      * @return      {@code true} if this event is processed
      */
     protected abstract boolean sendEventToIME(OpenWnnEvent ev);
+    /** Get the comparator for sorting the list */
+    protected abstract Comparator<WnnWord> getComparator();
 
     /**
      * Create the header
@@ -142,10 +165,36 @@ public abstract class UserDictionaryToolsList extends Activity
 
         super.onCreate(savedInstanceState);
 
-        mDelayUpdateHandler = new Handler();
         /* create XML layout */
         requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         setContentView(R.layout.user_dictionary_tools_list);
+        mTableLayout = (TableLayout)findViewById(R.id.user_dictionary_tools_table);
+
+        Button b = (Button)findViewById(R.id.user_dictionary_left_button);
+        b.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    int pos = mWordCount - MAX_LIST_WORD_COUNT;
+                    if (0 <= pos) {
+                        mWordCount = pos;
+                        updateWordList();
+                        mTableLayout.findViewById(1).requestFocus();
+                    }
+                }
+            });
+        mLeftButton = b;
+
+        b = (Button)findViewById(R.id.user_dictionary_right_button);
+        b.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    int pos = mWordCount + MAX_LIST_WORD_COUNT;
+                    if (pos < mWordList.size()) {
+                        mWordCount = pos;
+                        updateWordList();
+                        mTableLayout.findViewById(1).requestFocus();
+                    }
+                }
+            });
+        mRightButton = b;
 
     }
 
@@ -154,13 +203,13 @@ public abstract class UserDictionaryToolsList extends Activity
         super.onStart();
         sBeforeSelectedViewID = -1;
         sJustBeforeActionTime = -1;
-        updateWordList();
-    }
+        mWordList = getWords();
 
-    /** @see android.app.Activity#onStop */
-    @Override protected void onStop() {
-        super.onStop();
-        mDelayUpdateHandler.removeCallbacks(updateWordListRunnable);
+        headerCreate();
+        final TextView leftText = (TextView) findViewById(R.id.user_dictionary_tools_list_title_words_count);
+        leftText.setText(mWordList.size() + "/" + MAX_WORD_COUNT);
+
+        updateWordList();
     }
 
     /**
@@ -213,7 +262,7 @@ public abstract class UserDictionaryToolsList extends Activity
 
 
         /* [menu] add a word */
-        if ((mWordCount >= MAX_WORD_COUNT) || !mHasCreatedList) {
+        if (mWordList.size() >= MAX_WORD_COUNT) {
             /* disable if the number of registered word exceeds MAX_WORD_COUNT */
             mAddMenuEnabled = false;
         } else {
@@ -221,13 +270,17 @@ public abstract class UserDictionaryToolsList extends Activity
         }
         
         /* [menu] edit a word/delete a word */
-        if (mWordCount <= MIN_WORD_COUNT) {
+        if (mWordList.size() <= MIN_WORD_COUNT) {
             /* disable if no word is registered or no word is selected */
             mEditMenuEnabled = false;
             mDeleteMenuEnabled = false;
         } else {
             mEditMenuEnabled = true;
-            mDeleteMenuEnabled = true;
+            if (mSelectedWords) {
+                mDeleteMenuEnabled = true;
+            } else {
+                mDeleteMenuEnabled = false;
+            }
         }
         
         /* [menu] clear the dictionary (always enabled) */
@@ -323,7 +376,7 @@ public abstract class UserDictionaryToolsList extends Activity
                 CharSequence focusPairString = ((TextView)sFocusingPairView).getText();
                 WnnWord wnnWordSearch = new WnnWord();
 
-            if (mSelectedViewID > MAX_WORD_COUNT) {
+                if (mSelectedViewID > MAX_WORD_COUNT) {
                     wnnWordSearch.stroke = focusPairString.toString();
                     wnnWordSearch.candidate = focusString.toString();
                 } else {
@@ -339,38 +392,19 @@ public abstract class UserDictionaryToolsList extends Activity
                     Toast.makeText(getApplicationContext(),
                                    R.string.user_dictionary_delete_fail,
                                    Toast.LENGTH_LONG).show();
-                return;
-                }
- 
-                int id = mSelectedViewID;
-            id = (MAX_WORD_COUNT < id) ? id - MAX_WORD_COUNT : id;
-                View v = null;
-
-                mTableLayout.removeView((View)sFocusingView.getParent());
-
-                for (int i = id; i < MAX_WORD_COUNT; i++) {
-                    v = mTableLayout.findViewById(i);
-                    if (v != null) {
-                        break;
-                    }
+                    return;
                 }
 
-                if (v == null) {
-                    for (int i = id; 0 <= i; i--) {
-                        v = mTableLayout.findViewById(i);
-                        if (v != null) {
-                            break;
-                        }
-                    }
+                mWordList = getWords();
+                int size = mWordList.size();
+                if (size <= mWordCount) {
+                    int newPos = (mWordCount - MAX_LIST_WORD_COUNT);
+                    mWordCount = (0 <= newPos) ? newPos : 0;
                 }
-            
-                if (v != null) {
-                    ((View)v.getParent()).requestFocus();
-                }
-                mWordCount--;
+                updateWordList();
 
                 TextView leftText = (TextView) findViewById(R.id.user_dictionary_tools_list_title_words_count);
-                leftText.setText(mWordCount + "/" + MAX_WORD_COUNT);
+                leftText.setText(size + "/" + MAX_WORD_COUNT);
 
                 if (mInitializedMenu) {
                     onCreateOptionsMenu(mMenu);
@@ -395,10 +429,15 @@ public abstract class UserDictionaryToolsList extends Activity
                 /* show the message */
                 Toast.makeText(getApplicationContext(), R.string.dialog_clear_user_dictionary_done,
                                Toast.LENGTH_LONG).show();
+                mWordList = new ArrayList<WnnWord>();
+                mWordCount = 0;
                 updateWordList();
-            if (mInitializedMenu) {
-                onCreateOptionsMenu(mMenu);
-            }
+                TextView leftText = (TextView) findViewById(R.id.user_dictionary_tools_list_title_words_count);
+                leftText.setText(mWordList.size() + "/" + MAX_WORD_COUNT);
+
+                if (mInitializedMenu) {
+                    onCreateOptionsMenu(mMenu);
+                }
             }
         };
 
@@ -447,9 +486,7 @@ public abstract class UserDictionaryToolsList extends Activity
             sFocusingPairView.setBackgroundColor(FOCUS_BACKGROUND_COLOR);
             mSelectedWords = true;
         } else {
-            if (mSelectedViewID == 0) {
-                mSelectedWords = false;
-            }
+            mSelectedWords = false;
             ((TextView)v).setTextColor(Color.LTGRAY);
             v.setBackgroundColor(UNFOCUS_BACKGROUND_COLOR);
             ((TextView)sFocusingPairView).setTextColor(Color.LTGRAY);
@@ -464,6 +501,7 @@ public abstract class UserDictionaryToolsList extends Activity
      * Add the word
      */
     public void wordAdd() {
+        /** change to the edit window */
         screenTransition(Intent.ACTION_INSERT, mEditViewName);
     }
 
@@ -551,149 +589,141 @@ public abstract class UserDictionaryToolsList extends Activity
         finish();
     }
 
+    /**
+     * Get the list of words in the user dictionary.
+     * @return The list of words
+     */
+    private ArrayList<WnnWord> getWords() {
+        WnnWord word = new WnnWord();
+        OpenWnnEvent event = new OpenWnnEvent(OpenWnnEvent.LIST_WORDS_IN_USER_DICTIONARY,
+                                              WnnEngine.DICTIONARY_TYPE_USER,
+                                              word);
+        sendEventToIME(event);
+
+        ArrayList<WnnWord> list = new ArrayList<WnnWord>();
+        for (int i = 0; i < MAX_WORD_COUNT; i++) {
+            event = new OpenWnnEvent(OpenWnnEvent.GET_WORD, word);
+            if (!sendEventToIME(event)) {
+                break;
+            }
+            list.add(event.word);
+        }
+
+        compareTo(list);
+
+        return list;
+    }
+
+    /**
+     * Sort the list of words
+     * @param array The array list of the words
+     */
+    protected void compareTo(ArrayList<WnnWord> array) {
+        mSortData = new WnnWord[array.size()];
+        array.toArray(mSortData);
+        Arrays.sort(mSortData, getComparator());   
+    }
+
 
     /**
      * Update the word list.
      */
     private void updateWordList() {
-        mWordCount = 0;
-        WnnWord wnnWordSearch = new WnnWord();
-        mEvent = new OpenWnnEvent(OpenWnnEvent.LIST_WORDS_IN_USER_DICTIONARY,
-                                  WnnEngine.DICTIONARY_TYPE_USER,
-                                  wnnWordSearch);
-        sendEventToIME(mEvent);
+        if (!mInit) {
+            mInit = true;
+            mSelectedViewID = 1;
 
-        mTableLayout = (TableLayout)findViewById(R.id.user_dictionary_tools_table);
-        mTableLayout.removeAllViews();
+            Window window = getWindow();
+            WindowManager windowManager = window.getWindowManager();
+            Display display = windowManager.getDefaultDisplay();
+            int system_width = display.getWidth();
 
-        if (createWordList(mWordCount,MAX_LIST_WORD_COUNT, this)) {
-            headerCreate();
-            final TextView leftText = (TextView) findViewById(R.id.user_dictionary_tools_list_title_words_count);
-            leftText.setText(R.string.user_dictionary_creating_wordlist);
-            mDelayUpdateHandler.removeCallbacks(updateWordListRunnable);
-            mDelayUpdateHandler.postDelayed(updateWordListRunnable, 0);
+            for (int i = 1; i <= MAX_LIST_WORD_COUNT; i++) {
+                TableRow row = new TableRow(this);
+                UserDictionaryToolsListFocus stroke = new UserDictionaryToolsListFocus(this);
+                stroke.setId(i);
+                stroke.setWidth(system_width/2);
+                stroke.setTextSize(WORD_TEXT_SIZE);
+                stroke.setTextColor(Color.LTGRAY);
+                stroke.setBackgroundColor(UNFOCUS_BACKGROUND_COLOR);
+                stroke.setSingleLine();
+                stroke.setPadding(1,0,1,1);
+                stroke.setEllipsize(TextUtils.TruncateAt.END);
+                stroke.setClickable(true);
+                stroke.setFocusable(true);
+                stroke.setFocusableInTouchMode(true);
+                stroke.setOnTouchListener(this);
+                stroke.setOnFocusChangeListener(this);
+
+                UserDictionaryToolsListFocus candidate = new UserDictionaryToolsListFocus(this);
+                candidate.setId(i+MAX_WORD_COUNT);
+                candidate.setWidth(system_width/2);
+                candidate.setTextSize(WORD_TEXT_SIZE);
+                candidate.setTextColor(Color.LTGRAY);
+                candidate.setBackgroundColor(UNFOCUS_BACKGROUND_COLOR);
+                candidate.setSingleLine();
+                candidate.setPadding(1,0,1,1);
+                candidate.setEllipsize(TextUtils.TruncateAt.END);
+                candidate.setClickable(true);
+                candidate.setFocusable(true);
+                candidate.setFocusableInTouchMode(true);
+                candidate.setOnTouchListener(this);
+                candidate.setOnFocusChangeListener(this);
+
+                stroke.setPairView(candidate);
+                candidate.setPairView(stroke);
+
+                row.addView(stroke);
+                row.addView(candidate);
+                mTableLayout.addView(row, tableCreateParam(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            }
+        }
+
+        int size = mWordList.size();
+        int start = mWordCount;
+
+        TextView t = (TextView)findViewById(R.id.user_dictionary_position_indicator);
+        if (size <= MAX_LIST_WORD_COUNT) {
+            ((View)mLeftButton.getParent()).setVisibility(View.GONE);
         } else {
-            if (mSelectedViewID >= 0) {
-                View v;
-                v = mTableLayout.findViewById(mSelectedViewID);
-                if (v != null) {
-                    ((View)v.getParent()).requestFocus();
-                } else {
-                    mSelectedViewID--;
-                    if (mSelectedViewID < 0) {
-                        mSelectedViewID = 0;
-                    }
-                    v = mTableLayout.findViewById(mSelectedViewID);
-                    if (v != null) {
-                        ((View)v.getParent()).requestFocus();
-                    }
-                }
-            }
-            headerCreate();
-            final TextView leftText = (TextView) findViewById(R.id.user_dictionary_tools_list_title_words_count);
-            leftText.setText(mWordCount + "/" + MAX_WORD_COUNT);
-            mHasCreatedList = true;
-        }
-    }
+            ((View)mLeftButton.getParent()).setVisibility(View.VISIBLE);
+            int last = (start + MAX_LIST_WORD_COUNT);
+            t.setText((start + 1) + " - " + Math.min(last, size));
 
-    /**
-     * Handler for updating the word list.
-     */
-    private final Runnable updateWordListRunnable = new Runnable() {
-            public void run() {
-                UserDictionaryToolsList self = UserDictionaryToolsList.this;
-                if (createWordList(mWordCount,mWordCount+MAX_LIST_WORD_DELAY_COUNT, self)) {
-                    mDelayUpdateHandler.removeCallbacks(updateWordListRunnable);
-                    mDelayUpdateHandler.postDelayed(updateWordListRunnable, 0);
-                } else {
-                    mDelayUpdateHandler.removeCallbacks(updateWordListRunnable);
-                    final TextView leftText = (TextView) findViewById(R.id.user_dictionary_tools_list_title_words_count);
-                    leftText.setText(mWordCount + "/" + MAX_WORD_COUNT);
-                    mHasCreatedList = true;
-                    if (mInitializedMenu) {
-                        onCreateOptionsMenu(mMenu);
-                    }
-                }
-            }
-        };
-        
-    /**
-     * Create the list of words.
-     *
-     * @param  position     Start position to create the list
-     * @param  max          Maximum number of words to display
-     * @param  self         UserDictionaryToolsList
-     * @return          {@code true} if more words undisplayed; {@code false} if no more.
-     */
-    private boolean createWordList(int position ,int max, UserDictionaryToolsList self) {
-        boolean ret = true;
-                
-        if (position >= MAX_WORD_COUNT) {
-            return false;
+            mLeftButton.setEnabled(start != 0);
+            mRightButton.setEnabled(last < size);
         }
-        Window window = getWindow();
-        WindowManager windowManager = window.getWindowManager();
-        Display display = windowManager.getDefaultDisplay();
-        int system_width = display.getWidth();
-        WnnWord wnnWordGet = new WnnWord();
-        mEvent = new OpenWnnEvent(OpenWnnEvent.GET_WORD, wnnWordGet);
+
+        int selectedId = mSelectedViewID - ((MAX_WORD_COUNT < mSelectedViewID) ? MAX_WORD_COUNT : 0);
         
-        int i;
-        for (i = position; i < max; i++) {
-            if (!sendEventToIME(mEvent)) {
-                ret =  false;
-                break;
+        for (int i = 0; i < MAX_LIST_WORD_COUNT; i++) {
+            if ((size - 1) < (start + i)) {
+                if ((0 < i) && (selectedId == (i + 1))) {
+                    mTableLayout.findViewById(i).requestFocus();
+                }
+
+                ((View)(mTableLayout.findViewById(i + 1)).getParent()).setVisibility(View.GONE);
+                continue;
             }
-            wnnWordGet = mEvent.word;
+
+            WnnWord wnnWordGet;
+            wnnWordGet = mSortData[start + i];
             int len_stroke = wnnWordGet.stroke.length();
             int len_candidate = wnnWordGet.candidate.length();
             if (len_stroke == 0 || len_candidate == 0) {
-                ret =  false;
                 break;
             }
 
-            mWordCount++;
-            TableRow row = new TableRow(self);
-            UserDictionaryToolsListFocus stroke = new UserDictionaryToolsListFocus(self);
-            stroke.setId(mWordCount);
-            stroke.setText(wnnWordGet.stroke);
-            stroke.setWidth(system_width/2);
-            stroke.setTextSize(WORD_TEXT_SIZE);
-            stroke.setTextColor(Color.LTGRAY);
-            stroke.setBackgroundColor(UNFOCUS_BACKGROUND_COLOR);
-            stroke.setSingleLine();
-            stroke.setPadding(1,0,1,1);
-            stroke.setEllipsize(TextUtils.TruncateAt.END);
-            stroke.setClickable(true);
-            stroke.setFocusable(true);
-            stroke.setFocusableInTouchMode(true);
-            stroke.setOnTouchListener(self);
-            stroke.setOnFocusChangeListener(self);
+            if (selectedId == i + 1) {
+                mTableLayout.findViewById(i + 1).requestFocus();
+            }
 
-            UserDictionaryToolsListFocus candidate = new UserDictionaryToolsListFocus(self);
-            candidate.setId(mWordCount+MAX_WORD_COUNT);
-            candidate.setText(wnnWordGet.candidate);
-            candidate.setWidth(system_width/2);
-            candidate.setTextSize(WORD_TEXT_SIZE);
-            candidate.setTextColor(Color.LTGRAY);
-            candidate.setBackgroundColor(UNFOCUS_BACKGROUND_COLOR);
-            candidate.setSingleLine();
-            candidate.setPadding(1,0,1,1);
-            candidate.setEllipsize(TextUtils.TruncateAt.END);
-            candidate.setClickable(true);
-            candidate.setFocusable(true);
-            candidate.setFocusableInTouchMode(true);
-            candidate.setOnTouchListener(self);
-            candidate.setOnFocusChangeListener(self);
-
-            stroke.setPairView(candidate);
-            candidate.setPairView(stroke);
-
-            row.addView(stroke);
-            row.addView(candidate);
-            mTableLayout.addView(row, tableCreateParam(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            TextView text = (TextView)mTableLayout.findViewById(i + 1);
+            text.setText(wnnWordGet.stroke);
+            text = (TextView)mTableLayout.findViewById(i + 1 + MAX_WORD_COUNT);
+            text.setText(wnnWordGet.candidate);
+            ((View)text.getParent()).setVisibility(View.VISIBLE);
         }
         mTableLayout.requestLayout();
-        return ret;
     }
 }

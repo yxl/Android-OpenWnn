@@ -20,7 +20,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
-import android.graphics.Typeface;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.content.SharedPreferences;
@@ -517,7 +516,9 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
     /** @see jp.co.omronsoft.openwnn.InputViewManager#initView */
     public View initView(OpenWnn parent, int width, int height) {
         mWnn = parent;
-        mDisplayMode = (width == 320)? PORTRAIT : LANDSCAPE;
+        mDisplayMode = 
+            (parent.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            ? LANDSCAPE : PORTRAIT;
 
         /*
          * create keyboards & the view.
@@ -756,4 +757,20 @@ public class DefaultSoftKeyboard implements InputViewManager, KeyboardView.OnKey
         mHardKeyboardHidden = hidden;
     }
 
+    /**
+     * Get current keyboard view.
+     */
+    public View getKeyboardView() {
+        return mKeyboardView;
+    }
+
+    /**
+     * Reset the current keyboard
+     */
+    public void resetCurrentKeyboard() {
+        closing();
+        Keyboard keyboard = mCurrentKeyboard;
+        mCurrentKeyboard = null;
+        changeKeyboard(keyboard);
+    }
 }

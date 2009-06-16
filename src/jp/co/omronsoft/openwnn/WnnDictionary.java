@@ -84,7 +84,7 @@ public interface WnnDictionary {
     public static final int POS_TYPE_V3                             = 2;
     /** Type of a part of speech (Top of sentence) */
     public static final int POS_TYPE_BUNTOU                         = 3;
-    /** Type of a part of speech (Single chinese character) */
+    /** Type of a part of speech (Single Chinese character) */
     public static final int POS_TYPE_TANKANJI                       = 4;
     /** Type of a part of speech (Numeric) */
     public static final int POS_TYPE_SUUJI                          = 5;

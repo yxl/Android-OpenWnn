@@ -998,7 +998,6 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
         if( mDbDic != null ) {
             StringBuilder previousStrokeSQL    = new StringBuilder();
             StringBuilder previousCandidateSQL = new StringBuilder();
-            boolean isConnectLearn = false;
 
             if( previousWord != null &&
                 previousWord.stroke.length()    > 0 && previousWord.stroke.length()    <= MAX_STROKE_LENGTH &&
@@ -1006,7 +1005,6 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                 DatabaseUtils.appendEscapedSQLString( previousStrokeSQL, previousWord.stroke );
                 DatabaseUtils.appendEscapedSQLString( previousCandidateSQL, previousWord.candidate );
                 /* If the information of previous word is set, perform the link learning */
-                isConnectLearn = true;
             }
 
             if( word.stroke.length()    > 0 && word.stroke.length()    <= MAX_STROKE_LENGTH &&
@@ -1017,86 +1015,6 @@ public class OpenWnnDictionaryImpl implements WnnDictionary {
                 DatabaseUtils.appendEscapedSQLString( candidateSQL, word.candidate );
 
                 SQLiteCursor cursor;
-
-                /* If the words which have same stroke and same candidate is already learned, move to the tail */
-                cursor = ( SQLiteCursor )mDbDic.query(
-                    TABLE_NAME_DIC,
-                    new String[] { COLUMN_NAME_ID,
-                                   COLUMN_NAME_STROKE,
-                                   COLUMN_NAME_CANDIDATE,
-                                   COLUMN_NAME_POS_LEFT,
-                                   COLUMN_NAME_POS_RIGHT,
-                                   COLUMN_NAME_PREVIOUS_STROKE,
-                                   COLUMN_NAME_PREVIOUS_CANDIDATE,
-                                   COLUMN_NAME_PREVIOUS_POS_LEFT,
-                                   COLUMN_NAME_PREVIOUS_POS_RIGHT },
-                    String.format( "%s=%d and %s=%s and %s=%s",
-                                   COLUMN_NAME_TYPE, TYPE_NAME_LEARN,
-                                   COLUMN_NAME_STROKE, strokeSQL.toString(),
-                                   COLUMN_NAME_CANDIDATE, candidateSQL.toString() ),
-                    null, null, null,
-                    String.format( "%s ASC", COLUMN_NAME_ID ) );
-
-                if( cursor.getCount() > 0 ) {
-                    /* The results are arranged ascending by the ID. In other words, The results are arranged in an old turn. */
-                    cursor.moveToFirst( );
-
-                    ContentValues content = new ContentValues();
-                    int[] idArray = new int[ cursor.getCount() ];
-                    int idIndex = 0;
-
-                    boolean isExistConnectLearnData = false;
-
-                    mDbDic.beginTransaction();
-                    try {
-                        do {
-                            /* Record the ID that is removed later */
-                            idArray[ idIndex++ ] = cursor.getInt( 0 );
-
-                            /* Add the word to tail */
-                            content.clear();
-                            content.put( COLUMN_NAME_TYPE,               TYPE_NAME_LEARN );
-                            content.put( COLUMN_NAME_STROKE,             cursor.getString( 1 ) );
-                            content.put( COLUMN_NAME_CANDIDATE,          cursor.getString( 2 ) );
-                            content.put( COLUMN_NAME_POS_LEFT,           cursor.getInt( 3 ) );
-                            content.put( COLUMN_NAME_POS_RIGHT,          cursor.getInt( 4 ) );
-                            content.put( COLUMN_NAME_PREVIOUS_STROKE,    cursor.getString( 5 ) );
-                            content.put( COLUMN_NAME_PREVIOUS_CANDIDATE, cursor.getString( 6 ) );
-                            content.put( COLUMN_NAME_PREVIOUS_POS_LEFT,  cursor.getInt( 7 ) );
-                            content.put( COLUMN_NAME_PREVIOUS_POS_RIGHT, cursor.getInt( 8 ) );
-                            mDbDic.insert( TABLE_NAME_DIC, null, content );
-
-                            /* If the word that contain same link information exist, need NOT to add link information. */
-                            if( isConnectLearn &&
-                                previousWord.stroke.equals( cursor.getString( 5 ) ) &&
-                                previousWord.candidate.equals( cursor.getString( 6 ) ) ) {
-                                isExistConnectLearnData = true;
-                            }
-                        } while( cursor.moveToNext( ) );
-
-                        /* Delete the recorded words */
-                        while( --idIndex >= 0 ) {
-                            mDbDic.delete( TABLE_NAME_DIC,
-                                String.format( "%s=%d", COLUMN_NAME_ID, idArray[ idIndex ] ),
-                                null );
-                        }
-
-                        mDbDic.setTransactionSuccessful();
-
-                        /* If the link information is not specified or the word that contain same link information exist, */
-                        /* need NOT to add link information. Otherwise, go to next section for adding link information. */
-                        if( !isConnectLearn || isExistConnectLearnData ) {
-                            return 0;
-                        }
-                    } catch( SQLException e ) {
-                        return -1;
-                    } finally {
-                        mDbDic.endTransaction();
-                        cursor.close();
-                    }
-                } else {
-                    cursor.close();
-                }
 
                 /* Count the number of registered words and retrieve that words ascending by the ID */
                 cursor = ( SQLiteCursor )mDbDic.query(

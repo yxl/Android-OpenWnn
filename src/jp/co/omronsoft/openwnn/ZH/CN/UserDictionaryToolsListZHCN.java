@@ -19,6 +19,7 @@ package jp.co.omronsoft.openwnn.ZH.CN;
 import jp.co.omronsoft.openwnn.*;
 import android.view.View;
 import android.view.Window;
+import java.util.Comparator;
 
 /**
  * The user dictionary tool class for Chinese IME.
@@ -34,6 +35,7 @@ public class UserDictionaryToolsListZHCN extends UserDictionaryToolsList {
         mEditViewName = "jp.co.omronsoft.openwnn.ZH.CN.UserDictionaryToolsEditZHCN";
         mPackageName  = "jp.co.omronsoft.openwnn";
     }
+
     /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#headerCreate */
     @Override protected void headerCreate() {
       getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
@@ -55,4 +57,15 @@ public class UserDictionaryToolsListZHCN extends UserDictionaryToolsList {
         return false;
     }
 
+    /** @see jp.co.omronsoft.openwnn.UserDictionaryToolsList#getComparator */
+    @Override protected Comparator<WnnWord> getComparator() {
+        return new ListComparatorZHCN();
+    }
+
+    /** Comparator class for sorting the list of Chinese user dictionary */
+    protected class ListComparatorZHCN implements Comparator<WnnWord>{
+        public int compare(WnnWord word1, WnnWord word2) {
+            return word1.stroke.compareTo(word2.stroke);
+        };
+    }
 }
