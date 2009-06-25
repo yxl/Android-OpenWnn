@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
-                                   OpenWnn README
+                              OpenWnn Japnese README
 
                                    Version 1.3.1
                   
@@ -10,7 +10,7 @@
 
     OpenWnn is a IME(Input Method Editor) package which
     works on Android's IMF(Input Method Framework).  This version
-    contains Japanese, Chinese and English IME.
+    contains Japanese IME.
 
 2. Contents
 
@@ -46,13 +46,6 @@
       Index 5: Japanese dictionary for clause conversion (basic words)
       Index 6: Japanese dictionary for clause conversion (ancillary words)
 
-  [libWnnZHCNDic.so: Chinese dictionary]
-      Index 0: Chinese dictionary for normal prediction/conversion (high priority)
-      Index 1: Chinese dictionary for normal prediction/conversion (basic words)
-      Index 2: Chinese dictionary for normal prediction/conversion (single Kanji)
-      Index 3: Chinese dictionary for relative prediction #1
-      Index 4: Chinese dictionary for relative prediction #2
-
 4. File constitution 
 
     NOTICE                                    Apache license paper
@@ -79,9 +72,6 @@
             Android.mk                        |
             *.c                               |
         libwnnJpnDic/                         |
-            Android.mk                        |
-            *.c                               |
-        libwnnZHCNDic/                        |
             Android.mk                        |
             *.c                               |
 
@@ -114,9 +104,5 @@
                             *.java            |
                         JAJP/                 |
                             *.java            |
-                        ZH/                   |
-                            *.java            |
-                            CN/               |
-                                *.java        |
 
 -------------------------------------------------------------------------------

@@ -41,50 +41,11 @@
 
 	<activity android:name="jp.co.omronsoft.openwnn.JAJP.UserDictionaryToolsEditJAJP" android:label="@string/user_dictionary_edit_words" /> 
 
-        <service android:name="OpenWnnEN" android:label="OpenWnn English"
-		 android:permission="android.permission.BIND_INPUT_METHOD"
-		 android:id="@+id/openwnn_english">
-            <intent-filter>
-                <action android:name="android.view.InputMethod" />
-            </intent-filter>
-            <meta-data android:name="android.view.im" android:resource="@xml/method_en" />
-        </service>
-
-        <activity android:name="OpenWnnControlPanelEN"
-                android:label="@string/preference_ime_setting_app">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-
 	<activity android:name="jp.co.omronsoft.openwnn.EN.UserDictionaryToolsListEN" /> 
 
 	<activity android:name="jp.co.omronsoft.openwnn.EN.UserDictionaryToolsEditEN" android:label="@string/user_dictionary_edit_words" /> 
 
-        <service android:name="OpenWnnZHCN" android:label="OpenWnn Chinese"
-         android:permission="android.permission.BIND_INPUT_METHOD"
-         android:id="@+id/openwnn_chinese">
-            <intent-filter>
-                <action android:name="android.view.InputMethod" />
-            </intent-filter>
-            <meta-data android:name="android.view.im" android:resource="@xml/method_zhcn"/>
-        </service>
-
-        <activity android:name="OpenWnnControlPanelZHCN"
-                android:label="@string/preference_ime_setting_app">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-
-	<activity android:name="jp.co.omronsoft.openwnn.ZH.CN.UserDictionaryToolsListZHCN" /> 
-
-	<activity android:name="jp.co.omronsoft.openwnn.ZH.CN.UserDictionaryToolsEditZHCN" android:label="@string/user_dictionary_edit_words" /> 
-
     </application>
-
-
-
 
 </manifest> 
 
