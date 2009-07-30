@@ -6,7 +6,7 @@ LOCAL_SRC_FILES := $(call all-subdir-java-files)
 LOCAL_PACKAGE_NAME := OpenWnn
 
 LOCAL_JNI_SHARED_LIBRARIES := \
-	 libWnnEngDic libWnnJpnDic libWnnZHCNDic libwnndict
+	 libWnnEngDic libWnnJpnDic libwnndict
 
 include $(BUILD_PACKAGE)
 
