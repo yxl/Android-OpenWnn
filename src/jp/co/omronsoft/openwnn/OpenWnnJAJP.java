@@ -833,8 +833,13 @@ public class OpenWnnJAJP extends OpenWnn {
         case OpenWnnEvent.INPUT_SOFT_KEY:
             ret = processKeyEvent(keyEvent);
             if (!ret) {
-                mInputConnection.sendKeyEvent(keyEvent);
-                mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyEvent.getKeyCode()));
+            	int code = keyEvent.getKeyCode();
+            	if (code == KeyEvent.KEYCODE_ENTER) {
+                    sendKeyChar('\n');
+            	} else {
+                    mInputConnection.sendKeyEvent(keyEvent);
+                    mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+            	}
                 ret = true;
             }
             break;
@@ -2254,17 +2259,15 @@ public class OpenWnnJAJP extends OpenWnn {
                 break;
                 
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
+            case EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD:
                 mEnableLearning = false;
                 mEnableConverter = false;
                 mEnableSymbolListNonHalf = false;
                 mFilter.filter = CandidateFilter.FILTER_NON_ASCII; 
                 mDisableAutoCommitEnglishMask |= AUTO_COMMIT_ENGLISH_OFF;
-                mEnableAutoHideKeyboard = true;
                 break;
 
             case EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
-                mFilter.filter = CandidateFilter.FILTER_NON_ASCII; 
-                mEnableSymbolListNonHalf = false;
                 mEnableAutoInsertSpace = false;
                 mDisableAutoCommitEnglishMask |= AUTO_COMMIT_ENGLISH_OFF;
                 preferenceDictionary = EngineState.PREFERENCE_DICTIONARY_EMAIL_ADDRESS_URI;

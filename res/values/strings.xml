@@ -16,12 +16,6 @@
 -->
 <resources>
   <!-- common part -->
-    <!-- Engine -->
-    <string name="openwnn_system_dictionary_japanese">/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so</string>
-    <string name="openwnn_writable_dictionary_japanese">/data/data/jp.co.omronsoft.openwnn/writableJAJP.dic</string>
-    <string name="openwnn_system_dictionary_english">/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so</string>
-    <string name="openwnn_writable_dictionary_english">/data/data/jp.co.omronsoft.openwnn/writableEN.dic</string>
-
     <!-- Preferences -->
     <string name="preference_ime_setting_app">Setting</string>
 
@@ -111,20 +105,20 @@
 
   <!-- IME dependency -->
     <!-- OpenWnn English -->
-    <string name="openwnn_english_copyright">Ver.1.3.1\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_english_copyright">Ver.1.3.3\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_english">OpenWnn English</string>
     <string name="openwnn_english_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnEngDic.so</string>
     <string name="openwnn_english_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableEN.dic</string>
     <string name="en_word_separators">.,;:!?</string>
 
     <!-- OpenWnn Japanese -->
-    <string name="openwnn_japanese_copyright">Ver.1.3.1\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_japanese_copyright">Ver.1.3.3\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_japanese">Japanese IME</string>
     <string name="openwnn_japanese_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so</string>
     <string name="openwnn_japanese_writable_dictionary">/data/data/jp.co.omronsoft.openwnn/writableJAJP.dic</string>
 
     <!-- OpenWnn Chinese -->
-    <string name="openwnn_china_copyright">Ver.1.3.1\nOMRON SOFTWARE Co., Ltd.</string>
+    <string name="openwnn_china_copyright">Ver.1.3.3\nOMRON SOFTWARE Co., Ltd.</string>
     <string name="openwnn_china">OpenWnn Chinese</string>
     <string name="openwnn_china_system_dictionary">/data/data/jp.co.omronsoft.openwnn/lib/libWnnZHCNDic.so</string>
 <!-- After Config Change -->

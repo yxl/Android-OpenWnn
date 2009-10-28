@@ -331,7 +331,7 @@ public abstract class UserDictionaryToolsList extends Activity
             openOptionsMenu();
             return true;
         }
-        return false;
+         return super.onKeyUp(keyCode, event);
     }
 
     /** @see android.app.Activity#onCreateDialog */

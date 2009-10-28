@@ -520,8 +520,13 @@ public class OpenWnnEN extends OpenWnn {
             updateComposingText(1);
             ret = processKeyEvent(ev.keyEvent);
             if (!ret) {
-                mInputConnection.sendKeyEvent(ev.keyEvent);
-                mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, ev.keyEvent.getKeyCode()));
+            	int code = keyEvent.getKeyCode();
+            	if (code == KeyEvent.KEYCODE_ENTER) {
+                    sendKeyChar('\n');
+            	} else {
+                    mInputConnection.sendKeyEvent(keyEvent);
+                    mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+            	}
                 ret = true;
             }
             mPreviousEventCode = ev.code;
@@ -977,7 +982,7 @@ public class OpenWnnEN extends OpenWnn {
         case EditorInfo.TYPE_CLASS_TEXT:
             switch (info.inputType & EditorInfo.TYPE_MASK_VARIATION) {
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
-                mEnableAutoHideKeyboard = true;
+            case EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD:
                 mOptLearning = false;
                 mOptPrediction = false;
                 break;

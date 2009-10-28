@@ -734,12 +734,11 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             switch (inputType & EditorInfo.TYPE_MASK_VARIATION) {
 
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
+            case EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD:
                 mLimitedKeyMode = new int[] {KEYMODE_JA_HALF_ALPHABET, KEYMODE_JA_HALF_NUMBER};
                 break;
 
             case EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
-                mLimitedKeyMode = new int[] {KEYMODE_JA_HALF_ALPHABET, KEYMODE_JA_HALF_NUMBER};
-                break;
             case EditorInfo.TYPE_TEXT_VARIATION_URI:
                 mPreferenceKeyMode = KEYMODE_JA_HALF_ALPHABET;
                 break;

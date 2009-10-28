@@ -47,7 +47,7 @@
          android:layout_height="wrap_content"
          android:background="@color/candidate_back"
          />
-      <RelativeLayout 
+      <AbsoluteLayout
          android:id="@+id/candidates_2nd_view"
          android:layout_width="fill_parent" 
          android:layout_height="wrap_content"
