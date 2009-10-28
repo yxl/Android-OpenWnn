@@ -46,6 +46,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.AbsoluteLayout;
 import android.widget.ImageView;
 import android.graphics.drawable.Drawable;
 
@@ -86,7 +87,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
     /** Layout for the candidates list on normal view */
     private LinearLayout mViewCandidateList1st;
     /** Layout for the candidates list on full view */
-    private RelativeLayout mViewCandidateList2nd;
+    private AbsoluteLayout mViewCandidateList2nd;
     /** {@link OpenWnn} instance using this manager */
     private OpenWnn mWnn;
     /** View type (VIEW_TYPE_NORMAL or VIEW_TYPE_FULL or VIEW_TYPE_CLOSE) */
@@ -98,6 +99,11 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
     private int mViewWidth;
     /** Height of the view */
     private int mViewHeight;
+    /** Minimum width of a candidate (density support) */
+    private int mCandidateMinimumWidth;
+    /** Maximum width of a candidate (density support) */
+    private int mCandidateMinimumHeight;
+
     /** Whether hide the view if there is no candidates */
     private boolean mAutoHideMode;
     /** The converter to be get candidates from and notice the selected candidate to. */
@@ -152,7 +158,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
     /** Id of the top line view (in full view) */
     private int mFullViewPrevLineTopId;
     /** Layout of the previous candidate (in full view) */
-    private RelativeLayout.LayoutParams mFullViewPrevParams;
+    private ViewGroup.LayoutParams mFullViewPrevParams;
     /** Whether all candidates is displayed */
     private boolean mCreateCandidateDone;
     /** Number of lines in normal view */
@@ -260,6 +266,8 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
         mWnn = parent;
         mViewWidth = width;
         mViewHeight = height;
+        mCandidateMinimumWidth = (int)(CANDIDATE_MINIMUM_WIDTH * mMetrics.density);
+        mCandidateMinimumHeight = (int)(CANDIDATE_MINIMUM_HEIGHT * mMetrics.density);
         mPortrait = 
             (parent.getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE);
 
@@ -274,7 +282,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
         mViewCandidateBase = (ViewGroup)mViewBody.findViewById(R.id.candview_base);
 
         createNormalCandidateView();
-        mViewCandidateList2nd = (RelativeLayout)mViewBody.findViewById(R.id.candidates_2nd_view);
+        mViewCandidateList2nd = (AbsoluteLayout)mViewBody.findViewById(R.id.candidates_2nd_view);
 
         mReadMoreButtonWidth = r.getDrawable(R.drawable.cand_up).getMinimumWidth();
 
@@ -568,23 +576,13 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
                 mLineCount++;
             }
 
-            RelativeLayout layout = mViewCandidateList2nd;
+            ViewGroup layout = mViewCandidateList2nd;
 
             int width = indentWidth * occupyCount;
             int height = getCandidateMinimumHeight();
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(width, height);
 
-            if (mFullViewPrevLineTopId == 0) {
-                params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-            } else {
-                params.addRule(RelativeLayout.BELOW, mFullViewPrevLineTopId);
-            }
-            
-            if (mFullViewOccupyCount == 0) {
-                params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            } else {
-                params.addRule(RelativeLayout.RIGHT_OF, (mWordCount - 1));
-            }
+
+            ViewGroup.LayoutParams params = buildLayoutParams(mViewCandidateList2nd, width, height);
 
             textView = (TextView) layout.getChildAt(mFullViewWordCount);
             if (textView == null) {
@@ -680,6 +678,30 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
     }
 
     /**
+     * Create AbsoluteLayout.LayoutParams
+     * @param layout AbsoluteLayout
+     * @param width
+     * @param height
+     * @return ViewGroup.LayoutParams
+     */
+    private ViewGroup.LayoutParams buildLayoutParams(AbsoluteLayout layout, int width, int height) {
+
+        int indentWidth = mViewWidth / FULL_VIEW_DIV;
+        int x         = indentWidth * mFullViewOccupyCount;
+        int nomalLine = (mPortrait) ? LINE_NUM_PORTRAIT : LINE_NUM_LANDSCAPE;
+        int y         = getCandidateMinimumHeight() * (mLineCount - nomalLine - 1);
+        ViewGroup.LayoutParams params
+              = new AbsoluteLayout.LayoutParams(width, height, x, y);
+
+        return params;
+    }
+
+
+
+            
+
+
+    /**
      * Create a view for a candidate.
      * @return the view
      */
@@ -743,7 +765,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
     public void clearCandidates() {
         clearNormalViewCandidate();
 
-        RelativeLayout layout = mViewCandidateList2nd;
+        ViewGroup layout = mViewCandidateList2nd;
         int size = layout.getChildCount();
         for (int i = 0; i < size; i++) {
             View v = layout.getChildAt(i);
@@ -877,6 +899,10 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
      * @return          The width of string to draw
      */ 
     public int measureText(CharSequence text, int start, int end) {
+        if (end - start < 3) {
+            return getCandidateMinimumWidth();
+        }
+
         TextPaint paint = mViewCandidateTemplate.getPaint();
         return (int)paint.measureText(text, start, end);
     }
@@ -956,13 +982,13 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
      * @return the minimum width of a candidate view.
      */
     private int getCandidateMinimumWidth() {
-        return (int)(CANDIDATE_MINIMUM_WIDTH * mMetrics.density);
+        return mCandidateMinimumWidth;
     }
 
     /**
      * @return the minimum height of a candidate view.
      */
     private int getCandidateMinimumHeight() {
-        return (int)(CANDIDATE_MINIMUM_HEIGHT * mMetrics.density);
+        return mCandidateMinimumHeight;
     }
 }

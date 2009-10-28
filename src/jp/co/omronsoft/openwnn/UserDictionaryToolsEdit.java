@@ -169,8 +169,9 @@ public abstract class UserDictionaryToolsEdit extends Activity implements View.O
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             /* go back to the word list view */
             screenTransition();
+            return true;
         }
-        return false;
+        return super.onKeyDown(keyCode, event);
     }
 
     /**

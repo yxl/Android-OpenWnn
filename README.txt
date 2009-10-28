@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
                               OpenWnn Japnese README
 
-                                   Version 1.3.1
+                                   Version 1.3.3
                   
      (C) Copyright OMRON SOFTWARE Co., Ltd. 2008,2009 All Rights Reserved.
 -------------------------------------------------------------------------------
@@ -78,6 +78,8 @@
     res/                                      IME resource (XML, PNG)
         drawable/                             |
             *.xml                             |
+            *.png                             |
+        drawable-hdpi/                        |
             *.png                             |
         drawable-ja/                          |
             *.png                             |
