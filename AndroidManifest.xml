@@ -15,9 +15,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	  package="jp.co.omronsoft.openwnn"
-	  android:versionCode="1"
-	  android:versionName="1.0">
+	  package="jp.co.omronsoft.openwnn">
   <uses-permission xmlns:android="http://schemas.android.com/apk/res/android" android:name="android.permission.VIBRATE"/>
     <application android:label="OpenWnn">
 
