@@ -136,6 +136,13 @@ public class RomkanHalfKatakana implements LetterConverter {
         put("-", "\uff70"); put(".", "\uff61"); put(",", "\uff64"); put("/", "\uff65");
     }};
 
+    /**
+     * Default constructor
+     */
+    public RomkanHalfKatakana() {
+        super();
+    }
+
     /** @see LetterConverter#convert */
     public boolean convert(ComposingText text) {
         return RomkanFullKatakana.convert(text, mRomkanTable);

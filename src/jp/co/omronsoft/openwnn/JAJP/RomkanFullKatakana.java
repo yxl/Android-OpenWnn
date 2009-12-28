@@ -21,8 +21,6 @@ import jp.co.omronsoft.openwnn.ComposingText;
 import jp.co.omronsoft.openwnn.StrSegment;
 import java.util.HashMap;
 import android.content.SharedPreferences;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 /**
  * The Romaji to full-width Katakana converter class for Japanese IME.
@@ -42,6 +40,7 @@ public class RomkanFullKatakana implements LetterConverter {
         put("le", "\u30a7");        put("lye", "\u30a7");       put("xe", "\u30a7");
         put("xye", "\u30a7");       put("e", "\u30a8");         put("lo", "\u30a9");
         put("xo", "\u30a9");        put("o", "\u30aa");         put("ca", "\u30ab");
+        put("lka", "\u30f5");       put("xka", "\u30f5");
         put("ka", "\u30ab");        put("ga", "\u30ac");        put("ki", "\u30ad");
         put("kyi", "\u30ad\u30a3");     put("kye", "\u30ad\u30a7");     put("kya", "\u30ad\u30e3");
         put("kyu", "\u30ad\u30e5");     put("kyo", "\u30ad\u30e7");     put("gi", "\u30ae");
@@ -54,7 +53,8 @@ public class RomkanFullKatakana implements LetterConverter {
         put("qo", "\u30af\u30a9");      put("qwo", "\u30af\u30a9");     put("qya", "\u30af\u30e3");
         put("qyu", "\u30af\u30e5");     put("qyo", "\u30af\u30e7");     put("gu", "\u30b0");
         put("gwa", "\u30b0\u30a1");     put("gwi", "\u30b0\u30a3");     put("gwu", "\u30b0\u30a5");
-        put("gwe", "\u30b0\u30a7");     put("gwo", "\u30b0\u30a9");     put("ke", "\u30b1");
+        put("gwe", "\u30b0\u30a7");     put("gwo", "\u30b0\u30a9");
+        put("lke", "\u30f6");       put("xke", "\u30f6");       put("ke", "\u30b1");
         put("ge", "\u30b2");        put("co", "\u30b3");        put("ko", "\u30b3");
         put("go", "\u30b4");        put("sa", "\u30b5");        put("za", "\u30b6");
         put("ci", "\u30b7");        put("shi", "\u30b7");       put("si", "\u30b7");
@@ -123,22 +123,33 @@ public class RomkanFullKatakana implements LetterConverter {
         put("vu", "\u30f4");        put("va", "\u30f4\u30a1");      put("vi", "\u30f4\u30a3");
         put("vyi", "\u30f4\u30a3");     put("ve", "\u30f4\u30a7");      put("vye", "\u30f4\u30a7");
         put("vo", "\u30f4\u30a9");      put("vya", "\u30f4\u30e3");     put("vyu", "\u30f4\u30e5");
-        put("vyo", "\u30f4\u30e7");	
-        put("bb", "\u30c3b");	put("cc", "\u30c3c");	put("dd", "\u30c3d");
-        put("ff", "\u30c3f");	put("gg", "\u30c3g");	put("hh", "\u30c3h");
-        put("jj", "\u30c3j");	put("kk", "\u30c3k");	put("ll", "\u30c3l");
-        put("mm", "\u30c3m");	put("pp", "\u30c3p");	put("qq", "\u30c3q");
-        put("rr", "\u30c3r");	put("ss", "\u30c3s");	put("tt", "\u30c3t");
-        put("vv", "\u30c3v");	put("ww", "\u30c3w");	put("xx", "\u30c3x");
-        put("yy", "\u30c3y");	put("zz", "\u30c3z");	put("nb", "\u30f3b");
-        put("nc", "\u30f3c");	put("nd", "\u30f3d");	put("nf", "\u30f3f");
-        put("ng", "\u30f3g");	put("nh", "\u30f3h");	put("nj", "\u30f3j");
-        put("nk", "\u30f3k");	put("nm", "\u30f3m");	put("np", "\u30f3p");
-        put("nq", "\u30f3q");	put("nr", "\u30f3r");	put("ns", "\u30f3s");
-        put("nt", "\u30f3t");	put("nv", "\u30f3v");	put("nw", "\u30f3w");
-        put("nx", "\u30f3x");	put("nz", "\u30f3z");	put("nl", "\u30f3l");	
+        put("vyo", "\u30f4\u30e7");     
+        put("bb", "\u30c3b");   put("cc", "\u30c3c");   put("dd", "\u30c3d");
+        put("ff", "\u30c3f");   put("gg", "\u30c3g");   put("hh", "\u30c3h");
+        put("jj", "\u30c3j");   put("kk", "\u30c3k");   put("ll", "\u30c3l");
+        put("mm", "\u30c3m");   put("pp", "\u30c3p");   put("qq", "\u30c3q");
+        put("rr", "\u30c3r");   put("ss", "\u30c3s");   put("tt", "\u30c3t");
+        put("vv", "\u30c3v");   put("ww", "\u30c3w");   put("xx", "\u30c3x");
+        put("yy", "\u30c3y");   put("zz", "\u30c3z");   put("nb", "\u30f3b");
+        put("nc", "\u30f3c");   put("nd", "\u30f3d");   put("nf", "\u30f3f");
+        put("ng", "\u30f3g");   put("nh", "\u30f3h");   put("nj", "\u30f3j");
+        put("nk", "\u30f3k");   put("nm", "\u30f3m");   put("np", "\u30f3p");
+        put("nq", "\u30f3q");   put("nr", "\u30f3r");   put("ns", "\u30f3s");
+        put("nt", "\u30f3t");   put("nv", "\u30f3v");   put("nw", "\u30f3w");
+        put("nx", "\u30f3x");   put("nz", "\u30f3z");   put("nl", "\u30f3l");   
         put("-", "\u30fc"); put(".", "\u3002"); put(",", "\u3001"); put("?", "\uff1f"); put("/", "\u30fb");
     }};
+
+    /** Max length of the target text */
+    private static final int MAX_LENGTH = 4;
+
+
+    /**
+     * Default constructor
+     */
+    public RomkanFullKatakana() {
+        super();
+    }
 
     /** @see LetterConverter#convert */
     public boolean convert(ComposingText text) {
@@ -148,9 +159,9 @@ public class RomkanFullKatakana implements LetterConverter {
     /**
      * convert Romaji to Full Katakana
      *
-     * @param text		The input/output text
-     * @param table		HashMap for Romaji-to-Kana conversion
-     * @return			{@code true} if conversion is compleated; {@code false} if not
+     * @param text              The input/output text
+     * @param table             HashMap for Romaji-to-Kana conversion
+     * @return                  {@code true} if conversion is compleated; {@code false} if not
      */
     public static boolean convert(ComposingText text, HashMap<String, String> table) {
         int cursor = text.getCursor(1);
@@ -159,21 +170,17 @@ public class RomkanFullKatakana implements LetterConverter {
             return false;
         }
 
-        StrSegment[] str = new StrSegment[3];
-        int start = 2;
-        str[2] = text.getStrSegment(ComposingText.LAYER1, cursor - 1);
-        if (cursor >= 2) {
-            str[1] = text.getStrSegment(ComposingText.LAYER1, cursor - 2);
-            start = 1;
-            if (cursor >= 3) {
-                str[0] = text.getStrSegment(ComposingText.LAYER1, cursor - 3);
-                start = 0;
-            }
+        StrSegment[] str = new StrSegment[MAX_LENGTH];
+        int start = MAX_LENGTH;
+        int checkLength = Math.min(cursor, MAX_LENGTH);
+        for (int i = 1; i <= checkLength; i++) {
+            str[MAX_LENGTH - i] = text.getStrSegment(1, cursor - i);
+            start--;
         }
 
         StringBuffer key = new StringBuffer();
-        while (start < 3) {
-            for (int i = start; i < 3; i++) {
+        while (start < MAX_LENGTH) {
+            for (int i = start; i < MAX_LENGTH; i++) {
                 key.append(str[i].string);
             }
             boolean upper = Character.isUpperCase(key.charAt(key.length() - 1));
@@ -185,19 +192,15 @@ public class RomkanFullKatakana implements LetterConverter {
                 StrSegment[] out;
                 if (match.length() == 1) {
                     out = new StrSegment[1];
-                    out[0] = new StrSegment(match, str[start].from, str[2].to);
-                    text.replaceStrSegment(ComposingText.LAYER1, out, 3 - start);
+                    out[0] = new StrSegment(match, str[start].from, str[MAX_LENGTH - 1].to);
+                    text.replaceStrSegment(ComposingText.LAYER1, out, MAX_LENGTH - start);
                 } else {
                     out = new StrSegment[2];
-                    out[0] = new StrSegment(match.substring(0, match.length() - 1), str[start].from, str[2].to - 1);
-                    out[1] = new StrSegment(match.substring(match.length() - 1), str[2].to, str[2].to);
-                    text.replaceStrSegment(ComposingText.LAYER1, out, 3 - start);
-                }
-                String regex = ".*[a-zA-Z]$";
-                Pattern p = Pattern.compile(regex);
-                Matcher m = p.matcher(text.toString(ComposingText.LAYER1));
-                if (m.matches()) {
-                    text.moveCursor(ComposingText.LAYER1, -1);
+                    out[0] = new StrSegment(match.substring(0, match.length() - 1),
+                                            str[start].from, str[MAX_LENGTH - 1].to - 1);
+                    out[1] = new StrSegment(match.substring(match.length() - 1),
+                                            str[MAX_LENGTH - 1].to, str[MAX_LENGTH - 1].to);
+                    text.replaceStrSegment(1, out, MAX_LENGTH - start);
                 }
                 return true;
             }

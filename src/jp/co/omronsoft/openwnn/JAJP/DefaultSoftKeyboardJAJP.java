@@ -440,7 +440,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
     /** @see jp.co.omronsoft.openwnn.DefaultSoftKeyboard#changeKeyboard */
     @Override protected boolean changeKeyboard(Keyboard keyboard) {
         if (keyboard != null) {
-            if (mIsInputTypeNull) {
+            if (mIsInputTypeNull && mChangeModeKey != null) {
                 mChangeModeKey.popupResId = mPopupResId;
             }
 
@@ -449,7 +449,7 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
                 ? KEY_INDEX_CHANGE_MODE_QWERTY : KEY_INDEX_CHANGE_MODE_12KEY;
             mChangeModeKey = keys.get(keyIndex);
 
-            if (mIsInputTypeNull) {
+            if (mIsInputTypeNull && mChangeModeKey != null) {
                 mPopupResId = mChangeModeKey.popupResId;
                 mChangeModeKey.popupResId = 0;
             }
@@ -696,15 +696,19 @@ public class DefaultSoftKeyboardJAJP extends DefaultSoftKeyboard {
             if (inputType == EditorInfo.TYPE_NULL) {
                 if (!mIsInputTypeNull) {
                     mIsInputTypeNull = true;
-                    mPopupResId = mChangeModeKey.popupResId;
-                    mChangeModeKey.popupResId = 0;
+                    if (mChangeModeKey != null) {
+                        mPopupResId = mChangeModeKey.popupResId;
+                        mChangeModeKey.popupResId = 0;
+                    }
                 }
                 return;
             }
             
             if (mIsInputTypeNull) {
                 mIsInputTypeNull = false;
-                mChangeModeKey.popupResId = mPopupResId;
+                if (mChangeModeKey != null) {
+                    mChangeModeKey.popupResId = mPopupResId;
+                }
             }
         }
 

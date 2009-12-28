@@ -119,20 +119,20 @@ public class Romkan implements LetterConverter {
         put("vu", "\u30f4");        put("va", "\u30f4\u3041");      put("vi", "\u30f4\u3043");
         put("vyi", "\u30f4\u3043");     put("ve", "\u30f4\u3047");      put("vye", "\u30f4\u3047");
         put("vo", "\u30f4\u3049");      put("vya", "\u30f4\u3083");     put("vyu", "\u30f4\u3085");
-        put("vyo", "\u30f4\u3087");	
-        put("bb", "\u3063b");	put("cc", "\u3063c");	put("dd", "\u3063d");
-        put("ff", "\u3063f");	put("gg", "\u3063g");	put("hh", "\u3063h");
-        put("jj", "\u3063j");	put("kk", "\u3063k");	put("ll", "\u3063l");
-        put("mm", "\u3063m");	put("pp", "\u3063p");	put("qq", "\u3063q");
-        put("rr", "\u3063r");	put("ss", "\u3063s");	put("tt", "\u3063t");
-        put("vv", "\u3063v");	put("ww", "\u3063w");	put("xx", "\u3063x");
-        put("yy", "\u3063y");	put("zz", "\u3063z");	put("nb", "\u3093b");
-        put("nc", "\u3093c");	put("nd", "\u3093d");	put("nf", "\u3093f");
-        put("ng", "\u3093g");	put("nh", "\u3093h");	put("nj", "\u3093j");
-        put("nk", "\u3093k");	put("nm", "\u3093m");	put("np", "\u3093p");
-        put("nq", "\u3093q");	put("nr", "\u3093r");	put("ns", "\u3093s");
-        put("nt", "\u3093t");	put("nv", "\u3093v");	put("nw", "\u3093w");
-        put("nx", "\u3093x");	put("nz", "\u3093z");	put("nl", "\u3093l");
+        put("vyo", "\u30f4\u3087");     
+        put("bb", "\u3063b");   put("cc", "\u3063c");   put("dd", "\u3063d");
+        put("ff", "\u3063f");   put("gg", "\u3063g");   put("hh", "\u3063h");
+        put("jj", "\u3063j");   put("kk", "\u3063k");   put("ll", "\u3063l");
+        put("mm", "\u3063m");   put("pp", "\u3063p");   put("qq", "\u3063q");
+        put("rr", "\u3063r");   put("ss", "\u3063s");   put("tt", "\u3063t");
+        put("vv", "\u3063v");   put("ww", "\u3063w");   put("xx", "\u3063x");
+        put("yy", "\u3063y");   put("zz", "\u3063z");   put("nb", "\u3093b");
+        put("nc", "\u3093c");   put("nd", "\u3093d");   put("nf", "\u3093f");
+        put("ng", "\u3093g");   put("nh", "\u3093h");   put("nj", "\u3093j");
+        put("nk", "\u3093k");   put("nm", "\u3093m");   put("np", "\u3093p");
+        put("nq", "\u3093q");   put("nr", "\u3093r");   put("ns", "\u3093s");
+        put("nt", "\u3093t");   put("nv", "\u3093v");   put("nw", "\u3093w");
+        put("nx", "\u3093x");   put("nz", "\u3093z");   put("nl", "\u3093l");
         put("-", "\u30fc"); put(".", "\u3002"); put(",", "\u3001"); put("?", "\uff1f"); put("/", "\u30fb");
         put("@", "\uff20"); put("#", "\uff03"); put("%", "\uff05"); put("&", "\uff06"); put("*", "\uff0a");
         put("+", "\uff0b"); put("=", "\uff1d"); put("(", "\uff08"); put(")", "\uff09");
@@ -143,6 +143,17 @@ public class Romkan implements LetterConverter {
         put("1", "\uff11"); put("2", "\uff12"); put("3", "\uff13"); put("4", "\uff14"); put("5", "\uff15");
         put("6", "\uff16"); put("7", "\uff17"); put("8", "\uff18"); put("9", "\uff19"); put("0", "\uff10");
     }};
+
+    /** Max length of the target text */
+    private static final int MAX_LENGTH = 4;
+
+
+    /**
+     * Default constructor
+     */
+    public Romkan() {
+        super();
+    }
 
     /***********************************************************************
      * LetterConverter's interface
@@ -155,21 +166,17 @@ public class Romkan implements LetterConverter {
             return false;
         }
 
-        StrSegment[] str = new StrSegment[3];
-        int start = 2;
-        str[2] = text.getStrSegment(1, cursor - 1);
-        if (cursor >= 2) {
-            str[1] = text.getStrSegment(1, cursor - 2);
-            start = 1;
-            if (cursor >= 3) {
-                str[0] = text.getStrSegment(1, cursor - 3);
-                start = 0;
-            }
+        StrSegment[] str = new StrSegment[MAX_LENGTH];
+        int start = MAX_LENGTH;
+        int checkLength = Math.min(cursor, MAX_LENGTH);
+        for (int i = 1; i <= checkLength; i++) {
+            str[MAX_LENGTH - i] = text.getStrSegment(1, cursor - i);
+            start--;
         }
 
         StringBuffer key = new StringBuffer();
-        while (start < 3) {
-            for (int i = start; i < 3; i++) {
+        while (start < MAX_LENGTH) {
+            for (int i = start; i < MAX_LENGTH; i++) {
                 key.append(str[i].string);
             }
             boolean upper = Character.isUpperCase(key.charAt(key.length() - 1));
@@ -181,13 +188,15 @@ public class Romkan implements LetterConverter {
                 StrSegment[] out;
                 if (match.length() == 1) {
                     out = new StrSegment[1];
-                    out[0] = new StrSegment(match, str[start].from, str[2].to);
-                    text.replaceStrSegment(1, out, 3 - start);
+                    out[0] = new StrSegment(match, str[start].from, str[MAX_LENGTH - 1].to);
+                    text.replaceStrSegment(ComposingText.LAYER1, out, MAX_LENGTH - start);
                 } else {
                     out = new StrSegment[2];
-                    out[0] = new StrSegment(match.substring(0, match.length() - 1), str[start].from, str[2].to - 1);
-                    out[1] = new StrSegment(match.substring(match.length() - 1), str[2].to, str[2].to);
-                    text.replaceStrSegment(1, out, 3 - start);
+                    out[0] = new StrSegment(match.substring(0, match.length() - 1),
+                                            str[start].from, str[MAX_LENGTH - 1].to - 1);
+                    out[1] = new StrSegment(match.substring(match.length() - 1),
+                                            str[MAX_LENGTH - 1].to, str[MAX_LENGTH - 1].to);
+                    text.replaceStrSegment(1, out, MAX_LENGTH - start);
                 }
                 return true;
             }

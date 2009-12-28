@@ -21,6 +21,7 @@ import android.view.WindowManager;
 import android.content.Context;
 import android.view.View;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -30,7 +31,6 @@ import android.view.inputmethod.*;
 import android.content.res.Configuration;
 import android.graphics.*;
 import android.graphics.drawable.*;
-import android.view.MotionEvent;
 
 /**
  * The OpenWnn IME's base class.
@@ -140,7 +140,7 @@ public class OpenWnn extends InputMethodService {
     @Override public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
         mInputConnection = getCurrentInputConnection();
-        if (mComposingText != null) {
+        if (!restarting && mComposingText != null) {
             mComposingText.clear();
         }
     }

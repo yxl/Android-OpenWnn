@@ -41,33 +41,33 @@ import android.util.Log;
  * @author Copyright (C) 2009 OMRON SOFTWARE CO., LTD.  All Rights Reserved.
  */
 public class OpenWnnEngineJAJP implements WnnEngine {
-	/** Current dictionary type */
-	private int mDictType = DIC_LANG_INIT;
+    /** Current dictionary type */
+    private int mDictType = DIC_LANG_INIT;
     /** Dictionary type (default) */
-	public static final int DIC_LANG_INIT = 0;
+    public static final int DIC_LANG_INIT = 0;
     /** Dictionary type (Japanese standard) */
-	public static final int DIC_LANG_JP = 0;
+    public static final int DIC_LANG_JP = 0;
     /** Dictionary type (English standard) */
-	public static final int DIC_LANG_EN = 1;
+    public static final int DIC_LANG_EN = 1;
     /** Dictionary type (Japanese person's name) */
-	public static final int DIC_LANG_JP_PERSON_NAME = 2;
+    public static final int DIC_LANG_JP_PERSON_NAME = 2;
     /** Dictionary type (User dictionary) */
-	public static final int DIC_USERDIC = 3;
+    public static final int DIC_USERDIC = 3;
     /** Dictionary type (Japanese EISU-KANA conversion) */
-	public static final int DIC_LANG_JP_EISUKANA = 4;
+    public static final int DIC_LANG_JP_EISUKANA = 4;
     /** Dictionary type (e-mail/URI) */
-	public static final int DIC_LANG_EN_EMAIL_ADDRESS = 5;
+    public static final int DIC_LANG_EN_EMAIL_ADDRESS = 5;
     /** Dictionary type (Japanese postal address) */
-	public static final int DIC_LANG_JP_POSTAL_ADDRESS = 6;
+    public static final int DIC_LANG_JP_POSTAL_ADDRESS = 6;
 
     /** Type of the keyboard */
     private int mKeyboardType = KEYBOARD_UNDEF;
     /** Keyboard type (not defined) */
     public static final int KEYBOARD_UNDEF = 0;
     /** Keyboard type (12-keys) */
-	public static final int KEYBOARD_KEYPAD12 = 1;
+    public static final int KEYBOARD_KEYPAD12 = 1;
     /** Keyboard type (Qwerty) */
-	public static final int KEYBOARD_QWERTY = 2;
+    public static final int KEYBOARD_QWERTY = 2;
     
     /** Score(frequency value) of word in the learning dictionary */
     public static final int FREQ_LEARN = 600;
@@ -80,23 +80,23 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     public static final int PREDICT_LIMIT = 100;
    
     /** OpenWnn dictionary */
-	private WnnDictionary mDictionaryJP;
+    private WnnDictionary mDictionaryJP;
 
-	/** Word list */
+    /** Word list */
     private ArrayList<WnnWord> mConvResult;
 
     /** HashMap for checking duplicate word */
-	private HashMap<String, WnnWord> mCandTable;
+    private HashMap<String, WnnWord> mCandTable;
 
-	/** Input string (Hiragana) */
-	private String mInputHiragana;
-	
-	/** Input string (Romaji) */
-	private String mInputRomaji;
-	
-	/** Number of output candidates */
-	private int mOutputNum;
-	
+    /** Input string (Hiragana) */
+    private String mInputHiragana;
+    
+    /** Input string (Romaji) */
+    private String mInputRomaji;
+    
+    /** Number of output candidates */
+    private int mOutputNum;
+    
     /**
      * Where to get the next candidates from.<br>
      * (0:prefix search from the dictionary, 1:single clause converter, 2:Kana converter)
@@ -127,17 +127,17 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Constructor
      * 
-     * @param writableDictionaryName	Writable dictionary file name(null if not use)
+     * @param writableDictionaryName    Writable dictionary file name(null if not use)
      */
     public OpenWnnEngineJAJP(String writableDictionaryName) {
         /* load Japanese dictionary library */
         mDictionaryJP = new OpenWnnDictionaryImpl(
-        		"/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so",
-        		writableDictionaryName );
+                "/data/data/jp.co.omronsoft.openwnn/lib/libWnnJpnDic.so",
+                writableDictionaryName );
         if (!mDictionaryJP.isActive()) {
-        	mDictionaryJP = new OpenWnnDictionaryImpl(
-        			"/system/lib/libWnnJpnDic.so",
-        			writableDictionaryName );
+            mDictionaryJP = new OpenWnnDictionaryImpl(
+                    "/system/lib/libWnnJpnDic.so",
+                    writableDictionaryName );
         }
 
         /* clear dictionary settings */
@@ -157,7 +157,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Set dictionary for prediction.
      * 
-     * @param strlen		Length of input string
+     * @param strlen        Length of input string
      */
     private void setDictionaryForPrediction(int strlen) {
         WnnDictionary dict = mDictionaryJP;
@@ -191,13 +191,13 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Get a candidate.
      *
-     * @param index		Index of a candidate.
-     * @return			The candidate; {@code null} if there is no candidate.
+     * @param index     Index of a candidate.
+     * @return          The candidate; {@code null} if there is no candidate.
      */
     private WnnWord getCandidate(int index) {
-		WnnWord word;
+        WnnWord word;
 
-		if (mGetCandidateFrom == 0) {
+        if (mGetCandidateFrom == 0) {
             if (mDictType == OpenWnnEngineJAJP.DIC_LANG_JP_EISUKANA) {
                 /* skip to Kana conversion if EISU-KANA conversion mode */
                 mGetCandidateFrom = 2;
@@ -205,24 +205,24 @@ public class OpenWnnEngineJAJP implements WnnEngine {
                 /* skip to single clause conversion if single clause conversion mode */
                 mGetCandidateFrom = 1;
             } else {
-            	if (mConvResult.size() < PREDICT_LIMIT) {
-            		/* get prefix matching words from the dictionaries */
-            		while (index >= mConvResult.size()) {
-            			if ((word = mDictionaryJP.getNextWord()) == null) {
-            				mGetCandidateFrom = 1;
-            				break;
-            			}
-            			if (!mExactMatchMode || mInputHiragana.equals(word.stroke)) {
-            				addCandidate(word);
-            				if (mConvResult.size() >= PREDICT_LIMIT) {
-            					mGetCandidateFrom = 1;
-            					break;
-            				}
-            			}
-            		}
-            	} else {
-            		mGetCandidateFrom = 1;
-            	}
+                if (mConvResult.size() < PREDICT_LIMIT) {
+                    /* get prefix matching words from the dictionaries */
+                    while (index >= mConvResult.size()) {
+                        if ((word = mDictionaryJP.getNextWord()) == null) {
+                            mGetCandidateFrom = 1;
+                            break;
+                        }
+                        if (!mExactMatchMode || mInputHiragana.equals(word.stroke)) {
+                            addCandidate(word);
+                            if (mConvResult.size() >= PREDICT_LIMIT) {
+                                mGetCandidateFrom = 1;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    mGetCandidateFrom = 1;
+                }
             }
         }
 
@@ -240,13 +240,13 @@ public class OpenWnnEngineJAJP implements WnnEngine {
         
         /* get candidates from Kana converter */
         if (mGetCandidateFrom == 2) {
-			List<WnnWord> addCandidateList
-			= mKanaConverter.createPseudoCandidateList(mInputHiragana, mInputRomaji, mKeyboardType);
-			
-			Iterator<WnnWord> it = addCandidateList.iterator();
-			while(it.hasNext()) {
-				addCandidate(it.next());
-			}
+            List<WnnWord> addCandidateList
+            = mKanaConverter.createPseudoCandidateList(mInputHiragana, mInputRomaji, mKeyboardType);
+            
+            Iterator<WnnWord> it = addCandidateList.iterator();
+            while(it.hasNext()) {
+                addCandidate(it.next());
+            }
 
             mGetCandidateFrom = 3;
         }
@@ -264,16 +264,16 @@ public class OpenWnnEngineJAJP implements WnnEngine {
      * the same one in the buffer and the length of the candidate
      * string is not longer than {@code MAX_OUTPUT_LENGTH}.
      *
-     * @param word		A word to be add
-     * @return			{@code true} if the word added; {@code false} if not.
+     * @param word      A word to be add
+     * @return          {@code true} if the word added; {@code false} if not.
      */
     private boolean addCandidate(WnnWord word) {
         if (word.candidate == null || mCandTable.containsKey(word.candidate)
-				|| word.candidate.length() > MAX_OUTPUT_LENGTH) {
-			return false;
-		}
+                || word.candidate.length() > MAX_OUTPUT_LENGTH) {
+            return false;
+        }
         if (mFilter != null && !mFilter.isAllowed(word)) {
-        	return false;
+            return false;
         }
         mCandTable.put(word.candidate, word);
         mConvResult.add(word);
@@ -296,20 +296,20 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Set dictionary type.
      *
-     * @param type		Type of dictionary
-     * @return			{@code true} if the dictionary is changed; {@code false} if not.
+     * @param type      Type of dictionary
+     * @return          {@code true} if the dictionary is changed; {@code false} if not.
      */
     public boolean setDictionary(int type) {
-    	mDictType = type;
-     	return true;
+        mDictType = type;
+        return true;
     }
 
     /**
      * Set the search key and the search mode from {@link ComposingText}.
      *
-     * @param text		Input text
-     * @param maxLen	Maximum length to convert
-     * @return			Length of the search key
+     * @param text      Input text
+     * @param maxLen    Maximum length to convert
+     * @return          Length of the search key
      */
     private int setSearchKey(ComposingText text, int maxLen) {
         String input = text.toString(ComposingText.LAYER1);
@@ -342,7 +342,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Set keyboard type.
      * 
-     * @param keyboardType		Type of keyboard
+     * @param keyboardType      Type of keyboard
      */
     public void setKeyboardType(int keyboardType) {
         mKeyboardType = keyboardType;
@@ -351,11 +351,11 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /**
      * Set the candidate filter
      * 
-     * @param filter	The candidate filter
+     * @param filter    The candidate filter
      */
     public void setFilter(CandidateFilter filter) {
-    	mFilter = filter;
-    	mClauseConverter.setFilter(filter);
+        mFilter = filter;
+        mClauseConverter.setFilter(filter);
     }
     
     /***********************************************************************
@@ -405,11 +405,11 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 
     /** @see jp.co.omronsoft.openwnn.WnnEngine#convert */
     public int convert(ComposingText text) {
-    	clearCandidates();
+        clearCandidates();
 
-    	if (text == null) {
-			return 0;
-		}
+        if (text == null) {
+            return 0;
+        }
 
         mDictionaryJP.setInUseState( true );
 
@@ -440,26 +440,26 @@ public class OpenWnnEngineJAJP implements WnnEngine {
             sentence = new WnnSentence(head, sentence);
         }
         if (sentence == null) {
-    		return 0;
-    	}
+            return 0;
+        }
 
-    	StrSegmentClause[] ss = new StrSegmentClause[sentence.elements.size()];
-    	int pos = 0;
-    	int idx = 0;
-    	Iterator<WnnClause> it = sentence.elements.iterator();
-    	while(it.hasNext()) {
-    		WnnClause clause = (WnnClause)it.next();
-    		int len = clause.stroke.length();
-    		ss[idx] = new StrSegmentClause(clause, pos, pos + len - 1);
-    		pos += len;
-    		idx += 1;
-    	}
-    	text.setCursor(ComposingText.LAYER2, text.size(ComposingText.LAYER2));
-    	text.replaceStrSegment(ComposingText.LAYER2, ss, 
+        StrSegmentClause[] ss = new StrSegmentClause[sentence.elements.size()];
+        int pos = 0;
+        int idx = 0;
+        Iterator<WnnClause> it = sentence.elements.iterator();
+        while(it.hasNext()) {
+            WnnClause clause = (WnnClause)it.next();
+            int len = clause.stroke.length();
+            ss[idx] = new StrSegmentClause(clause, pos, pos + len - 1);
+            pos += len;
+            idx += 1;
+        }
+        text.setCursor(ComposingText.LAYER2, text.size(ComposingText.LAYER2));
+        text.replaceStrSegment(ComposingText.LAYER2, ss, 
                                text.getCursor(ComposingText.LAYER2));
         mConvertSentence = sentence;
 
-    	return 0;
+        return 0;
     }
     
     /** @see jp.co.omronsoft.openwnn.WnnEngine#searchWords */
@@ -524,6 +524,9 @@ public class OpenWnnEngineJAJP implements WnnEngine {
     /** @see jp.co.omronsoft.openwnn.WnnEngine#addWord */
     public int addWord(WnnWord word) {
         mDictionaryJP.setInUseState( true );
+        if (word.partOfSpeech.right == 0) {
+            word.partOfSpeech = mDictionaryJP.getPOS(WnnDictionary.POS_TYPE_MEISI);
+        }
         mDictionaryJP.addWordToUserDictionary(word);
         mDictionaryJP.setInUseState( false );
         return 0;
@@ -580,7 +583,7 @@ public class OpenWnnEngineJAJP implements WnnEngine {
 
     /** @see jp.co.omronsoft.openwnn.WnnEngine#initializeDictionary */
     public boolean initializeDictionary(int dictionary, int type) {
-    	return initializeDictionary(dictionary);
+        return initializeDictionary(dictionary);
     }
     
     /** @see jp.co.omronsoft.openwnn.WnnEngine#getUserDictionaryWords */

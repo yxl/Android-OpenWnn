@@ -8,6 +8,8 @@ LOCAL_PACKAGE_NAME := OpenWnn
 LOCAL_JNI_SHARED_LIBRARIES := \
 	 libWnnEngDic libWnnJpnDic libwnndict
 
+LOCAL_AAPT_FLAGS += -c hdpi
+
 include $(BUILD_PACKAGE)
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
