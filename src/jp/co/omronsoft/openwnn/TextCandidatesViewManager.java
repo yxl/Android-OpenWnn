@@ -45,7 +45,6 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.AbsoluteLayout;
 import android.widget.ImageView;
 import android.graphics.drawable.Drawable;
@@ -369,7 +368,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
             LinearLayout lineView = new LinearLayout(mViewBodyScroll.getContext());
             lineView.setOrientation(LinearLayout.HORIZONTAL);
             LinearLayout.LayoutParams layoutParams = 
-                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                               ViewGroup.LayoutParams.WRAP_CONTENT);
             lineView.setLayoutParams(layoutParams);
             for (int j = 0; j < (width / getCandidateMinimumWidth()); j++) {

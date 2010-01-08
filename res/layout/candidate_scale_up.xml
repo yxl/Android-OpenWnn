@@ -19,12 +19,12 @@
    xmlns:android="http://schemas.android.com/apk/res/android"
    android:orientation="vertical"
    android:background="@color/candidate_back"
-   android:layout_width="fill_parent"
+   android:layout_width="match_parent"
    android:layout_height="wrap_content"
    >
   <TextView
      android:id="@+id/candidate_scale_up_text"
-     android:layout_width="fill_parent"
+     android:layout_width="match_parent"
      android:layout_height="wrap_content"
      android:background="@color/candidate_back"
      android:textSize="@dimen/candidate_delete_word_size"
@@ -33,26 +33,26 @@
      />
   <LinearLayout 
      android:orientation="horizontal"
-     android:layout_width="fill_parent" 
+     android:layout_width="match_parent" 
      android:layout_height="wrap_content"
      android:gravity="center"
      >
     <jp.co.omronsoft.openwnn.CandidateViewButton
        android:id="@+id/candidate_select"
-       android:layout_height="fill_parent"
+       android:layout_height="match_parent"
        android:layout_width="wrap_content" 
        android:text="@string/button_candidate_select"
        />
     <jp.co.omronsoft.openwnn.CandidateViewButton
        android:id="@+id/candidate_delete"
-       android:layout_height="fill_parent"
+       android:layout_height="match_parent"
        android:layout_width="wrap_content" 
        android:text="@string/button_candidate_delete"
        android:visibility="gone"
        />
     <jp.co.omronsoft.openwnn.CandidateViewButton
        android:id="@+id/candidate_cancel"
-       android:layout_height="fill_parent"
+       android:layout_height="match_parent"
        android:layout_width="wrap_content" 
        android:text="@string/button_candidate_cancel"
        />

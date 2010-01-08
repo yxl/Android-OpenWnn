@@ -18,12 +18,12 @@
 <FrameLayout
    xmlns:android="http://schemas.android.com/apk/res/android"
    android:orientation="vertical"
-   android:layout_width="fill_parent"
+   android:layout_width="match_parent"
    android:layout_height="wrap_content"
    >
   <ScrollView
      android:id="@+id/candview_scroll"
-     android:layout_width="fill_parent"
+     android:layout_width="match_parent"
      android:layout_height="wrap_content"
      android:fadingEdgeLength="0dip"
      android:scrollbars="vertical"
@@ -31,25 +31,25 @@
     <LinearLayout 
        android:id="@+id/candview_base"
        android:orientation="vertical"
-       android:layout_width="fill_parent" 
+       android:layout_width="match_parent" 
        android:layout_height="wrap_content"
        android:background="@color/candidate_back"
        >
       <!--View
          android:layout_height="wrap_content" 
-         android:layout_width="fill_parent" 
+         android:layout_width="match_parent" 
          android:background="@drawable/candidate_top"
          /-->
       <LinearLayout 
          android:id="@+id/candidates_1st_view"
          android:orientation="vertical"
-         android:layout_width="fill_parent" 
+         android:layout_width="match_parent" 
          android:layout_height="wrap_content"
          android:background="@color/candidate_back"
          />
       <AbsoluteLayout
          android:id="@+id/candidates_2nd_view"
-         android:layout_width="fill_parent" 
+         android:layout_width="match_parent" 
          android:layout_height="wrap_content"
          android:background="@color/candidate_back"
          />
@@ -58,7 +58,7 @@
 
   <LinearLayout
      android:id="@+id/read_more"
-     android:layout_width="fill_parent"
+     android:layout_width="match_parent"
      android:layout_height="wrap_content" 
      android:fadingEdgeLength="0dip"
      android:orientation="vertical"

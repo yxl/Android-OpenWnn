@@ -675,7 +675,7 @@ public abstract class UserDictionaryToolsList extends Activity
 
                 row.addView(stroke);
                 row.addView(candidate);
-                mTableLayout.addView(row, tableCreateParam(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                mTableLayout.addView(row, tableCreateParam(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             }
         }
 
