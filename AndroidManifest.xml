@@ -16,7 +16,10 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	  package="jp.co.omronsoft.openwnn">
-  <uses-permission xmlns:android="http://schemas.android.com/apk/res/android" android:name="android.permission.VIBRATE"/>
+
+    <original-package android:name="jp.co.omronsoft.openwnn" />
+
+    <uses-permission xmlns:android="http://schemas.android.com/apk/res/android" android:name="android.permission.VIBRATE"/>
     <application android:label="OpenWnn">
 
         <service android:name="OpenWnnJAJP" android:label="Japanese IME"
