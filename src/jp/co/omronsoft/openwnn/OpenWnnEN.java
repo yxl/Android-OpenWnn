@@ -1017,9 +1017,9 @@ public class OpenWnnEN extends OpenWnn {
      */
     private void checkTutorial(String privateImeOptions) {
         if (privateImeOptions == null) return;
-        if (privateImeOptions.equals("com.android.setupwizard:ShowTutorial")) {
+        if (privateImeOptions.equals("com.google.android.setupwizard:ShowTutorial")) {
             if ((mTutorial == null) && mEnableTutorial) startTutorial();
-        } else if (privateImeOptions.equals("com.android.setupwizard:HideTutorial")) {
+        } else if (privateImeOptions.equals("com.google.android.setupwizard:HideTutorial")) {
             if (mTutorial != null) {
                 if (mTutorial.close()) {
                     mTutorial = null;
