@@ -142,7 +142,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /** Delay time(msec.) to start prediction after key input when the candidates view is shown. */
     private static final int PREDICTION_DELAY_MS_SHOWING_CANDIDATE = 200;
-
+    
 
     /** Convert engine's state */
     private class EngineState {
@@ -211,7 +211,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is consecutive clause(RENBUNSETSU) conversion.
-         *
+         * 
          * @return {@code true} if current type of conversion is consecutive clause conversion.
          */
         public boolean isRenbun() {
@@ -220,7 +220,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is EISU-KANA conversion.
-         *
+         * 
          * @return {@code true} if current type of conversion is EISU-KANA conversion.
          */
         public boolean isEisuKana() {
@@ -229,7 +229,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Returns whether current type of conversion is no conversion.
-         *
+         * 
          * @return {@code true} if no conversion is executed currently.
          */
         public boolean isConvertState() {
@@ -238,7 +238,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Check whether or not the mode is "symbol list".
-         *
+         * 
          * @return {@code true} if the mode is "symbol list".
          */
         public boolean isSymbolList() {
@@ -247,7 +247,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /**
          * Check whether or not the current language is English.
-         *
+         * 
          * @return {@code true} if the current language is English.
          */
         public boolean isEnglish() {
@@ -382,7 +382,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /** List of words in the user dictionary */
     private WnnWord[] mUserDictionaryWords = null;
-
+    
     /** Tutorial */
     private TutorialJAJP mTutorial;
 
@@ -409,7 +409,7 @@ public class OpenWnnJAJP extends OpenWnn {
                             DefaultSoftKeyboardJAJP inputManager = ((DefaultSoftKeyboardJAJP) mInputViewManager);
                             View v = inputManager.getKeyboardView();
                             mTutorial = new TutorialJAJP(OpenWnnJAJP.this, v, inputManager);
-
+                                                         
                             mTutorial.start();
                         } else {
                             /* Try again soon if the view is not yet showing */
@@ -493,14 +493,14 @@ public class OpenWnnJAJP extends OpenWnn {
 
             mPrevCommitCount = 0;
             clearCommitInfo();
-
+            
             ((DefaultSoftKeyboard) mInputViewManager).resetCurrentKeyboard();
-
+            
             super.onStartInputView(attribute, restarting);
-
+            
             mCandidatesViewManager.clearCandidates();
             mStatus = STATUS_INIT;
-            mExactMatchMode = false;
+            mExactMatchMode = false;       
 
             /* hardware keyboard support */
             mHardShift = 0;
@@ -588,7 +588,7 @@ public class OpenWnnJAJP extends OpenWnn {
     @Override public void onConfigurationChanged(Configuration newConfig) {
         try {
             super.onConfigurationChanged(newConfig);
-
+            
             if (mInputConnection != null) {
                 if (super.isInputViewShown()) {
                     updateViewStatus(mTargetLayer, true, true);
@@ -619,11 +619,11 @@ public class OpenWnnJAJP extends OpenWnn {
 
         /* handling events which are valid when InputConnection is not active. */
         switch (ev.code) {
-
+        
         case OpenWnnEvent.KEYUP:
             onKeyUpEvent(ev.keyEvent);
             return true;
-
+            
         case OpenWnnEvent.INITIALIZE_LEARNING_DICTIONARY:
             mConverterEN.initializeDictionary(WnnEngine.DICTIONARY_TYPE_LEARN);
             mConverterJAJP.initializeDictionary(WnnEngine.DICTIONARY_TYPE_LEARN);
@@ -722,7 +722,7 @@ public class OpenWnnJAJP extends OpenWnn {
             /* return if InputConnection is not active */
             return false;
         }
-
+        
         if (!((ev.code == OpenWnnEvent.COMMIT_COMPOSING_TEXT)
               || ((keyEvent != null)
                   && ((keyCode == KeyEvent.KEYCODE_SHIFT_LEFT)
@@ -732,8 +732,8 @@ public class OpenWnnJAJP extends OpenWnn {
                       || (keyEvent.isAltPressed() && (keyCode == KeyEvent.KEYCODE_SPACE)))))) {
 
             clearCommitInfo();
-        }
-
+        }       
+                
         /* change back the dictionary if necessary */
         if (!((ev.code == OpenWnnEvent.SELECT_CANDIDATE)
               || (ev.code == OpenWnnEvent.LIST_CANDIDATES_NORMAL)
@@ -830,7 +830,7 @@ public class OpenWnnJAJP extends OpenWnn {
                     return true;
                 }
                 break;
-
+            
             case KeyEvent.KEYCODE_ALT_LEFT:
             case KeyEvent.KEYCODE_ALT_RIGHT:
                 if (keyEvent.getRepeatCount() == 0) {
@@ -884,7 +884,7 @@ public class OpenWnnJAJP extends OpenWnn {
             }
             break;
 
-        case OpenWnnEvent.CONVERT:
+        case OpenWnnEvent.CONVERT:           
             startConvert(EngineState.CONVERT_TYPE_RENBUN);
             break;
 
@@ -1009,7 +1009,7 @@ public class OpenWnnJAJP extends OpenWnn {
                     updateMetaKeyStateDisplay();
                 }
             }
-
+            
             if (str == null) {
                 return true;
             }
@@ -1182,7 +1182,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Handle the space key event from the Hardware keyboard.
-     *
+     * 
      * @param ev  The space key event
      */
     private void processHardwareKeyboardSpaceKey(KeyEvent ev) {
@@ -1250,7 +1250,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 Matcher m = mEnglishAutoCommitDelimiter.matcher(str.string);
                 if (m.matches()) {
                     commitText(true);
-
+                    
                     commit = true;
                 }
                 appendStrSegment(str);
@@ -1258,7 +1258,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 appendStrSegment(str);
                 mPreConverter.convert(mComposingText);
             }
-
+            
             if (commit) {
                 commitText(true);
             } else {
@@ -1388,12 +1388,12 @@ public class OpenWnnJAJP extends OpenWnn {
         case KeyEvent.KEYCODE_MENU:
             ret = false;
             break;
-
+            
         case KeyEvent.KEYCODE_CALL:
         case KeyEvent.KEYCODE_VOLUME_DOWN:
         case KeyEvent.KEYCODE_VOLUME_UP:
             return false;
-
+            
         case KeyEvent.KEYCODE_DPAD_CENTER:
             ret = true;
             break;
@@ -1407,7 +1407,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 ret = true;
             }
             break;
-
+        
         default:
             return true;
         }
@@ -1491,7 +1491,7 @@ public class OpenWnnJAJP extends OpenWnn {
                     /* text color in the highlight */
                     mDisplayText.setSpan(SPAN_TEXTCOLOR, 0,
                                          mComposingText.toString(layer).length(),
-                                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); 
                 }
             }
 
@@ -1501,7 +1501,7 @@ public class OpenWnnJAJP extends OpenWnn {
             int displayCursor = mComposingText.toString(layer, 0, cursor - 1).length();
             if (FIX_CURSOR_TEXT_END) {
                 displayCursor = (cursor == 0) ?  0 : 1;
-            }
+            } 
             /* update the composing text on the EditView */
             if ((mDisplayText.length() != 0) || !mHasStartedTextSelection) {
                 mInputConnection.setComposingText(mDisplayText, displayCursor);
@@ -1520,7 +1520,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 /* update the candidates view */
                 if ((mComposingText.size(ComposingText.LAYER1) != 0)
                     && !mEngineState.isConvertState()) {
-
+                    
                     mHandler.removeMessages(MSG_PREDICTION);
                     if (mCandidatesViewManager.getCurrentView().isShown()) {
                         mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_PREDICTION),
@@ -1587,7 +1587,7 @@ public class OpenWnnJAJP extends OpenWnn {
                     if (mComposingText.size(ComposingText.LAYER1) != 0) {
                         String stroke = mComposingText.toString(ComposingText.LAYER1, 0, mComposingText.getCursor(layer) - 1);
                         WnnWord word = new WnnWord(tmp, stroke);
-
+                                                   
                         learnWord(word);
                     }
                 }
@@ -1613,7 +1613,7 @@ public class OpenWnnJAJP extends OpenWnn {
             commitText(false);
         }
     }
-
+    
     /**
      * Commit all uncommitted words.
      */
@@ -1667,7 +1667,7 @@ public class OpenWnnJAJP extends OpenWnn {
         mInputConnection.commitText(string, (FIX_CURSOR_TEXT_END ? 1 : string.length()));
         mPrevCommitText.append(string);
         mPrevCommitCount++;
-
+        
         int cursor = mComposingText.getCursor(layer);
         if (cursor > 0) {
             mComposingText.deleteStrSegment(layer, 0, mComposingText.getCursor(layer) - 1);
@@ -1810,7 +1810,7 @@ public class OpenWnnJAJP extends OpenWnn {
         EngineState myState = mEngineState;
 
         /* language */
-        if ((state.dictionarySet != EngineState.INVALID)
+        if ((state.dictionarySet != EngineState.INVALID) 
             && (myState.dictionarySet != state.dictionarySet)) {
 
             switch (state.dictionarySet) {
@@ -1888,7 +1888,7 @@ public class OpenWnnJAJP extends OpenWnn {
         }
 
         /* preference dictionary */
-        if ((state.preferenceDictionary != EngineState.INVALID)
+        if ((state.preferenceDictionary != EngineState.INVALID) 
             && (myState.preferenceDictionary != state.preferenceDictionary)) {
 
             myState.preferenceDictionary = state.preferenceDictionary;
@@ -1902,7 +1902,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 mConverterJAJP.setKeyboardType(OpenWnnEngineJAJP.KEYBOARD_KEYPAD12);
                 mConverterEN.setDictionary(OpenWnnEngineEN.DICT_DEFAULT);
                 break;
-
+                
             case EngineState.KEYBOARD_QWERTY:
             default:
                 mConverterJAJP.setKeyboardType(OpenWnnEngineJAJP.KEYBOARD_QWERTY);
@@ -1919,7 +1919,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Set dictionaries to be used.
-     *
+     * 
      * @param mode  Definition of dictionaries
      */
     private void setDictionary(int mode) {
@@ -1956,7 +1956,7 @@ public class OpenWnnJAJP extends OpenWnn {
         default:
             break;
         }
-
+ 
         switch (mode) {
         case OpenWnnEngineJAJP.DIC_LANG_JP:
         case OpenWnnEngineJAJP.DIC_LANG_EN:
@@ -2008,7 +2008,7 @@ public class OpenWnnJAJP extends OpenWnn {
                 if (Character.isLowerCase(top)) {
                     str = Character.toString(Character.toUpperCase(top));
                 }
-            }
+            } 
             appendStrSegment(new StrSegment(str));
         }
 
@@ -2083,7 +2083,7 @@ public class OpenWnnJAJP extends OpenWnn {
                     commit = true;
                 }
             }
-
+        
             if (commit) {
                 commitText(true);
 
@@ -2126,7 +2126,7 @@ public class OpenWnnJAJP extends OpenWnn {
                                                  mComposingText.size(ComposingText.LAYER1));
                     }
                 }
-            }
+            } 
 
             if (convertType == EngineState.CONVERT_TYPE_RENBUN) {
                 /* clears variables for the prediction */
@@ -2226,8 +2226,8 @@ public class OpenWnnJAJP extends OpenWnn {
     }
 
     /**
-     * Memory a selected word.
-     *
+     * Memory a selected word. 
+     * 
      * @param word  A selected word
      */
     private void learnWord(WnnWord word) {
@@ -2238,7 +2238,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Memory a clause which is generated by consecutive clause conversion.
-     *
+     * 
      * @param index  Index of a clause
      */
     private void learnWord(int index) {
@@ -2257,7 +2257,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Fits an editor info.
-     *
+     * 
      * @param preferences  The preference data.
      * @param info              The editor info.
      */
@@ -2297,13 +2297,13 @@ public class OpenWnnJAJP extends OpenWnn {
             case EditorInfo.TYPE_TEXT_VARIATION_PERSON_NAME:
                 preferenceDictionary = EngineState.PREFERENCE_DICTIONARY_PERSON_NAME;
                 break;
-
+                
             case EditorInfo.TYPE_TEXT_VARIATION_PASSWORD:
             case EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD:
                 mEnableLearning = false;
                 mEnableConverter = false;
                 mEnableSymbolListNonHalf = false;
-                mFilter.filter = CandidateFilter.FILTER_NON_ASCII;
+                mFilter.filter = CandidateFilter.FILTER_NON_ASCII; 
                 mDisableAutoCommitEnglishMask |= AUTO_COMMIT_ENGLISH_OFF;
                 break;
 
@@ -2355,7 +2355,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
         checkTutorial(info.privateImeOptions);
     }
-
+    
     /**
      * Append a {@link StrSegment} to the composing text
      * <br>
@@ -2366,7 +2366,7 @@ public class OpenWnnJAJP extends OpenWnn {
      */
     private void appendStrSegment(StrSegment str) {
         ComposingText composingText = mComposingText;
-
+        
         if (composingText.size(ComposingText.LAYER1) >= LIMIT_INPUT_NUMBER) {
             return; /* do nothing */
         }
@@ -2391,7 +2391,7 @@ public class OpenWnnJAJP extends OpenWnn {
             initializeScreen();
         }
     }
-
+    
     /**
      * Initialize the screen displayed by IME
      */
@@ -2400,7 +2400,7 @@ public class OpenWnnJAJP extends OpenWnn {
             mInputConnection.setComposingText("", 0);
         }
         mComposingText.clear();
-        mExactMatchMode = false;
+        mExactMatchMode = false;       
         mStatus = STATUS_INIT;
         mHandler.removeMessages(MSG_PREDICTION);
         View candidateView = mCandidatesViewManager.getCurrentView();
@@ -2413,7 +2413,7 @@ public class OpenWnnJAJP extends OpenWnn {
         state.temporaryMode = EngineState.TEMPORARY_DICTIONARY_MODE_NONE;
         updateEngineState(state);
     }
-
+    
     /**
      * Whether the tail of the string is alphabet or not.
      *
@@ -2435,7 +2435,7 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Check whether or not the converter is active.
-     *
+     * 
      * @return {@code true} if the converter is active.
      */
     private boolean isEnableL2Converter() {
@@ -2486,7 +2486,7 @@ public class OpenWnnJAJP extends OpenWnn {
         mCommitStartCursor = mComposingStartCursor;
         mPrevCommitText.delete(0, mPrevCommitText.length());
     }
-
+    
     /**
      * Clear the commit text's info.
      * @return {@code true}:cleared, {@code false}:has already cleared.
@@ -2519,14 +2519,14 @@ public class OpenWnnJAJP extends OpenWnn {
 
     /**
      * Check and start the tutorial if it is the tutorial mode.
-     *
+     * 
      * @param privateImeOptions IME's options
      */
     private void checkTutorial(String privateImeOptions) {
         if (privateImeOptions == null) return;
-        if (privateImeOptions.equals("com.google.android.setupwizard:ShowTutorial")) {
+        if (privateImeOptions.equals("com.android.setupwizard:ShowTutorial")) {
             if ((mTutorial == null) && mEnableTutorial) startTutorial();
-        } else if (privateImeOptions.equals("com.google.android.setupwizard:HideTutorial")) {
+        } else if (privateImeOptions.equals("com.android.setupwizard:HideTutorial")) {
             if (mTutorial != null) {
                 if (mTutorial.close()) {
                     mTutorial = null;
