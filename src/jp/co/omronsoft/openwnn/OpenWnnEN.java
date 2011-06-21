@@ -45,7 +45,7 @@ import android.view.inputmethod.EditorInfo;
 public class OpenWnnEN extends OpenWnn {
     /** A space character */
     private static final char[] SPACE = {' '};
-    
+
     /** Character style of underline */
     private static final CharacterStyle SPAN_UNDERLINE   = new UnderlineSpan();
     /** Highlight color style for the selected string  */
@@ -83,7 +83,7 @@ public class OpenWnnEN extends OpenWnn {
     private boolean mOptSpellCorrection;
     /** Whether learning is enabled */
     private boolean mOptLearning;
-    
+
     /** SHIFT key state */
     private int mHardShift;
     /** SHIFT key state (pressing) */
@@ -102,10 +102,10 @@ public class OpenWnnEN extends OpenWnn {
     private static final int[] mAltKeyToggle = {0, MetaKeyKeyListener.META_ALT_ON, MetaKeyKeyListener.META_ALT_LOCKED};
     /** Auto caps mode */
     private boolean mAutoCaps = false;
-    
+
     /** Whether dismissing the keyboard when the enter key is pressed */
     private boolean mEnableAutoHideKeyboard = true;
-    
+
     /** Tutorial */
     private TutorialEN mTutorial;
 
@@ -126,7 +126,7 @@ public class OpenWnnEN extends OpenWnn {
 
     /** Delay time(msec.) to start prediction after key input when the candidates view is shown. */
     private static final int PREDICTION_DELAY_MS_SHOWING_CANDIDATE = 200;
-    
+
     /** {@code Handler} for drawing candidates/displaying tutorial */
     Handler mHandler = new Handler() {
             @Override public void handleMessage(Message msg) {
@@ -140,7 +140,7 @@ public class OpenWnnEN extends OpenWnn {
                             DefaultSoftKeyboardEN inputManager = ((DefaultSoftKeyboardEN) mInputViewManager);
                             View v = inputManager.getKeyboardView();
                             mTutorial = new TutorialEN(OpenWnnEN.this, v, inputManager);
-                                                         
+
                             mTutorial.start();
                         } else {
                             /* Try again soon if the view is not yet showing */
@@ -193,7 +193,7 @@ public class OpenWnnEN extends OpenWnn {
      * Get the instance of this service.
      * <br>
      * Before using this method, the constructor of this service must be invoked.
-     * 
+     *
      * @return      The instance of this object
      */
     public static OpenWnnEN getInstance() {
@@ -254,7 +254,7 @@ public class OpenWnnEN extends OpenWnn {
 
     /**
      * Set the mode of the symbol list.
-     * 
+     *
      * @param mode      {@code SymbolList.SYMBOL_ENGLISH} or {@code null}.
      */
     private void setSymbolMode(String mode) {
@@ -285,7 +285,7 @@ public class OpenWnnEN extends OpenWnn {
             mSymbolList = new SymbolList(this, SymbolList.LANG_EN);
         }
     }
-    
+
     /** @see jp.co.omronsoft.openwnn.OpenWnn#onCreateInputView */
     @Override public View onCreateInputView() {
         int hiddenState = getResources().getConfiguration().hardKeyboardHidden;
@@ -316,7 +316,7 @@ public class OpenWnnEN extends OpenWnn {
 
         /* set TextCandidatesViewManager's option */
         ((TextCandidatesViewManager)mCandidatesViewManager).setAutoHide(true);
-        
+
         /* display status icon */
         showStatusIcon(R.drawable.immodeic_half_alphabet);
 
@@ -325,7 +325,7 @@ public class OpenWnnEN extends OpenWnn {
         }
         /* initialize the engine's state */
         fitInputType(pref, attribute);
-        
+
         ((DefaultSoftKeyboard) mInputViewManager).resetCurrentKeyboard();
     }
 
@@ -391,11 +391,11 @@ public class OpenWnnEN extends OpenWnn {
     @Override synchronized public boolean onEvent(OpenWnnEvent ev) {
         /* handling events which are valid when InputConnection is not active. */
         switch (ev.code) {
-        
+
         case OpenWnnEvent.KEYUP:
             onKeyUpEvent(ev.keyEvent);
             return true;
-            
+
         case OpenWnnEvent.INITIALIZE_LEARNING_DICTIONARY:
             return mConverterEN.initializeDictionary( WnnEngine.DICTIONARY_TYPE_LEARN );
 
@@ -430,7 +430,7 @@ public class OpenWnnEN extends OpenWnn {
 
         case OpenWnnEvent.CHANGE_MODE:
             return false;
-            
+
         case OpenWnnEvent.UPDATE_CANDIDATE:
             updateComposingText(ComposingText.LAYER1);
             return true;
@@ -477,7 +477,7 @@ public class OpenWnnEN extends OpenWnn {
              ((TextCandidatesViewManager)mCandidatesViewManager).setAutoHide(false);
             EditorInfo edit = getCurrentInputEditorInfo();
             if( edit.inputType == EditorInfo.TYPE_CLASS_PHONE){
-                commitText(new String(ev.chars));           
+                commitText(new String(ev.chars));
             }else{
                 setSymbolMode(null);
                 insertCharToComposingText(ev.chars);
@@ -536,7 +536,7 @@ public class OpenWnnEN extends OpenWnn {
             if (mSymbolMode) {
                 commitText(ev.word, false);
             } else {
-                if (mWordSeparators.contains(ev.word.candidate) && 
+                if (mWordSeparators.contains(ev.word.candidate) &&
                     mPreviousEventCode == OpenWnnEvent.SELECT_CANDIDATE) {
                     mInputConnection.deleteSurroundingText(1, 0);
                 }
@@ -608,7 +608,7 @@ public class OpenWnnEN extends OpenWnn {
                     return true;
                 }
             }
-            
+
             ((TextCandidatesViewManager)mCandidatesViewManager).setAutoHide(false);
 
             /* get the key character */
@@ -659,11 +659,11 @@ public class OpenWnnEN extends OpenWnn {
                 commitText(1);
                 mComposingText.clear();
                 setSymbolMode(SymbolList.SYMBOL_ENGLISH);
-                updateComposingText(1);     
+                updateComposingText(1);
                 mHardAlt = 0;
                 updateMetaKeyStateDisplay();
             } else {
-                insertCharToComposingText(SPACE);   
+                insertCharToComposingText(SPACE);
             }
             return true;
         } else if (key == KeyEvent.KEYCODE_SYM) {
@@ -671,10 +671,10 @@ public class OpenWnnEN extends OpenWnn {
             commitText(1);
             mComposingText.clear();
             setSymbolMode(SymbolList.SYMBOL_ENGLISH);
-            updateComposingText(1);     
+            updateComposingText(1);
             mHardAlt = 0;
             updateMetaKeyStateDisplay();
-        } 
+        }
 
 
         /* Functional key */
@@ -823,17 +823,17 @@ public class OpenWnnEN extends OpenWnn {
                     mDisplayText.setSpan(SPAN_REMAIN_BGCOLOR_HL, cursor, disp.length(),
                             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                     mDisplayText.setSpan(SPAN_TEXTCOLOR, 0, disp.length(),
-                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE); 
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
-                
+
                 disp.setSpan(SPAN_UNDERLINE, 0, disp.length(),
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
-            
+
             int displayCursor = cursor;
             if (FIX_CURSOR_TEXT_END) {
                 displayCursor = (cursor == 0) ?  0 : 1;
-            } 
+            }
             /* update the composing text on the EditView */
             mInputConnection.setComposingText(disp, displayCursor);
         }
@@ -872,7 +872,7 @@ public class OpenWnnEN extends OpenWnn {
 
         if (withSpace) {
             commitText(" ");
-        }       
+        }
     }
 
     /**
@@ -953,7 +953,7 @@ public class OpenWnnEN extends OpenWnn {
     }
     /**
      * Fits an editor info.
-     * 
+     *
      * @param preferences  The preference data.
      * @param info          The editor info.
      */
@@ -964,7 +964,7 @@ public class OpenWnnEN extends OpenWnn {
         }
 
         mEnableAutoHideKeyboard = false;
-        
+
         /* set prediction & spell correction mode */
         mOptPrediction      = preference.getBoolean("opt_en_prediction", true);
         mOptSpellCorrection = preference.getBoolean("opt_en_spell_correction", true);
@@ -1012,14 +1012,14 @@ public class OpenWnnEN extends OpenWnn {
 
     /**
      * Check and start the tutorial if it is the tutorial mode.
-     * 
+     *
      * @param privateImeOptions IME's options
      */
     private void checkTutorial(String privateImeOptions) {
         if (privateImeOptions == null) return;
-        if (privateImeOptions.equals("com.android.setupwizard:ShowTutorial")) {
+        if (privateImeOptions.equals("com.google.android.setupwizard:ShowTutorial")) {
             if ((mTutorial == null) && mEnableTutorial) startTutorial();
-        } else if (privateImeOptions.equals("com.android.setupwizard:HideTutorial")) {
+        } else if (privateImeOptions.equals("com.google.android.setupwizard:HideTutorial")) {
             if (mTutorial != null) {
                 if (mTutorial.close()) {
                     mTutorial = null;
