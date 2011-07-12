@@ -19,12 +19,7 @@ LOCAL_SRC_FILES := \
 	engine/ndcommon.c \
 	engine/nj_str.c
 
-ifeq ($(TARGET_OS)-$(TARGET_SIMULATOR),linux-true)
-LOCAL_LDLIBS += -ldl
-endif
-ifneq ($(TARGET_SIMULATOR),true)
 LOCAL_SHARED_LIBRARIES += libdl
-endif
 
 LOCAL_STATIC_LIBRARIES := 
 
