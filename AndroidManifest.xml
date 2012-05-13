@@ -15,14 +15,14 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	  package="jp.co.omronsoft.openwnn">
+	  package="name.yxl.openwnn">
 
-    <original-package android:name="jp.co.omronsoft.openwnn" />
+    <original-package android:name="name.yxl.openwnn" />
 
     <uses-permission xmlns:android="http://schemas.android.com/apk/res/android" android:name="android.permission.VIBRATE"/>
     <application android:label="OpenWnn">
 
-        <service android:name="OpenWnnJAJP" android:label="Japanese IME"
+        <service android:name="OpenWnnJAJP" android:label="Improved Japanese IME"
 		 android:permission="android.permission.BIND_INPUT_METHOD"
 		 android:id="@+id/openwnn_japanese">
             <intent-filter>
@@ -38,13 +38,13 @@
             </intent-filter>
         </activity>
 
-	<activity android:name="jp.co.omronsoft.openwnn.JAJP.UserDictionaryToolsListJAJP" /> 
+	<activity android:name="name.yxl.openwnn.JAJP.UserDictionaryToolsListJAJP" /> 
 
-	<activity android:name="jp.co.omronsoft.openwnn.JAJP.UserDictionaryToolsEditJAJP" android:label="@string/user_dictionary_edit_words" /> 
+	<activity android:name="name.yxl.openwnn.JAJP.UserDictionaryToolsEditJAJP" android:label="@string/user_dictionary_edit_words" /> 
 
-	<activity android:name="jp.co.omronsoft.openwnn.EN.UserDictionaryToolsListEN" /> 
+	<activity android:name="name.yxl.openwnn.EN.UserDictionaryToolsListEN" /> 
 
-	<activity android:name="jp.co.omronsoft.openwnn.EN.UserDictionaryToolsEditEN" android:label="@string/user_dictionary_edit_words" /> 
+	<activity android:name="name.yxl.openwnn.EN.UserDictionaryToolsEditEN" android:label="@string/user_dictionary_edit_words" /> 
 
     </application>
 

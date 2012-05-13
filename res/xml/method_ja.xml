@@ -18,5 +18,5 @@
 <!-- for the Search Manager. -->
 
 <input-method xmlns:android="http://schemas.android.com/apk/res/android"
-              android:settingsActivity="jp.co.omronsoft.openwnn.OpenWnnControlPanelJAJP"
+              android:settingsActivity="name.yxl.openwnn.OpenWnnControlPanelJAJP"
 />

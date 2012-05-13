@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni.h"
+#include "name_yxl_openwnn_OpenWnnDictionaryImplJni.h"
 
 #include "nj_lib.h"
 #include "nj_err.h"
@@ -198,11 +198,11 @@ static int convertNjCharToString( JNIEnv* env, jstring* dstJ, NJ_CHAR* src, int 
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    createWnnWork
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_createWnnWork
+JNIEXPORT jlong JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_createWnnWork
   (JNIEnv *env, jobject obj, jstring dicLibPathJ)
 {
 	NJ_JNIWORK*		work;
@@ -277,11 +277,11 @@ JNIEXPORT jlong JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_cr
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    freeWnnWork
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_freeWnnWork
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_freeWnnWork
   (JNIEnv *env, jobject obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -303,11 +303,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_fre
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    clearDictionaryParameters
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_clearDictionaryParameters
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_clearDictionaryParameters
   (JNIEnv *env, jobject obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -333,11 +333,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_cle
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    setDictionaryParameter
  * Signature: (JIII)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_setDictionaryParameter
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_setDictionaryParameter
   (JNIEnv *env, jobject obj, jlong wnnWork, jint index, jint base, jint high)
 {
 	NJ_JNIWORK*	work;
@@ -377,20 +377,20 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_set
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    searchWord
  * Signature: (JIILjava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_searchWord
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_searchWord
   (JNIEnv *env, jobject obj, jlong wnnWork, jint operation, jint order, jstring keyString)
 {
 	NJ_JNIWORK*	work;
 
-	if( !( operation == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_SEARCH_EXACT ||
-           operation == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_SEARCH_PREFIX ||
-           operation == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_SEARCH_LINK ) ||
-		!( order == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_ORDER_BY_FREQUENCY ||
-           order == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_ORDER_BY_KEY ) ||
+	if( !( operation == name_yxl_openwnn_OpenWnnDictionaryImplJni_SEARCH_EXACT ||
+           operation == name_yxl_openwnn_OpenWnnDictionaryImplJni_SEARCH_PREFIX ||
+           operation == name_yxl_openwnn_OpenWnnDictionaryImplJni_SEARCH_LINK ) ||
+		!( order == name_yxl_openwnn_OpenWnnDictionaryImplJni_ORDER_BY_FREQUENCY ||
+           order == name_yxl_openwnn_OpenWnnDictionaryImplJni_ORDER_BY_KEY ) ||
 		   keyString == NULL ) {
 		/* If a invalid parameter was specified, return an error code */
 		return NJ_SET_ERR_VAL(NJ_FUNC_JNI_SEARCH_WORD, NJ_ERR_INVALID_PARAM);
@@ -417,7 +417,7 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_sea
    			work->cursor.cond.charset	= &( work->approxSet );
 
             /* If the link search feature is specified, set the predict search information to structure */
-            if( operation == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_SEARCH_LINK ) {
+            if( operation == name_yxl_openwnn_OpenWnnDictionaryImplJni_SEARCH_LINK ) {
                 work->cursor.cond.yomi  = work->previousStroke;
                 work->cursor.cond.kanji = work->previousCandidate;
             }
@@ -445,11 +445,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_sea
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getNextWord
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getNextWord
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getNextWord
   (JNIEnv *env, jclass obj, jlong wnnWork, jint length)
 {
 	NJ_JNIWORK*	work;
@@ -489,11 +489,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getStroke
  * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getStroke
+JNIEXPORT jstring JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getStroke
   (JNIEnv *env, jobject obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -522,11 +522,11 @@ JNIEXPORT jstring JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getCandidate
  * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getCandidate
+JNIEXPORT jstring JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getCandidate
   (JNIEnv *env, jobject obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -555,11 +555,11 @@ JNIEXPORT jstring JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getFrequency
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getFrequency
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getFrequency
   (JNIEnv *env, jobject obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -579,11 +579,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    clearApproxPatterns
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_clearApproxPatterns
+JNIEXPORT void JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_clearApproxPatterns
   (JNIEnv *env, jobject obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -608,11 +608,11 @@ JNIEXPORT void JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_cle
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    setApproxPattern
  * Signature: (JLjava/lang/String;Ljava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_setApproxPattern__JLjava_lang_String_2Ljava_lang_String_2
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_setApproxPattern__JLjava_lang_String_2Ljava_lang_String_2
   (JNIEnv *env, jobject obj, jlong wnnWork, jstring srcJ, jstring dstJ)
 {
 	NJ_JNIWORK*	work;
@@ -660,20 +660,20 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_set
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    setApproxPattern
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_setApproxPattern__JI
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_setApproxPattern__JI
   (JNIEnv *env, jclass obj, jlong wnnWork, jint approxPattern)
 {
 	NJ_JNIWORK	*work;
 
-	if( !( approxPattern == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_TOUPPER ||
-		   approxPattern == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_TOLOWER ||
-		   approxPattern == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_QWERTY_NEAR ||
-		   approxPattern == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_QWERTY_NEAR_UPPER ||
-		   approxPattern == jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_JAJP_12KEY_NORMAL ) ) {
+	if( !( approxPattern == name_yxl_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_TOUPPER ||
+		   approxPattern == name_yxl_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_TOLOWER ||
+		   approxPattern == name_yxl_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_QWERTY_NEAR ||
+		   approxPattern == name_yxl_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_EN_QWERTY_NEAR_UPPER ||
+		   approxPattern == name_yxl_openwnn_OpenWnnDictionaryImplJni_APPROX_PATTERN_JAJP_12KEY_NORMAL ) ) {
 		/* If a invalid parameter was specified, return an error code */
 		return NJ_SET_ERR_VAL(NJ_FUNC_JNI_SET_APPROX_PATTERN, NJ_ERR_INVALID_PARAM);
 	}
@@ -719,11 +719,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_set
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getLeftPartOfSpeech
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getLeftPartOfSpeech
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getLeftPartOfSpeech
   (JNIEnv *env, jclass obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -738,11 +738,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getRightPartOfSpeech
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getRightPartOfSpeech
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getRightPartOfSpeech
   (JNIEnv *env, jclass obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -757,11 +757,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    clearResult
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_clearResult
+JNIEXPORT void JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_clearResult
   (JNIEnv *env, jclass obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -778,11 +778,11 @@ JNIEXPORT void JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_cle
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    setLeftPartOfSpeech
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_setLeftPartOfSpeech
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_setLeftPartOfSpeech
   (JNIEnv *env, jclass obj, jlong wnnWork, jint leftPartOfSpeech)
 {
 	NJ_JNIWORK*	work;
@@ -812,11 +812,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_set
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    setRightPartOfSpeech
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_setRightPartOfSpeech
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_setRightPartOfSpeech
   (JNIEnv *env, jclass obj, jlong wnnWork, jint rightPartOfSpeech)
 {
 	NJ_JNIWORK*	work;
@@ -846,11 +846,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_set
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    setStroke
  * Signature: (JLjava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_setStroke
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_setStroke
   (JNIEnv *env, jclass obj, jlong wnnWork, jstring stroke)
 {
 	NJ_JNIWORK*	work;
@@ -881,11 +881,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_set
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    setCandidate
  * Signature: (JLjava/lang/String;)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_setCandidate
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_setCandidate
   (JNIEnv *env, jclass obj, jlong wnnWork, jstring candidate)
 {
 	NJ_JNIWORK*	work;
@@ -916,11 +916,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_set
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    selectWord
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_selectWord
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_selectWord
   (JNIEnv *env, jclass obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -937,11 +937,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_sel
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getLeftPartOfSpeechSpecifiedType
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getLeftPartOfSpeechSpecifiedType
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getLeftPartOfSpeechSpecifiedType
   (JNIEnv *env, jclass obj, jlong wnnWork, jint type)
 {
 	NJ_JNIWORK*	work;
@@ -949,34 +949,34 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 	work = *( NJ_JNIWORK** )&wnnWork;
 	if( work != NULL ) {
         switch( type ) {
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V1:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V1:
             type = NJ_HINSI_V1_F;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V2:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V2:
             type = NJ_HINSI_V2_F;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V3:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V3:
             type = NJ_HINSI_V3_F;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_BUNTOU:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_BUNTOU:
     		/* No part of speech is defined at this type */
             return 0;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_TANKANJI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_TANKANJI:
             type = NJ_HINSI_TANKANJI_F;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_SUUJI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_SUUJI:
     		/* No part of speech is defined at this type */
             return 0;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_MEISI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_MEISI:
             type = NJ_HINSI_MEISI_F;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_JINMEI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_JINMEI:
             type = NJ_HINSI_JINMEI_F;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_CHIMEI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_CHIMEI:
             type = NJ_HINSI_CHIMEI_F;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_KIGOU:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_KIGOU:
             type = NJ_HINSI_KIGOU_F;
             break;
         default:
@@ -991,11 +991,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getRightPartOfSpeechSpecifiedType
  * Signature: (JI)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getRightPartOfSpeechSpecifiedType
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getRightPartOfSpeechSpecifiedType
   (JNIEnv *env, jclass obj, jlong wnnWork, jint type)
 {
 	NJ_JNIWORK*	work;
@@ -1003,34 +1003,34 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 	work = *( NJ_JNIWORK** )&wnnWork;
 	if( work != NULL ) {
         switch( type ) {
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V1:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V1:
     		/* No part of speech is defined at this type */
             return 0;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V2:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V2:
     		/* No part of speech is defined at this type */
             return 0;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V3:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_V3:
     		/* No part of speech is defined at this type */
             return 0;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_BUNTOU:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_BUNTOU:
             type = NJ_HINSI_BUNTOU_B;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_TANKANJI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_TANKANJI:
             type = NJ_HINSI_TANKANJI_B;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_SUUJI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_SUUJI:
             type = NJ_HINSI_SUUJI_B;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_MEISI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_MEISI:
             type = NJ_HINSI_MEISI_B;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_JINMEI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_JINMEI:
             type = NJ_HINSI_JINMEI_B;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_CHIMEI:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_CHIMEI:
             type = NJ_HINSI_CHIMEI_B;
             break;
-        case jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_KIGOU:
+        case name_yxl_openwnn_OpenWnnDictionaryImplJni_POS_TYPE_KIGOU:
             type = NJ_HINSI_KIGOU_B;
             break;
         default:
@@ -1045,11 +1045,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getConnectArray
  * Signature: (JI)[B
  */
-JNIEXPORT jbyteArray JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getConnectArray
+JNIEXPORT jbyteArray JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getConnectArray
   (JNIEnv *env, jclass obj, jlong wnnWork, jint leftPartOfSpeech)
 {
 	NJ_JNIWORK*	work;
@@ -1114,11 +1114,11 @@ JNIEXPORT jbyteArray JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJ
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getNumberOfLeftPOS
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getNumberOfLeftPOS
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getNumberOfLeftPOS
   (JNIEnv *env, jclass obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -1141,11 +1141,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getNumberOfRightPOS
  * Signature: (J)I
  */
-JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getNumberOfRightPOS
+JNIEXPORT jint JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getNumberOfRightPOS
   (JNIEnv *env, jclass obj, jlong wnnWork)
 {
 	NJ_JNIWORK*	work;
@@ -1168,11 +1168,11 @@ JNIEXPORT jint JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_get
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    getApproxPattern
  * Signature: (JLjava/lang/String;)[Ljava/lang/String;
  */
-JNIEXPORT jobjectArray JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_getApproxPattern
+JNIEXPORT jobjectArray JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_getApproxPattern
   (JNIEnv *env, jclass obj, jlong wnnWork, jstring srcJ)
 {
 	NJ_JNIWORK*	work;
@@ -1226,11 +1226,11 @@ JNIEXPORT jobjectArray JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImp
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    createBindArray
  * Signature: (JLjava/lang/String;II)[Ljava/lang/String;
  */
-JNIEXPORT jobjectArray JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_createBindArray
+JNIEXPORT jobjectArray JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_createBindArray
   (JNIEnv *env, jclass obj, jlong wnnWork, jstring keyStringJ, jint maxBindsOfQuery, jint maxPatternOfApprox)
 {
 	NJ_JNIWORK*	work;
@@ -1332,11 +1332,11 @@ JNIEXPORT jobjectArray JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImp
 }
 
 /*
- * Class:     jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni
+ * Class:     name_yxl_openwnn_OpenWnnDictionaryImplJni
  * Method:    createQueryStringBase
  * Signature: (JIILjava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_jp_co_omronsoft_openwnn_OpenWnnDictionaryImplJni_createQueryStringBase
+JNIEXPORT jstring JNICALL Java_name_yxl_openwnn_OpenWnnDictionaryImplJni_createQueryStringBase
   (JNIEnv *env, jclass obj, jlong wnnWork, jint maxBindsOfQuery, jint maxPatternOfApprox, jstring keyColumnNameJ)
 {
     NJ_JNIWORK*	work;

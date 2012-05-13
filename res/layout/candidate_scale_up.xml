@@ -37,20 +37,20 @@
      android:layout_height="wrap_content"
      android:gravity="center"
      >
-    <jp.co.omronsoft.openwnn.CandidateViewButton
+    <name.yxl.openwnn.CandidateViewButton
        android:id="@+id/candidate_select"
        android:layout_height="fill_parent"
        android:layout_width="wrap_content" 
        android:text="@string/button_candidate_select"
        />
-    <jp.co.omronsoft.openwnn.CandidateViewButton
+    <name.yxl.openwnn.CandidateViewButton
        android:id="@+id/candidate_delete"
        android:layout_height="fill_parent"
        android:layout_width="wrap_content" 
        android:text="@string/button_candidate_delete"
        android:visibility="gone"
        />
-    <jp.co.omronsoft.openwnn.CandidateViewButton
+    <name.yxl.openwnn.CandidateViewButton
        android:id="@+id/candidate_cancel"
        android:layout_height="fill_parent"
        android:layout_width="wrap_content" 

@@ -30,14 +30,14 @@
 
 3. Dictionary Libraries
 
-  [libWnnEngDic.so: English dictionary]
+  [name_yxl_libWnnEngDic.so: English dictionary]
       Index 0: English dictionary for normal prediction (high priority)
       Index 1: English dictionary for normal prediction (middle priority)
       Index 2: English dictionary for normal prediction (low priority)
       Index 3: English dictionary for relative prediction #1
       Index 4: English dictionary for relative prediction #2
 
-  [libWnnJpnDic.so: Japanese dictionary]
+  [name_yxl_libWnnJpnDic.so: Japanese dictionary]
       Index 0: Japanese dictionary for normal prediction (high priority)
       Index 1: Japanese dictionary for normal prediction (low priority)
       Index 2: Japanese dictionary for relative prediction #1
@@ -58,7 +58,7 @@
     Android.mk                                Building control file
     AndroidManifest.xml                       |
 
-    libs/                                     IME native library source code (C language)
+    jni/                                     IME native library source code (C language)
         Android.mk                            |
         libwnnDictionary/                     |
             Android.mk                        |
