@@ -368,7 +368,7 @@ public class TextCandidatesViewManager implements CandidatesViewManager, Gesture
             LinearLayout lineView = new LinearLayout(mViewBodyScroll.getContext());
             lineView.setOrientation(LinearLayout.HORIZONTAL);
             LinearLayout.LayoutParams layoutParams = 
-                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,
                                               ViewGroup.LayoutParams.WRAP_CONTENT);
             lineView.setLayoutParams(layoutParams);
             for (int j = 0; j < (width / getCandidateMinimumWidth()); j++) {

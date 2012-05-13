@@ -17,12 +17,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:paddingTop="5sp"
-              android:layout_width="match_parent"
+              android:layout_width="fill_parent"
               android:layout_height="wrap_content">
     <LinearLayout
        android:orientation="horizontal"
        android:gravity="center"
-       android:layout_width="match_parent"
+       android:layout_width="fill_parent"
        android:layout_height="wrap_content">
       <Button
          android:id="@+id/user_dictionary_left_button" 
@@ -42,7 +42,7 @@
     </LinearLayout>
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:padding="1dip"
         android:layout_gravity="left">
@@ -75,11 +75,11 @@
     </LinearLayout>
     <ScrollView
         android:id="@+id/user_dictionary_tools_scroll"
-        android:layout_width="match_parent" 
+        android:layout_width="fill_parent" 
         android:layout_height="wrap_content">
         <TableLayout
             android:id="@+id/user_dictionary_tools_table" 
-            android:layout_width="match_parent" 
+            android:layout_width="fill_parent" 
             android:layout_height="wrap_content"
             android:padding="1dip">
         </TableLayout>
